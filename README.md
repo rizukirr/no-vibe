@@ -4,7 +4,7 @@ Learn how things work from Claude instead of having Claude generate everything f
 
 ## Who this is for
 
-If you feel like AI is draining your skill, making you forget how to do things, or you just want to actually understand how things work — this plugin is for you.
+If you feel like AI is draining your skill, making you forget how to do things and now ou just want to actually understand how things work — this plugin is for you.
 
 ## How it works
 
