@@ -5,5 +5,18 @@
     "author": {
         "name": "rizukirr",
         "github": "https://github.com/rizkirr"
+    },
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Edit|Write|NotebookEdit|MultiEdit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/hooks/block-writes.sh"
+                    }
+                ]
+            }
+        ]
     }
 }
