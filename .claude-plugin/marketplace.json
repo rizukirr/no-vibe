@@ -1,0 +1,28 @@
+{
+    "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+    "name": "no-vibe",
+    "description": "Forces you to write code yourself. AI shows and reviews, never writes to your files.",
+    "owner": {
+        "name": "rizukirr"
+    },
+    "plugins": [
+        {
+            "name": "no-vibe",
+            "description": "A Claude Code plugin that forces you to write code yourself. AI shows code in chat and reviews your work, but never writes to your project files. Top-down learning with reference projects.",
+            "version": "0.1.0",
+            "author": {
+                "name": "rizukirr"
+            },
+            "source": "./",
+            "category": "learning",
+            "homepage": "https://github.com/rizukirr/no-vibe",
+            "tags": [
+                "learning",
+                "tutor",
+                "no-vibe-coding",
+                "education"
+            ]
+        }
+    ],
+    "version": "0.1.0"
+}

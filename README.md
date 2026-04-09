@@ -14,11 +14,14 @@ A lesson usually goes like this: look at what you already have, sketch the API f
 
 ### Install
 
-```sh
-curl -fsSL https://raw.githubusercontent.com/rizukirr/no-vibe/main/install.sh | sh
+In Claude Code, add the marketplace and install the plugin:
+
+```
+/plugin marketplace add rizukirr/no-vibe
+/plugin install no-vibe@no-vibe
 ```
 
-Clones into `~/.claude/plugins/no-vibe`. Override with `NO_VIBE_DIR`, `NO_VIBE_REPO`, or `NO_VIBE_REF`. Requires `git` and `jq`. Restart Claude Code after installing.
+Then restart Claude Code.
 
 ### Usage
 
