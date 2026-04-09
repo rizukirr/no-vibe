@@ -88,4 +88,104 @@ EOF
 test_marker_allows_read
 test_marker_blocks_edit_outside
 test_marker_allows_edit_inside
+
+# --- Test 5: path traversal (.. escape) → deny ---
+test_marker_blocks_traversal() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe"
+    touch "$cwd/.no-vibe/active"
+    local input
+    input=$(cat <<EOF
+{"tool_name":"Edit","tool_input":{"file_path":"$cwd/.no-vibe/../foo.py"},"cwd":"$cwd"}
+EOF
+)
+    local exit_code
+    echo "$input" | "$HOOK" >/dev/null 2>&1
+    exit_code=$?
+    rm -rf "$cwd"
+    [ "$exit_code" -ne 0 ] && pass "marker + path traversal → deny" \
+        || fail "marker + path traversal → deny" "got exit $exit_code"
+}
+
+# --- Test 6: Write tool also blocked ---
+test_marker_blocks_write() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe"
+    touch "$cwd/.no-vibe/active"
+    local input
+    input=$(cat <<EOF
+{"tool_name":"Write","tool_input":{"file_path":"$cwd/foo.py","content":"x"},"cwd":"$cwd"}
+EOF
+)
+    local exit_code
+    echo "$input" | "$HOOK" >/dev/null 2>&1
+    exit_code=$?
+    rm -rf "$cwd"
+    [ "$exit_code" -ne 0 ] && pass "marker + Write outside → deny" \
+        || fail "marker + Write outside → deny" "got exit $exit_code"
+}
+
+# --- Test 7: NotebookEdit also blocked ---
+test_marker_blocks_notebook_edit() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe"
+    touch "$cwd/.no-vibe/active"
+    local input
+    input=$(cat <<EOF
+{"tool_name":"NotebookEdit","tool_input":{"notebook_path":"$cwd/n.ipynb"},"cwd":"$cwd"}
+EOF
+)
+    local exit_code
+    echo "$input" | "$HOOK" >/dev/null 2>&1
+    exit_code=$?
+    rm -rf "$cwd"
+    [ "$exit_code" -ne 0 ] && pass "marker + NotebookEdit outside → deny" \
+        || fail "marker + NotebookEdit outside → deny" "got exit $exit_code"
+}
+
+# --- Test 8: MultiEdit also blocked ---
+test_marker_blocks_multi_edit() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe"
+    touch "$cwd/.no-vibe/active"
+    local input
+    input=$(cat <<EOF
+{"tool_name":"MultiEdit","tool_input":{"file_path":"$cwd/foo.py"},"cwd":"$cwd"}
+EOF
+)
+    local exit_code
+    echo "$input" | "$HOOK" >/dev/null 2>&1
+    exit_code=$?
+    rm -rf "$cwd"
+    [ "$exit_code" -ne 0 ] && pass "marker + MultiEdit outside → deny" \
+        || fail "marker + MultiEdit outside → deny" "got exit $exit_code"
+}
+
+# --- Test 9: Bash tool not blocked (loophole — handled by skill instruction) ---
+test_marker_allows_bash() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe"
+    touch "$cwd/.no-vibe/active"
+    local input
+    input=$(cat <<EOF
+{"tool_name":"Bash","tool_input":{"command":"echo hi"},"cwd":"$cwd"}
+EOF
+)
+    local exit_code
+    echo "$input" | "$HOOK" >/dev/null 2>&1
+    exit_code=$?
+    rm -rf "$cwd"
+    assert_eq "0" "$exit_code" "marker + Bash → allow (loophole, see SKILL.md)"
+}
+
+test_marker_blocks_traversal
+test_marker_blocks_write
+test_marker_blocks_notebook_edit
+test_marker_blocks_multi_edit
+test_marker_allows_bash
 summary
