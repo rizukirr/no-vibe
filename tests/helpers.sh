@@ -31,8 +31,7 @@ assert_contains() {
     if echo "$haystack" | grep -qF "$needle"; then
         pass "$name"
     else
-        fail "$name" "expected output to contain: $needle"
-        fail "$name" "actual: $haystack"
+        fail "$name" "expected to contain: $needle | actual: $haystack"
     fi
 }
 
