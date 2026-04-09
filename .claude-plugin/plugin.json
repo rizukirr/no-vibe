@@ -13,7 +13,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/hooks/block-writes.sh"
+                        "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-writes.sh"
                     }
                 ]
             }
