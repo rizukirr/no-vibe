@@ -17,5 +17,50 @@ if [ -z "$cwd" ] || [ ! -f "$cwd/.no-vibe/active" ]; then
     exit 0
 fi
 
-# Marker exists — but for now, still allow. (Subsequent tasks tighten this.)
-exit 0
+# Parse tool name. Only the four write-style tools matter.
+tool_name=$(echo "$input" | jq -r '.tool_name // empty')
+case "$tool_name" in
+    Edit|Write|NotebookEdit|MultiEdit) ;;
+    *) exit 0 ;;
+esac
+
+# Extract the target path. Field name varies slightly by tool but
+# all four currently use file_path or notebook_path at the top level.
+target=$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.notebook_path // empty')
+
+# If we somehow can't find a target, fail open (don't block).
+if [ -z "$target" ]; then
+    exit 0
+fi
+
+# Resolve target to absolute path. If it's relative, anchor to cwd.
+case "$target" in
+    /*) abs_target="$target" ;;
+    *)  abs_target="$cwd/$target" ;;
+esac
+
+# Resolve symlinks and .. — use realpath if available, else manual cleanup.
+if command -v realpath >/dev/null 2>&1; then
+    # -m so it doesn't fail if the file doesn't exist yet
+    abs_target=$(realpath -m "$abs_target")
+    scratch_root=$(realpath -m "$cwd/.no-vibe")
+else
+    abs_target=$(cd "$(dirname "$abs_target")" 2>/dev/null && pwd)/$(basename "$abs_target")
+    scratch_root="$cwd/.no-vibe"
+fi
+
+# Allow writes inside .no-vibe/ (the scratch escape hatch).
+case "$abs_target" in
+    "$scratch_root"/*|"$scratch_root") exit 0 ;;
+esac
+
+# Otherwise — deny.
+cat >&2 <<EOF
+no-vibe mode is active. You cannot write to '$abs_target' while learning.
+Show the code in chat instead, and let the user type it into their project
+themselves. If you need to save a lesson note or summary, write it under
+\`.no-vibe/\`.
+
+To exit no-vibe mode, the user can run \`/no-vibe off\`.
+EOF
+exit 2
