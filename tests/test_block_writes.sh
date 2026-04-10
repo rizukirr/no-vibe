@@ -3,7 +3,7 @@
 
 set -u
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HOOK="$SCRIPT_DIR/../.claude-plugin/hooks/block-writes.sh"
+HOOK="$SCRIPT_DIR/../hooks/block-writes.sh"
 . "$SCRIPT_DIR/helpers.sh"
 
 # Each test runs in a fresh temp dir to isolate the .no-vibe/ marker.
