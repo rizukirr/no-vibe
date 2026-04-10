@@ -14,6 +14,8 @@ A lesson usually goes like this: look at what you already have, sketch the API f
 
 ### Install
 
+#### Claude Code
+
 In Claude Code, add the marketplace and install the plugin:
 
 ```
@@ -22,6 +24,32 @@ In Claude Code, add the marketplace and install the plugin:
 ```
 
 Then restart Claude Code.
+
+#### OpenCode
+
+Add no-vibe to your `opencode.json` plugin list:
+
+```json
+{
+  "plugin": ["no-vibe@git+https://github.com/rizukirr/no-vibe.git"]
+}
+```
+
+Restart OpenCode, then run:
+
+```text
+/no-vibe on
+```
+
+You can then use the same command forms:
+
+```text
+/no-vibe build a linear layer like pytorch's
+/no-vibe --ref pytorch --mode concept how does autograd work
+/no-vibe off
+```
+
+See `.opencode/INSTALL.md` for troubleshooting and details.
 
 ### Usage
 
