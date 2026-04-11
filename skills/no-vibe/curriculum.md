@@ -45,6 +45,8 @@ Inverted template (root-cause descent):
 
 - **Lecturing without running.** Every layer must produce something the user can run and see.
 - **More than one new concept per layer.** If you find yourself explaining two things, split the layer.
+- **Blowing the explanation budget.** 1–4 sentences per layer (up to 6 in concept mode for mental-model territory). Past that, split the layer instead of writing more prose.
+- **Preamble, recap, preview, cheerleading.** "Great! Now let's…" / "In the last step we…" / "Coming up next…" / "Awesome work!" — all noise. Show the layer, explain it, give the run command, stop.
 - **Inventing API surface that isn't in the reference.** When a ref is attached, grep first.
 - **Skipping Phase 1a context analysis.** A curriculum without intake is a guess.
 - **Silent curriculum revisions.** Always announce changes with *why*.
