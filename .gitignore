@@ -2,3 +2,6 @@
 **/.omc/
 .worktrees/
 docs/superpowers/
+/external/superpowers
+/external/DeepTutor
+/docs
