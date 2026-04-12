@@ -39,7 +39,7 @@ Determine which form was invoked:
 - If turning ON or starting any lesson, you MUST run this exact bash command:
 
 ```bash
-mkdir -p .no-vibe/notes .no-vibe/refs && touch .no-vibe/active
+mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/active
 ```
 
 Then verify with:
