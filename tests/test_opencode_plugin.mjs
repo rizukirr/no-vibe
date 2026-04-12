@@ -49,6 +49,10 @@ const run = async () => {
   assert.notEqual(first.text, "Teach me linear layers", "first text part should be injected bootstrap")
   assert.ok(first.text.includes("no-vibe"), "bootstrap should mention no-vibe")
   assert.ok(first.text.includes("OpenCode"), "bootstrap should mention OpenCode")
+  assert.ok(
+    first.text.includes("Data Schema") || first.text.includes("DATA-SCHEMA") || first.text.includes("profile.json"),
+    "bootstrap should include data schema content",
+  )
 
   const tempCwd = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-write-guard-"))
   const markerDir = path.join(tempCwd, ".no-vibe")
@@ -81,6 +85,21 @@ const run = async () => {
     )
   } finally {
     fs.rmSync(tempCwd, { recursive: true, force: true })
+  }
+
+  // --- Test: write to .no-vibe/data/ is allowed ---
+  const tempCwd2 = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-data-write-"))
+  const markerDir2 = path.join(tempCwd2, ".no-vibe")
+  fs.mkdirSync(path.join(markerDir2, "data", "sessions"), { recursive: true })
+  fs.writeFileSync(path.join(markerDir2, "active"), "")
+
+  try {
+    await plugin["tool.execute.before"](
+      { tool: "write", cwd: tempCwd2, args: { filePath: ".no-vibe/data/profile.json" } },
+      { args: { filePath: ".no-vibe/data/profile.json" } },
+    )
+  } finally {
+    fs.rmSync(tempCwd2, { recursive: true, force: true })
   }
 
   console.log("PASS test_opencode_plugin bootstrap/config")
