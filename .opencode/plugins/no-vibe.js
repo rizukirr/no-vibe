@@ -13,10 +13,16 @@ const getSkillsDir = (directory) => path.resolve(directory || process.cwd(), "sk
 
 const buildBootstrap = (skillsDir) => {
   const skillPath = path.join(skillsDir, "no-vibe", "SKILL.md")
+  const schemaPath = path.join(skillsDir, "no-vibe", "DATA-SCHEMA.md")
   let skillBody = "You are in no-vibe mode. Teach in chat and never write project files directly."
+  let schemaBody = ""
 
   if (fs.existsSync(skillPath)) {
     skillBody = stripFrontmatter(fs.readFileSync(skillPath, "utf8")).trim()
+  }
+
+  if (fs.existsSync(schemaPath)) {
+    schemaBody = "\n\n## Data Schema Reference\n\n" + stripFrontmatter(fs.readFileSync(schemaPath, "utf8")).trim()
   }
 
   return [
@@ -25,6 +31,7 @@ const buildBootstrap = (skillsDir) => {
     "no-vibe mode is available in this repository.",
     "",
     skillBody,
+    schemaBody,
     "",
     "**Tool Mapping for OpenCode:**",
     "When skill content references tools you do not have, use OpenCode equivalents:",
