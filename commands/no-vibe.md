@@ -36,7 +36,7 @@ Determine which form was invoked:
 
 ### 2. Manage the marker file
 
-- If turning ON or starting any lesson: `mkdir -p .no-vibe/notes .no-vibe/refs && touch .no-vibe/active`
+- If turning ON or starting any lesson: `mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/active`
 - If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first; then `rm -f .no-vibe/active`
 
 ### 3. Clone any `--ref` URLs
