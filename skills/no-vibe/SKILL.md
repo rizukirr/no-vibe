@@ -3,6 +3,12 @@ name: no-vibe
 description: Use when the user is in no-vibe mode (a /no-vibe command was invoked or .no-vibe/active exists). Guides the user through writing code themselves via a six-phase teaching cycle, never writing to project files.
 ---
 
+## Data tracking
+
+This skill tracks learner progress in `.no-vibe/data/`. See `skills/no-vibe/DATA-SCHEMA.md` for all JSON contracts. When writing any data file, read the schema first.
+
+Before any data write, ensure the target file exists. If missing, initialize with schema defaults (see DATA-SCHEMA.md "Initializing Data Files").
+
 # no-vibe — Teaching Cycle
 
 You are in **no-vibe mode**. The user has explicitly opted into a learning experience where:
@@ -24,6 +30,17 @@ The rhythm is: introduce → user types → **user runs and sees output** → us
 
 ## The cycle
 
+### Phase 0 — Auto-resume check
+
+Before starting a new session, check for incomplete work:
+
+1. Read all files in `.no-vibe/data/sessions/`. Look for any with `"status": "in_progress"`.
+2. If found, ask the user:
+   > "Found incomplete session: **{topic}** ({layers_completed}/{layers_total} layers done). Continue where you left off, or start fresh?"
+3. If user says continue → read the session JSON, resume at `current_phase` and `current_layer`. Skip Phase 1a–1c and jump directly to the recorded phase.
+4. If user says start fresh → update the old session: set `"status": "abandoned"`. Proceed to Phase 1a normally.
+5. If no incomplete session found → proceed to Phase 1a normally.
+
 ### Phase 1a — Context analysis & targeted clarification
 
 Before asking anything, silently analyze:
@@ -32,6 +49,8 @@ Before asking anything, silently analyze:
 - The user's project: Read/Grep a few relevant files to infer stack, style, naming, apparent skill level
 - Any attached reference project's top-level structure
 - Conversation history
+- `.no-vibe/data/profile.json` (if exists): note skill levels relevant to this topic, factor into curriculum difficulty
+- `.no-vibe/data/mistakes.json` (if exists): check for 3+ mistakes in categories relevant to upcoming topic — plan extra scaffolding for those areas
 
 Form a working hypothesis of who the user is and what they want. Only ask clarifying questions for **genuine forks** that would change the curriculum. If the hypothesis is confident, do a brief sanity check instead:
 
@@ -74,13 +93,24 @@ Started: 2026-04-09
 
 Present the curriculum in chat; user approves or edits. Approval gates entry to Phase 2.
 
+**Data tracking:** Also create `.no-vibe/data/sessions/<topic-slug>.json` with initial state per DATA-SCHEMA.md. Set `status: "in_progress"`, `current_phase: "phase1c"`, `layers_total` matching curriculum length.
+
+**Adaptive difficulty:** Before finalizing the curriculum:
+- If `profile.json` shows `comfortable` or `strong` in a relevant topic area, offer: "You seem solid on {area} — want to skip the basics and start at layer {N}?"
+- If `profile.json` shows `struggling` or `new`, add an extra scaffolding layer for fundamentals.
+- If `mistakes.json` has 3+ entries in a category that overlaps with this topic (e.g. `off-by-one` for array-heavy work), insert an explicit layer addressing that pattern.
+
 ### Phase 2 — Minimal skeleton
 
 Show the smallest *runnable* shape in chat. Explain what it is and what it isn't yet. Include the run command. Wait for "next".
 
+**Data tracking:** Update session JSON: `"current_phase": "phase2"`, `"current_layer": 1`.
+
 ### Phase 3 — Add one layer
 
 Introduce exactly **one** new concept on top. Each addition includes:
+
+**Data tracking:** Update session JSON: increment `current_layer`, set `"current_phase": "phase3"`.
 1. The concept in prose
 2. The code to add, shown in chat with clear "add this / replace that" framing
 3. *Why* this layer exists
@@ -104,6 +134,10 @@ User writes, runs, says "next".
 Use Read to look at the user's file(s). Check (a) the layer's intent is present and (b) the code is still runnable end-to-end. You may optionally use Bash to actually execute it for verification (e.g., `bash -c "cd <project> && python <file>"`).
 
 Three outcomes:
+
+**Data tracking:** When an issue is found (small issue or fundamental misunderstanding):
+1. Append to `.no-vibe/data/mistakes.json`: `{"category": "<kebab-case>", "topic": "<session-topic>", "layer": <N>}`. Reuse an existing category from the file if one matches.
+2. Increment `mistakes_this_session` in the session JSON.
 
 - **Good** → brief affirmation, advance to Phase 5.
 - **Small issue** → point it out and ask the user to fix. The framing depends on mode:
@@ -135,6 +169,14 @@ When the curriculum is exhausted, produce:
 - **Advanced techniques** — 3–5 bullets pointing outward, designed to keep curiosity alive.
 
 Auto-save the synthesis to `.no-vibe/notes/YYYY-MM-DD-<topic>.md` (writes to `.no-vibe/` are allowed by the hook). Check off the corresponding curriculum item in `.no-vibe/session.md`.
+
+**Data tracking:** Update all data files:
+1. Session JSON: set `"status": "completed"`, `"layers_completed"` to final count.
+2. `profile.json` (create with defaults if missing):
+   - Set `skill_levels[<topic-area>]` based on performance (see DATA-SCHEMA.md level update logic)
+   - Increment `total_sessions` and add `layers_completed` to `total_layers_completed`
+   - Recompute `common_weaknesses`: categories with 3+ entries in `mistakes.json`
+   - Recompute `common_strengths`: categories user encountered but has 0 recent mistakes in
 
 ## Curriculum revision triggers
 
