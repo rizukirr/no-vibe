@@ -1,16 +1,6 @@
 # no-vibe — Codex Installation
 
-## Option 1: Plugin Install (Recommended)
-
-Codex supports Claude Code plugin format natively:
-
-```bash
-claude plugin add rizukirr/no-vibe
-```
-
-This installs hooks, commands, and skills automatically.
-
-## Option 2: Manual Symlink
+## Install
 
 ```bash
 # Clone the repo
@@ -23,7 +13,13 @@ ln -s ~/.codex/no-vibe/skills ~/.agents/skills/no-vibe
 # Restart Codex
 ```
 
-> **Note:** Manual symlink only exposes skills. Hooks (write guard) and slash commands require the plugin install method.
+On Windows (PowerShell):
+
+```powershell
+git clone https://github.com/rizukirr/no-vibe.git "$env:USERPROFILE\.codex\no-vibe"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.agents\skills"
+cmd /c mklink /J "$env:USERPROFILE\.agents\skills\no-vibe" "$env:USERPROFILE\.codex\no-vibe\skills"
+```
 
 ## Verify Installation
 
@@ -39,7 +35,7 @@ ln -s ~/.codex/no-vibe/skills ~/.agents/skills/no-vibe
 
 ## Usage
 
-```bash
+```
 /no-vibe build a REST API handler          # one-shot lesson
 /no-vibe on                                 # persistent mode
 /no-vibe --ref pytorch --mode concept       # with reference + mode
@@ -49,13 +45,10 @@ ln -s ~/.codex/no-vibe/skills ~/.agents/skills/no-vibe
 
 ## Troubleshooting
 
-**Hook not blocking writes:**
-- Verify `jq` is installed: `which jq`
-- Check marker exists: `test -f .no-vibe/active && echo "active"`
-
-**Skills not discovered (symlink method):**
+**Skills not discovered:**
 - Verify symlink: `ls -la ~/.agents/skills/no-vibe`
 - Should point to `~/.codex/no-vibe/skills`
 
-**Commands not found:**
-- Manual symlink does not register commands — use plugin install method instead
+**Hook not blocking writes:**
+- Verify `jq` is installed: `which jq`
+- Check marker exists: `test -f .no-vibe/active && echo "active"`

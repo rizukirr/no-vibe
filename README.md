@@ -17,8 +17,11 @@ Turn on no-vibe mode and the AI guides you through building code top-down: start
 ### Claude Code
 
 ```
-claude plugin add rizukirr/no-vibe
+/plugin marketplace add rizukirr/no-vibe
+/plugin install no-vibe@no-vibe
 ```
+
+Then restart Claude Code.
 
 ### OpenCode
 
@@ -32,11 +35,11 @@ See `.opencode/INSTALL.md` for details.
 
 ### Codex
 
-```
-claude plugin add rizukirr/no-vibe
-```
+Paste this into Codex:
 
-See `INSTALL.codex.md` for manual symlink method.
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/INSTALL.codex.md
+```
 
 ### Then
 
