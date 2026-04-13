@@ -10,9 +10,9 @@ No-vibe is designed to help you finish your project by your own hands while lear
 
 ## How it works
 
-Start no-vibe mode and the AI becomes your coding coach. You write every line yourself — the AI tells you what to write and why, helping you understand how things work piece by piece, step by step. You'll build things top-down: get the big picture first, then fill in one concept at a time, running your code at every step — this builds a solid mental model in your head. When helpful, it pulls from real projects to show how things actually work — not hallucinate. A built-in safety net stops the AI from touching your files — all changes go through you.
+Start no-vibe mode and the AI becomes your coding coach. You write every line yourself, the AI tells you what to write and why, helping you understand how things work piece by piece, step by step. You'll build things top-down, get the big picture first, then fill in one concept at a time, running your code at every step, this builds a solid mental model in your head. When helpful, it pulls from real projects to show how things actually work — not hallucinate. A built-in safety net stops the AI from touching your files, all changes go through you.
 
-No-vibe also remembers you between sessions. It tracks what you're good at and where you get stuck, spots recurring mistakes, and adjusts its teaching — giving you more help where you need it and skipping what you already know. If you close mid-lesson, it picks up right where you left off.
+No-vibe also remembers you between sessions. It tracks what you're good at and where you get stuck, spots recurring mistakes, and adjusts its teaching, giving you more help where you need it and skipping what you already know. If you close mid-lesson, it picks up right where you left off.
 
 All data stays local in `.no-vibe/data/`.
 
