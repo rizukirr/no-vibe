@@ -10,7 +10,11 @@ No-vibe is designed to help you finish your project by your own hands while lear
 
 ## How it works
 
-Turn on no-vibe mode and the AI guides you through building code top-down: start with the shape, add one concept at a time, run it at every step. Each layer is grounded in real reference projects when available. A write-guard hook prevents the AI from editing your files — everything goes through chat and into your hands.
+Start no-vibe mode and the AI becomes your coding coach. You write every line yourself — the AI tells you what to write and why, helping you understand how things work piece by piece, step by step. You'll build things top-down: get the big picture first, then fill in one concept at a time, running your code at every step — this builds a solid mental model in your head. When helpful, it pulls from real projects to show how things actually work — not hallucinate. A built-in safety net stops the AI from touching your files — all changes go through you.
+
+No-vibe also remembers you between sessions. It tracks what you're good at and where you get stuck, spots recurring mistakes, and adjusts its teaching — giving you more help where you need it and skipping what you already know. If you close mid-lesson, it picks up right where you left off.
+
+All data stays local in `.no-vibe/data/`.
 
 ## Quick start
 
@@ -68,12 +72,6 @@ Flags can be combined: `/no-vibe --ref pytorch --mode concept how does autograd 
 | **concept** | "teach me how X works" | More prose, more "why", deeper check-ins |
 | **skill** | "I want to practice writing Y" | "Type this exactly", muscle-memory repetition |
 | **debug** | "why does my Z behave like this" | Start from symptom, descend toward root cause |
-
-## Learner tracking
-
-No-vibe remembers how you're doing across sessions. It tracks skill levels per topic, logs mistakes to surface patterns, and adapts future lessons — more scaffolding where you struggle, skipping basics where you're strong. Interrupted sessions auto-resume where you left off.
-
-All data stays local in `.no-vibe/data/`.
 
 ## Platform support
 
