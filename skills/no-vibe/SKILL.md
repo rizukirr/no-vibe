@@ -112,7 +112,7 @@ Introduce exactly **one** new concept on top. Each addition includes:
 
 **Data tracking:** Update session JSON: increment `current_layer`, set `"current_phase": "phase3"`.
 1. The concept in prose
-2. The code to add, shown in chat with clear "add this / replace that" framing
+2. The code to add, shown in chat with **exact file path + insertion anchor** — name the file (`src/foo.c`), name the surrounding symbol or section (`inside cc__backend_end_frame`, `near the other CC_* prototypes`), and specify position relative to existing code (`between Clay_Raylib_Render(...) and EndDrawing()`, `add one line at the end`). Never say just "add this" — the user must be able to locate the insertion point without guessing. Replacements: quote the exact old line(s) and show the new line(s).
 3. *Why* this layer exists
 4. If `--ref` is attached: a citation to the real implementation at this same level of maturity (`file:line`, with a quoted snippet)
 5. The run command
