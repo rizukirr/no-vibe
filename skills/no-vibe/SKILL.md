@@ -52,11 +52,22 @@ Before asking anything, silently analyze:
 - `.no-vibe/data/profile.json` (if exists): note skill levels relevant to this topic, factor into curriculum difficulty
 - `.no-vibe/data/mistakes.json` (if exists): check for 3+ mistakes in categories relevant to upcoming topic — plan extra scaffolding for those areas
 
-Form a working hypothesis of who the user is and what they want. Only ask clarifying questions for **genuine forks** that would change the curriculum. If the hypothesis is confident, do a brief sanity check instead:
+Form a working hypothesis of who the user is and what they want. Only ask clarifying questions for **genuine forks** that would change the curriculum. If the hypothesis is confident, do a sanity check instead. The sanity check has a locked shape — state back three things explicitly, then offer 2–3 yes/no assumption checks the user can reject fast:
 
-> "I've had a look at your project — looks like you're comfortable with numpy and have a `layers/` module. I'm guessing you want a Linear layer that fits that style, going from scratch down to matmul. Correct me if I'm wrong, otherwise I'll draft the curriculum."
+1. **Target behavior** — what the code will do when done
+2. **Constraints** — language, stack, deps inferred from the project scan
+3. **Scope boundary** — what we're *not* building this lesson
 
-**Rule:** never ask a question you could have answered by reading the code.
+Example:
+
+> "Target: a `Linear` layer usable as `Linear(2,3)(x)` returning a 1-D numpy array. Constraints: Python + numpy, fits your `layers/` module style. Not building: autograd, batching, or GPU.
+>
+> Quick checks — reject any that are wrong:
+> - (a) Forward pass only, no backward — right?
+> - (b) Float32 weights, not float64 — right?
+> - (c) Starting from scratch (no torch import) — right?"
+
+**Rule:** never ask a question you could have answered by reading the code. Assumption checks are yes/no, not open-ended.
 
 ### Phase 1b — Reference suggestion (if none provided)
 
@@ -98,7 +109,9 @@ Present the curriculum in chat; user approves or edits. Approval gates entry to 
 **Adaptive difficulty:** Before finalizing the curriculum:
 - If `profile.json` shows `comfortable` or `strong` in a relevant topic area, offer: "You seem solid on {area} — want to skip the basics and start at layer {N}?"
 - If `profile.json` shows `struggling` or `new`, add an extra scaffolding layer for fundamentals.
-- If `mistakes.json` has 3+ entries in a category that overlaps with this topic (e.g. `off-by-one` for array-heavy work), insert an explicit layer addressing that pattern.
+- If `mistakes.json` has 3+ entries in a category that overlaps with this topic, insert a **common-trap layer**: show the wrong version the user historically writes, have them predict what breaks, then show the right version and why. Label the curriculum item `Common trap: <pattern name>`. Pattern names should be specific (`array-bounds-off-by-one-fencepost`, `type-confusion-list-vs-scalar`) not vague (`off-by-one`).
+
+**Offer implementation forks.** If a layer has a natural fork (pure Python vs numpy, recursive vs iterative, stdlib vs third-party), surface both paths in one sentence each with the tradeoff and let the user pick before Phase 2. Learner choice = learner investment.
 
 ### Phase 2 — Minimal skeleton
 
@@ -108,14 +121,22 @@ Show the smallest *runnable* shape in chat. Explain what it is and what it isn't
 
 ### Phase 3 — Add one layer
 
-Introduce exactly **one** new concept on top. Each addition includes:
+Introduce exactly **one** new concept on top. **Split test — layer is too big if any trigger fires:**
+- Introduces 2+ new named symbols that each need their own explanation
+- Touches 2+ unrelated files/modules
+- Cannot be described in one sentence without `and`
+
+If any fire, split before showing.
+
+Each addition includes:
 
 **Data tracking:** Update session JSON: increment `current_layer`, set `"current_phase": "phase3"`.
 1. The concept in prose
-2. The code to add, shown in chat with **exact file path + insertion anchor** — name the file (`src/foo.c`), name the surrounding symbol or section (`inside cc__backend_end_frame`, `near the other CC_* prototypes`), and specify position relative to existing code (`between Clay_Raylib_Render(...) and EndDrawing()`, `add one line at the end`). Never say just "add this" — the user must be able to locate the insertion point without guessing. Replacements: quote the exact old line(s) and show the new line(s).
+2. The code to add, shown in chat with **exact file path + insertion anchor** — name the file (`src/foo.c`), name the surrounding symbol or section (`inside cc__backend_end_frame`, `near the other CC_* prototypes`), and specify position relative to existing code (`between Clay_Raylib_Render(...) and EndDrawing()`, `add one line at the end`). Never say just "add this" — the user must be able to locate the insertion point without guessing. Replacements: quote the exact old line(s) and show the new line(s). **Per-block explanation:** when a layer contains multiple code blocks, each block must be immediately followed by a 1–2 sentence explanation of what that specific block does and why it goes there, before showing the next block. Pattern: `[anchor line] → [code block 1] → [explain block 1] → [anchor line] → [code block 2] → [explain block 2] → …`. Never dump all blocks first and explain them at the end.
 3. *Why* this layer exists
 4. If `--ref` is attached: a citation to the real implementation at this same level of maturity (`file:line`, with a quoted snippet)
-5. The run command
+5. The run command **+ expected output signature** — one line stating what the user should see when the code runs correctly (e.g. "expect: `Linear(in=2, out=3)` on stdout", "expect: array of shape `(3,)` with values near zero"). Without an expected-output line, subtle typos pass silently until Phase 4.
+6. **Deliberately absent** — one sentence naming what this layer does *not* do yet, so the user doesn't assume it's "done" (e.g. "this layer computes matmul; it doesn't broadcast shapes or handle batches — that's next").
 
 **Explanation budget: 1–4 sentences of prose per layer** (concept mode may stretch to 6 when a mental model needs it; skill mode should stay at 1–2). If your explanation is growing past the budget, the layer is too big — split it. The test for every sentence: *does the user need this to understand the code I just showed?* If not, cut it. Name things by what they do, not by jargon (`owns its text` beats `has move semantics` unless the user already knows the jargon). Don't repeat what the code obviously says — explain the *why* or the non-obvious mechanics, not the literal reading.
 
@@ -139,12 +160,14 @@ Three outcomes:
 1. Append to `.no-vibe/data/mistakes.json`: `{"category": "<kebab-case>", "topic": "<session-topic>", "layer": <N>}`. Reuse an existing category from the file if one matches.
 2. Increment `mistakes_this_session` in the session JSON.
 
-- **Good** → brief affirmation, advance to Phase 5.
+- **Good** → brief affirmation, then a **compact recap**: 2–4 sentences naming what the user has built across all completed layers so far and how the pieces connect (data flow / call order / who owns what). Keep it to the point — no restating code, no cheerleading, no previewing the next layer. Purpose is to cement the mental model while the layer is fresh. Then advance to Phase 5.
 - **Small issue** → point it out and ask the user to fix. The framing depends on mode:
   - **concept mode** — teaching framing, not scolding. One sentence naming the issue, one sentence on *why* it matters, then ask the user to fix. The "why" is the whole point of concept mode.
   - **skill / debug mode** — fix-first. One line on what's wrong, show the corrected code block, one line on why the fix works. No Socratic questions. The user retypes and reruns. Skill mode is about muscle memory; debug mode is about getting unstuck — in both, hand over the fix and keep moving.
   Re-review on next "next".
 - **Fundamental misunderstanding** → pause, explain the gap in prose (no code), and revise the curriculum (`.no-vibe/session.md`) to insert a prerequisite layer. Announce the revision.
+
+**Reproduce-before-fix.** If the user reports unexpected behavior ("it doesn't work", "output is wrong"), do NOT theorize into a fix. First ask the user to write a one-line minimal test or print that demonstrates the failure, and run it to confirm the symptom. Only after the failure reproduces deterministically do you propose a fix. This forces precision on what "broken" means and prevents symptom-patching.
 
 If the user's code is *better* than what you suggested, acknowledge it explicitly and keep their version.
 
@@ -186,6 +209,7 @@ Throughout the cycle, rewrite `.no-vibe/session.md` when:
 - **User breezes through** → collapse or drop upcoming steps. Announce.
 - **User asks a sideways question** → either park it as a new step later or pivot. Always ask: *"park for later, or pivot now?"*
 - **Reference reveals something unexpected** → insert a step. Announce.
+- **Duplication appears across 3+ layers** → do NOT preemptively extract. Let the pattern show up, then offer the user the choice: *"Notice we've repeated this shape three times now. Worth extracting into `<name>`, or keep it inline?"* User drives abstraction timing. This teaches judgment about *when* abstraction pays off, not just the mechanics.
 
 **Every revision is (1) written to `.no-vibe/session.md`, (2) announced in chat with *why*, (3) never silent.**
 
