@@ -59,6 +59,11 @@ Then restart Claude Code.
 }
 ```
 
+Then add commands globally:
+
+- `~/.config/opencode/commands/no-vibe.md` from `.opencode/commands/no-vibe.md`
+- `~/.config/opencode/commands/no-vibe-challenge.md` from `.opencode/commands/no-vibe-challenge.md`
+
 See `.opencode/INSTALL.md` for details.
 
 ### Codex

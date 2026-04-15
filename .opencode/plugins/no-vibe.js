@@ -1,5 +1,6 @@
 import fs from "node:fs"
 import path from "node:path"
+import { fileURLToPath } from "node:url"
 
 const WRITE_TOOLS = new Set(["edit", "write", "notebookedit", "multiedit", "apply_patch", "applypatch"])
 const BOOTSTRAP_SENTINEL = "NO_VIBE_OPENCODE_BOOTSTRAP_V1"
@@ -9,7 +10,9 @@ const stripFrontmatter = (content) => {
   return match ? match[1] : content
 }
 
-const getSkillsDir = (directory) => path.resolve(directory || process.cwd(), "skills")
+const PLUGIN_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..")
+
+const getSkillsDir = () => path.resolve(PLUGIN_ROOT, "skills")
 
 const buildBootstrap = (skillsDir) => {
   const skillPath = path.join(skillsDir, "no-vibe", "SKILL.md")
@@ -82,8 +85,8 @@ const isWithinNoVibeDir = (cwd, absoluteTargetPath) => {
 }
 
 export const NoVibePlugin = async ({ directory } = {}) => {
-  const repoRoot = path.resolve(directory || process.cwd())
-  const skillsDir = getSkillsDir(repoRoot)
+  const projectRoot = path.resolve(directory || process.cwd())
+  const skillsDir = getSkillsDir()
   const bootstrap = buildBootstrap(skillsDir)
 
   return {
@@ -114,7 +117,7 @@ export const NoVibePlugin = async ({ directory } = {}) => {
     },
 
     "tool.execute.before": async (input, output) => {
-      const cwd = path.resolve(input?.session?.cwd || input?.cwd || repoRoot)
+      const cwd = path.resolve(input?.session?.cwd || input?.cwd || projectRoot)
       const markerPath = path.join(cwd, ".no-vibe", "active")
       if (!fs.existsSync(markerPath)) return
       if (!isWriteTool(input?.tool)) return

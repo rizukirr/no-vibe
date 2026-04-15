@@ -1,6 +1,6 @@
 {
     "name": "no-vibe",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "A Claude Code plugin that forces you to write code yourself. AI shows code in chat and reviews your work, but never writes to your project files. Top-down learning with reference projects.",
     "author": {
         "name": "rizukirr",

@@ -20,19 +20,25 @@ const makeOutput = () => ({
 const run = async () => {
   let NoVibePlugin
   try {
-    ;({ NoVibePlugin } = await import("../.opencode/plugins/no-vibe.js"))
+    ;({ default: NoVibePlugin } = await import("../index.js"))
   } catch (err) {
     throw new Error("failed to import OpenCode no-vibe plugin module", { cause: err })
   }
 
-  const plugin = await NoVibePlugin({ directory: repoRoot })
+  const fakeProjectDir = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-plugin-project-"))
+  const plugin = await NoVibePlugin({ directory: fakeProjectDir })
 
   const config = {}
   await plugin.config(config)
   assert.ok(config.skills?.paths?.length, "skills paths should be populated")
   assert.ok(
     config.skills.paths.some((p) => path.resolve(p) === skillsDir),
-    "skills path should include repository skills dir",
+    "skills path should include plugin-bundled skills dir",
+  )
+
+  assert.ok(
+    !config.skills.paths.some((p) => path.resolve(p) === path.join(fakeProjectDir, "skills")),
+    "skills path should not depend on current project directory",
   )
 
   const output = makeOutput()
@@ -101,6 +107,8 @@ const run = async () => {
   } finally {
     fs.rmSync(tempCwd2, { recursive: true, force: true })
   }
+
+  fs.rmSync(fakeProjectDir, { recursive: true, force: true })
 
   console.log("PASS test_opencode_plugin bootstrap/config")
 }
