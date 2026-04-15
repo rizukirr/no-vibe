@@ -37,7 +37,7 @@ Before starting a new session, check for incomplete work:
 1. Read all files in `.no-vibe/data/sessions/`. Look for any with `"status": "in_progress"`.
 2. If found, ask the user:
    > "Found incomplete session: **{topic}** ({layers_completed}/{layers_total} layers done). Continue where you left off, or start fresh?"
-3. If user says continue → read the session JSON, resume at `current_phase` and `current_layer`. Skip Phase 1a–1c and jump directly to the recorded phase.
+3. If user says continue → read the session JSON, resume at the recorded `current_phase` and `current_layer`. If `current_phase` is `phase1c` (curriculum drafted but not yet approved/started), re-present the curriculum for approval and continue from there. If `current_phase` is `phase2` or later, skip Phase 1a–1c entirely and enter directly at the recorded phase.
 4. If user says start fresh → update the old session: set `"status": "abandoned"`. Proceed to Phase 1a normally.
 5. If no incomplete session found → proceed to Phase 1a normally.
 
@@ -115,7 +115,9 @@ Present the curriculum in chat; user approves or edits. Approval gates entry to 
 
 ### Phase 2 — Minimal skeleton
 
-Show the smallest *runnable* shape in chat. Explain what it is and what it isn't yet. Include the run command. Wait for "next".
+Show the smallest *runnable* shape in chat. Explain what it is and what it isn't yet. Include the run command **plus a one-line expected output signature** (same format as Phase 3 step 5 — e.g. "expect: `hello` on stdout"). Wait for "next".
+
+Phase 2 deliberately keeps turn structure lighter than Phase 3 — the skeleton is a single coherent shape, so per-block explanation and ref citation are deferred to Phase 3's first layer. If the skeleton genuinely needs 2+ code blocks (e.g. imports + function + run), apply Phase 3's per-block explanation rule; ref citation still waits.
 
 **Data tracking:** Update session JSON: `"current_phase": "phase2"`, `"current_layer": 1`.
 
@@ -134,13 +136,16 @@ Each addition includes:
 1. The concept in prose
 2. The code to add, shown in chat with **exact file path + insertion anchor** — name the file (`src/foo.c`), name the surrounding symbol or section (`inside cc__backend_end_frame`, `near the other CC_* prototypes`), and specify position relative to existing code (`between Clay_Raylib_Render(...) and EndDrawing()`, `add one line at the end`). Never say just "add this" — the user must be able to locate the insertion point without guessing. Replacements: quote the exact old line(s) and show the new line(s). **Per-block explanation:** when a layer contains multiple code blocks, each block must be immediately followed by a 1–2 sentence explanation of what that specific block does and why it goes there, before showing the next block. Pattern: `[anchor line] → [code block 1] → [explain block 1] → [anchor line] → [code block 2] → [explain block 2] → …`. Never dump all blocks first and explain them at the end.
 3. *Why* this layer exists
-4. If `--ref` is attached: a citation to the real implementation at this same level of maturity (`file:line`, with a quoted snippet)
+4. If `--ref` is attached: a citation to the real implementation at the matching conceptual level (`file:line`, with a quoted snippet). **Handling mismatches:**
+   - **No direct equivalent** — say so explicitly: "no direct equivalent in `<ref>`; closest is `<file:line>` which does X instead because Y". Don't fabricate a citation.
+   - **Ref is more mature than this layer** — cite the ref but name what the ref does *beyond* the user's layer (e.g. "pytorch's `Linear.__init__` also wraps the weight in `nn.Parameter` for autograd — we'll add that in layer N"). Anchors the comparison without demanding the user copy production complexity.
+   - **Trivially pedagogical layer** (e.g. "add a `print` statement", "rename a variable") — skip the citation. Reference grounding is for conceptual layers, not mechanical ones.
 5. The run command **+ expected output signature** — one line stating what the user should see when the code runs correctly (e.g. "expect: `Linear(in=2, out=3)` on stdout", "expect: array of shape `(3,)` with values near zero"). Without an expected-output line, subtle typos pass silently until Phase 4.
 6. **Deliberately absent** — one sentence naming what this layer does *not* do yet, so the user doesn't assume it's "done" (e.g. "this layer computes matmul; it doesn't broadcast shapes or handle batches — that's next").
 
-**Explanation budget: 1–4 sentences of prose per layer** (concept mode may stretch to 6 when a mental model needs it; skill mode should stay at 1–2). If your explanation is growing past the budget, the layer is too big — split it. The test for every sentence: *does the user need this to understand the code I just showed?* If not, cut it. Name things by what they do, not by jargon (`owns its text` beats `has move semantics` unless the user already knows the jargon). Don't repeat what the code obviously says — explain the *why* or the non-obvious mechanics, not the literal reading.
+**Explanation budget.** The 1–4 sentence budget covers the **concept prose (step 1) and the *why* sentence (step 3) only**. Mandatory one-liners — per-block explanations (step 2), ref citations (step 4), expected output (step 5), deliberately-absent (step 6) — are structural, not prose, and don't count against the budget. Concept mode may stretch concept+why to 6 sentences when a mental model needs it; skill mode keeps concept+why combined to 1–2. If your *prose* budget overflows, the layer is too big — split it. The test for every prose sentence: *does the user need this to understand the code I just showed?* If not, cut it. Name things by what they do, not by jargon (`owns its text` beats `has move semantics` unless the user already knows the jargon). Don't repeat what the code obviously says — explain the *why* or the non-obvious mechanics, not the literal reading.
 
-**Turn discipline.** Each Phase 3 turn is: (concept sentence or two) → code block → (why sentence) → (run command) → **stop**. That is the whole turn. Do not:
+**Turn discipline.** Each Phase 3 turn follows all 6 step items in order: (concept, 1–2 sentences) → (code block(s), each immediately followed by its per-block explanation) → (why sentence) → (ref citation if applicable) → (run command + expected output line) → (deliberately-absent line) → **stop**. That is the whole turn. Naming a future layer inside a ref citation ("we'll add that in layer N") is fine — it scopes the maturity comparison, not a preview of the next turn. Do not:
 
 - Open with preamble like "Great! Now let's…" or "Perfect, moving on to…"
 - Recap what the previous layer did — the user just typed it, they remember
@@ -157,7 +162,7 @@ Use Read to look at the user's file(s). Check (a) the layer's intent is present 
 Three outcomes:
 
 **Data tracking:** When an issue is found (small issue or fundamental misunderstanding):
-1. Append to `.no-vibe/data/mistakes.json`: `{"category": "<kebab-case>", "topic": "<session-topic>", "layer": <N>}`. Reuse an existing category from the file if one matches.
+1. Append to `.no-vibe/data/mistakes.json`: `{"category": "<specific-kebab-case-pattern>", "topic": "<session-topic>", "layer": <N>}`. Pattern names must be specific enough to drive a future common-trap layer (per Phase 1c rule): `array-bounds-off-by-one-fencepost` not `off-by-one`; `type-confusion-list-vs-scalar` not `type-error`. Reuse an existing specific category if one matches.
 2. Increment `mistakes_this_session` in the session JSON.
 
 - **Good** → brief affirmation, then a **compact recap**: 2–4 sentences naming what the user has built across all completed layers so far and how the pieces connect (data flow / call order / who owns what). Keep it to the point — no restating code, no cheerleading, no previewing the next layer. Purpose is to cement the mental model while the layer is fresh. Then advance to Phase 5.
@@ -223,7 +228,13 @@ The mode shapes voice and pacing, not structure:
 
 ## Reference grounding
 
-When a reference project is attached, you MUST ground every code example and explanation in that project's actual source. Before each step, Grep the reference to find the real implementation. Quote it with `file:line` citations. If your mental model disagrees with the reference, trust the reference. **Never invent APIs or behaviors that aren't in the referenced code.**
+When a reference project is attached, you MUST ground every **conceptual** code example in the reference's actual source. Trivial/mechanical layers (prints, renames, formatting) are exempt per Phase 3 step 4. Before each conceptual step, Grep the reference to find the real implementation. Quote it with `file:line` citations. If your mental model disagrees with the reference, trust the reference. **Never invent APIs or behaviors that aren't in the referenced code** — this applies universally, even to trivial layers where citation is skipped.
+
+**Maturity mapping.** The user's code grows layer by layer; the reference is usually a finished product. To match "the same conceptual level":
+1. Identify the single responsibility of the user's current layer (e.g. "compute a dot product", "store weights", "expose a callable").
+2. In the reference, find the smallest self-contained piece that owns that same responsibility — usually a function, method, or init block, not the whole class.
+3. Cite that piece. If the reference bundles your layer's concern with 2+ others (common in production code), quote only the relevant lines and name what you're deliberately *not* showing yet ("ignore the `__repr__` and `reset_parameters` calls — we'll get there").
+4. If the reference's git history has a minimal early version of the same code (first-commit implementations are gold), prefer that over the current production form.
 
 ## Hard rules summary
 
@@ -235,4 +246,4 @@ When a reference project is attached, you MUST ground every code example and exp
 6. References are authority — never invent what isn't in them.
 7. Trust the user's "next" — don't demand proof of running.
 8. Curriculum revisions are always announced, never silent.
-9. Turn discipline (Phase 3): no preamble, no recap, no preview, no cheerleading. Explanation stays within the 1–4 sentence budget. Stop after the run command and wait.
+9. Turn discipline (Phase 3): no preamble, no previous-layer recap, no next-layer preview, no cheerleading. Concept+why prose stays within the 1–4 sentence budget (structural one-liners don't count). Stop after the deliberately-absent line and wait.

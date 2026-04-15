@@ -26,6 +26,20 @@ Start no-vibe mode and the AI becomes your tutor for the lesson at hand.
 
 All learner data stays local in `.no-vibe/data/`.
 
+## References — learn from real code, not hallucinations
+
+When the AI teaches you how something "usually" works, it's guessing from training data. Guesses drift into invented APIs and plausible-but-wrong patterns. Attach a real reference project and the AI has to ground every example in that project's actual source.
+
+Pass `--ref <url>` (or `--ref <name>` for something you've already cloned):
+
+```
+/no-vibe --ref https://github.com/pytorch/pytorch build a Linear layer
+```
+
+The AI clones it into `.no-vibe/refs/`, then for each conceptual layer it greps the reference, finds the smallest piece that owns the same responsibility as your current step, and quotes it with a `file:line` citation. If the reference does something *beyond* your current layer (production-grade concerns you haven't reached yet), the AI names what's deliberately out of scope instead of demanding you copy it. If the reference has no equivalent at all, it says so — it won't fabricate a citation.
+
+No ref attached? The AI proposes 2–3 candidates with different pedagogical angles (production-polished, minimal-real, pure-pedagogical) and lets you pick. That way you choose whether your lesson is anchored to battle-tested complexity or a stripped-down teaching implementation — both valid, different tradeoffs.
+
 ## Quick start
 
 ### Claude Code
