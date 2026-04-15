@@ -109,7 +109,7 @@ Flags can be combined: `/no-vibe --ref pytorch --mode concept how does autograd 
 
 ## Contributing
 
-Issues and PRs welcome at [github.com/rizukirr/no-vibe](https://github.com/rizukirr/no-vibe).
+Issues and PRs welcome at [issues](https://github.com/rizukirr/no-vibe/issues).
 
 ## License
 
