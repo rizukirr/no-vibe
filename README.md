@@ -53,18 +53,13 @@ Then restart Claude Code.
 
 ### OpenCode
 
-```json
-{
-  "plugin": ["no-vibe@git+https://github.com/rizukirr/no-vibe.git"]
-}
+Tell your agent:
+
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/INSTALL.opencode.md
 ```
 
-Then add commands globally:
-
-- `~/.config/opencode/commands/no-vibe.md` from `.opencode/commands/no-vibe.md`
-- `~/.config/opencode/commands/no-vibe-challenge.md` from `.opencode/commands/no-vibe-challenge.md`
-
-See `.opencode/INSTALL.md` for details.
+Or see `.opencode/INSTALL.md` for the manual setup.
 
 ### Codex
 
