@@ -1,20 +1,30 @@
 # no-vibe
 
-A plugin that turns your AI coding assistant into a tutor. It shows code in chat and reviews what you write — but never touches your project files. You do the typing and learn while getting the project done.
+No-vibe turns your AI coding assistant into a tutor that works alongside you on your actual projects. Instead of writing your code for you, it shows you what to write, explains the *why*, and reviews what you type. It learns where you get stuck, adapts to how you learn, and meets you at your level — more scaffolding in areas you're weak, less in areas you already know.
+
+Every line in your codebase is one you wrote yourself. The AI never touches your project files; a built-in guard blocks it from doing so. You keep your skill. You finish your project. And along the way you build a real mental model of how it works.
 
 ## Why
 
-If you feel like AI is draining your skill, making you forget how to do things and now you just want to actually understand how things work — this plugin is for you.
+Vibe-coding is fast until it isn't. You accept AI-written code you don't fully understand, and a week later you're debugging something you didn't write, extending a design you didn't choose, and reaching for the AI again to explain what you just shipped. The loop is seductive — and it quietly erodes your skill.
 
-No-vibe is designed to help you finish your project by your own hands while learning how things work along the way. It's not a classroom — it's a tutor that walks with you through real work.
+No-vibe breaks the loop. The AI can still plan, explain, and review — but the code lands through your fingers. You debug what you wrote. You extend what you understand. You keep shipping, and you keep getting sharper instead of duller.
 
 ## How it works
 
-Start no-vibe mode and the AI becomes your coding coach. You write every line yourself, the AI tells you what to write and why, helping you understand how things work piece by piece, step by step. You'll build things top-down, get the big picture first, then fill in one concept at a time, running your code at every step, this builds a solid mental model in your head. When helpful, it pulls from real projects to show how things actually work — not hallucinate. A built-in safety net stops the AI from touching your files, all changes go through you.
+Start no-vibe mode and the AI becomes your tutor for the lesson at hand.
 
-No-vibe also remembers you between sessions. It tracks what you're good at and where you get stuck, spots recurring mistakes, and adjusts its teaching, giving you more help where you need it and skipping what you already know. If you close mid-lesson, it picks up right where you left off.
+**Top-down, one layer at a time.** You build the minimal runnable skeleton first, then add one concept per step. Every layer runs and shows output — no broken intermediate states, no "just trust me, it'll work later".
 
-All data stays local in `.no-vibe/data/`.
+**Show the why, not just the what.** Each step tells you exactly where the code goes, what it does, and what the next run should print. If something doesn't work, you write a one-line test that reproduces the problem before the AI proposes a fix.
+
+**Grounded in real code.** When a reference project is attached, the AI quotes actual source with `file:line` citations instead of inventing APIs.
+
+**Adapts to you.** It tracks what you get right, what trips you up, and common mistake patterns across sessions. Weak area? Extra scaffolding. Solid area? Skip ahead. Close mid-lesson? It picks up where you left off.
+
+**Your files stay yours.** A pre-write guard blocks the AI from touching your project. Every change lands through your keyboard.
+
+All learner data stays local in `.no-vibe/data/`.
 
 ## Quick start
 
@@ -45,7 +55,7 @@ Paste this into Codex:
 Fetch and follow instructions from https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/INSTALL.codex.md
 ```
 
-### Then
+### Your first lesson
 
 ```
 /no-vibe build a linear layer like pytorch's
