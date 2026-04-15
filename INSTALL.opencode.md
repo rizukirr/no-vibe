@@ -30,8 +30,11 @@ curl -fsSL https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/.o
 2. Start a lesson topic (for example `/no-vibe build a linear layer`)
 3. Confirm the assistant teaches in chat and does not write project files directly
 
+CLI note: when using `opencode run`, invoke commands with `--command` (for example `opencode run --command no-vibe on`). Do not pass `/no-vibe on` as a plain message if you expect command execution.
+
 ## Troubleshooting
 
 - Check logs: `opencode run --print-logs "hello" 2>&1 | rg -i "no-vibe|plugin|error"`
+- Requires `rg` (ripgrep) for the troubleshooting command above
 - If install fails, look for `ENOENT ... package.json` on `no-vibe@git+...`
 - If `/no-vibe` is unknown, command files were not installed in `~/.config/opencode/commands/`

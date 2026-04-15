@@ -33,6 +33,7 @@ Restart OpenCode so plugins and commands reload.
 - Run `/no-vibe on`
 - Ask for a coding lesson topic
 - Confirm the agent teaches in chat instead of writing project files
+- CLI note: with `opencode run`, use `--command no-vibe on` rather than passing `/no-vibe on` as plain message text.
 
 ## Troubleshooting
 
@@ -41,6 +42,8 @@ Check logs:
 ```bash
 opencode run --print-logs "hello" 2>&1 | rg -i "no-vibe|plugin"
 ```
+
+Requires `rg` (ripgrep).
 
 If the plugin does not load:
 
