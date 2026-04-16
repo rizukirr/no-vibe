@@ -22,7 +22,14 @@ curl -fsSL https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/.o
 curl -fsSL https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/.opencode/commands/no-vibe-challenge.md -o ~/.config/opencode/commands/no-vibe-challenge.md
 ```
 
-3) Restart OpenCode.
+3) Refresh plugin cache (recommended on install/update):
+
+```bash
+rm -rf ~/.cache/opencode/packages/no-vibe@git+https:/github.com/rizukirr/no-vibe.git
+opencode run --print-logs "check no-vibe plugin"
+```
+
+4) Restart OpenCode.
 
 ## Verify
 
@@ -38,3 +45,4 @@ CLI note: when using `opencode run`, invoke commands with `--command` (for examp
 - Requires `rg` (ripgrep) for the troubleshooting command above
 - If install fails, look for `ENOENT ... package.json` on `no-vibe@git+...`
 - If `/no-vibe` is unknown, command files were not installed in `~/.config/opencode/commands/`
+- If installed version looks stale, clear only the no-vibe cache path above, run `opencode run --print-logs "check no-vibe plugin"`, then restart OpenCode
