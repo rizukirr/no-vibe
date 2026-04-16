@@ -24,9 +24,9 @@ cmd /c mklink /J "$env:USERPROFILE\.agents\skills\no-vibe" "$env:USERPROFILE\.co
 ## Verify Installation
 
 1. Start a Codex session in any project
-2. Run `/no-vibe on` — should create `.no-vibe/active` marker
+2. Run `$no-vibe on` — should create `.no-vibe/active` marker
 3. Try editing a project file — should be blocked with "no-vibe mode is active" message
-4. Run `/no-vibe off` — should remove marker
+4. Run `$no-vibe off` — should remove marker
 
 ## Requirements
 
@@ -36,11 +36,11 @@ cmd /c mklink /J "$env:USERPROFILE\.agents\skills\no-vibe" "$env:USERPROFILE\.co
 ## Usage
 
 ```
-/no-vibe build a REST API handler          # one-shot lesson
-/no-vibe on                                 # persistent mode
-/no-vibe --ref pytorch --mode concept       # with reference + mode
-/no-vibe:challenge                          # get a coding challenge
-/no-vibe off                                # exit
+$no-vibe build a REST API handler          # one-shot lesson
+$no-vibe on                                # persistent mode
+$no-vibe --ref pytorch --mode concept      # with reference + mode
+$no-vibe:challenge                         # get a coding challenge
+$no-vibe off                               # exit
 ```
 
 ## Troubleshooting
