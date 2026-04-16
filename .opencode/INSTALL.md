@@ -20,6 +20,7 @@ Plugins and commands are loaded separately in OpenCode. To use `/no-vibe` and `/
 mkdir -p ~/.config/opencode/commands
 cp .opencode/commands/no-vibe.md ~/.config/opencode/commands/no-vibe.md
 cp .opencode/commands/no-vibe-challenge.md ~/.config/opencode/commands/no-vibe-challenge.md
+cp .opencode/commands/no-vibe-btw.md ~/.config/opencode/commands/no-vibe-btw.md
 ```
 
 If you prefer project-local commands instead, copy these files into `<project>/.opencode/commands/`.
