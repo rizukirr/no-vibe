@@ -39,9 +39,14 @@ Determine which form was invoked:
 - If turning ON or starting any lesson, you MUST run this exact bash command:
 
 ```bash
+# Project level
 mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/active
-[ -f .no-vibe/data/profile.json ] || echo '{"skill_levels":{},"total_sessions":0,"total_layers_completed":0,"common_strengths":[],"common_weaknesses":[]}' > .no-vibe/data/profile.json
 [ -f .no-vibe/data/mistakes.json ] || echo '[]' > .no-vibe/data/mistakes.json
+# Global level
+mkdir -p ~/.no-vibe
+[ -f ~/.no-vibe/profile.json ] || echo '{"skill_levels":{},"total_sessions":0,"total_layers_completed":0,"common_strengths":[],"common_weaknesses":[],"projects":{}}' > ~/.no-vibe/profile.json
+[ -f ~/.no-vibe/profile.md ] || touch ~/.no-vibe/profile.md
+[ -f ~/.no-vibe/mistakes.json ] || echo '[]' > ~/.no-vibe/mistakes.json
 ```
 
 Then verify with:
@@ -52,7 +57,7 @@ test -f .no-vibe/active
 
 If verification succeeds, explicitly state in chat: `no-vibe is active (.no-vibe/active exists)`.
 
-- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first. **Even if skipping Phase 6**, you MUST update `profile.json` and the session JSON with what you observed during the session (skill levels, layers completed, session count). Then you MUST run:
+- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first. **Even if skipping Phase 6**, you MUST update global `~/.no-vibe/profile.json`, rewrite `~/.no-vibe/profile.md`, and update the session JSON with what you observed during the session. Then you MUST run:
 
 ```bash
 rm -f .no-vibe/active
@@ -104,6 +109,6 @@ If persistent mode is on, leave the marker in place until `/no-vibe off`.
 ## Hard rules
 
 - Never write project files directly; show all code in chat.
-- `.no-vibe/**` is the only allowed write area in active mode.
+- `.no-vibe/**` and `~/.no-vibe/` are the only allowed write areas in active mode.
 - Use Read/Grep/Glob/WebFetch for context analysis and reference grounding.
 - Preserve the teaching cycle and runnability invariant while active mode is on.

@@ -5,21 +5,36 @@ description: Use when the user is in no-vibe mode (a /no-vibe command was invoke
 
 ## Data tracking
 
-This skill tracks learner progress in `.no-vibe/data/`. See `skills/no-vibe/DATA-SCHEMA.md` for all JSON contracts. When writing any data file, read the schema first.
+Data lives at two levels. See `skills/no-vibe/DATA-SCHEMA.md` for all JSON contracts. Read the schema before writing any data file.
+
+- **Global (`~/.no-vibe/`)** — synthesized learner identity across all projects
+- **Project (`.no-vibe/data/`)** — raw session data for this codebase
 
 Before any data write, ensure the target file exists. If missing, initialize with schema defaults (see DATA-SCHEMA.md "Initializing Data Files").
 
 ### Mistake logging (all phases)
 
-Whenever you observe a user mistake — wrong code, misunderstanding, incorrect output — **immediately** append to `.no-vibe/data/mistakes.json` regardless of which phase you are in. Do not wait for Phase 4. Format: `{"category": "<specific-kebab-case-pattern>", "topic": "<session-topic>", "layer": <N>}`. Pattern names must be specific enough to drive a future common-trap layer: `array-bounds-off-by-one-fencepost` not `off-by-one`; `type-confusion-list-vs-scalar` not `type-error`. Reuse an existing category if one matches. Also increment `mistakes_this_session` in the session JSON if it exists.
+Whenever you observe a user mistake — wrong code, misunderstanding, incorrect output — **immediately** write to **both levels**:
+
+1. **Project:** append to `.no-vibe/data/mistakes.json` — format: `{"category": "<specific-kebab-case-pattern>", "topic": "<session-topic>", "layer": <N>}`
+2. **Global:** append to `~/.no-vibe/mistakes.json` — same fields plus `"project": "<project-dir-name>", "date": "<YYYY-MM-DD>"`
+3. Increment `mistakes_this_session` in the session JSON if it exists.
+
+Pattern names must be specific enough to drive a future common-trap layer: `array-bounds-off-by-one-fencepost` not `off-by-one`; `type-confusion-list-vs-scalar` not `type-error`. Reuse an existing category if one matches.
 
 ### Profile update (session end OR session close)
 
-Update `.no-vibe/data/profile.json` when:
+Update global `~/.no-vibe/profile.json` when:
 1. **Session completes** (Phase 6 reached) — full update with skill level progression
-2. **Session closed early** (`/no-vibe off` or user abandons) — still write what AI observed: partial skill level based on layers completed and mistakes so far, increment `total_sessions`, add `layers_completed` to `total_layers_completed`, recompute strengths/weaknesses from `mistakes.json`
+2. **Session closed early** (`/no-vibe off` or user abandons) — still write what AI observed: partial skill level based on layers completed and mistakes so far, increment `total_sessions`, add `layers_completed` to `total_layers_completed`, recompute strengths/weaknesses from global `mistakes.json`
 
-Profile must always reflect AI's understanding of the learner, even from incomplete sessions.
+Also update `~/.no-vibe/profile.json`'s `projects` field with session count and last session date for this project.
+
+### Profile synthesis (session end)
+
+At every session end (complete or early close), rewrite `~/.no-vibe/profile.md` with a fresh free-form synthesis of the learner. Read global `profile.json` and `mistakes.json`, then write observations about learning patterns, cross-project insights, and teaching approach preferences. This is not append-only — rewrite the whole file each time with current understanding.
+
+Global profile must always reflect AI's understanding of the learner, even from incomplete sessions.
 
 # no-vibe — Teaching Cycle
 
@@ -61,8 +76,11 @@ Before asking anything, silently analyze:
 - The user's project: Read/Grep a few relevant files to infer stack, style, naming, apparent skill level
 - Any attached reference project's top-level structure
 - Conversation history
-- `.no-vibe/data/profile.json` (if exists): note skill levels relevant to this topic, factor into curriculum difficulty
-- `.no-vibe/data/mistakes.json` (if exists): check for 3+ mistakes in categories relevant to upcoming topic — plan extra scaffolding for those areas
+- **Global `~/.no-vibe/profile.json`** (if exists): cross-project skill levels, overall strengths/weaknesses — calibrate curriculum difficulty
+- **Global `~/.no-vibe/profile.md`** (if exists): free-form learner observations — inform teaching approach
+- **Global `~/.no-vibe/mistakes.json`** (if exists): check for 3+ mistakes in categories relevant to upcoming topic across all projects — plan extra scaffolding
+- **Project `.no-vibe/data/mistakes.json`** (if exists): mistakes specific to this codebase
+- **Project `.no-vibe/data/sessions/`**: check for incomplete or past sessions in this project
 
 Form a working hypothesis of who the user is and what they want. Only ask clarifying questions for **genuine forks** that would change the curriculum. If the hypothesis is confident, do a sanity check instead. The sanity check has a locked shape — state back three things explicitly, then offer 2–3 yes/no assumption checks the user can reject fast:
 
@@ -119,9 +137,9 @@ Present the curriculum in chat; user approves or edits. Approval gates entry to 
 **Data tracking:** Also create `.no-vibe/data/sessions/<topic-slug>.json` with initial state per DATA-SCHEMA.md. Set `status: "in_progress"`, `current_phase: "phase1c"`, `layers_total` matching curriculum length.
 
 **Adaptive difficulty:** Before finalizing the curriculum:
-- If `profile.json` shows `comfortable` or `strong` in a relevant topic area, offer: "You seem solid on {area} — want to skip the basics and start at layer {N}?"
-- If `profile.json` shows `struggling` or `new`, add an extra scaffolding layer for fundamentals.
-- If `mistakes.json` has 3+ entries in a category that overlaps with this topic, insert a **common-trap layer**: show the wrong version the user historically writes, have them predict what breaks, then show the right version and why. Label the curriculum item `Common trap: <pattern name>`. Pattern names should be specific (`array-bounds-off-by-one-fencepost`, `type-confusion-list-vs-scalar`) not vague (`off-by-one`).
+- If `~/.no-vibe/profile.json` shows `comfortable` or `strong` in a relevant topic area, offer: "You seem solid on {area} — want to skip the basics and start at layer {N}?"
+- If `~/.no-vibe/profile.json` shows `struggling` or `new`, add an extra scaffolding layer for fundamentals.
+- If `~/.no-vibe/mistakes.json` has 3+ entries in a category that overlaps with this topic, insert a **common-trap layer**: show the wrong version the user historically writes, have them predict what breaks, then show the right version and why. Label the curriculum item `Common trap: <pattern name>`. Pattern names should be specific (`array-bounds-off-by-one-fencepost`, `type-confusion-list-vs-scalar`) not vague (`off-by-one`).
 
 **Offer implementation forks.** If a layer has a natural fork (pure Python vs numpy, recursive vs iterative, stdlib vs third-party), surface both paths in one sentence each with the tradeoff and let the user pick before Phase 2. Learner choice = learner investment.
 
@@ -210,7 +228,8 @@ Auto-save the synthesis to `.no-vibe/notes/YYYY-MM-DD-<topic>.md` (writes to `.n
 
 **Data tracking:** Update all data files:
 1. Session JSON: set `"status": "completed"`, `"layers_completed"` to final count.
-2. Update `profile.json` per the global "Profile update (session end OR session close)" rule above.
+2. Update `~/.no-vibe/profile.json` per the global "Profile update (session end OR session close)" rule above.
+3. Rewrite `~/.no-vibe/profile.md` per the global "Profile synthesis (session end)" rule above.
 
 ## Curriculum revision triggers
 

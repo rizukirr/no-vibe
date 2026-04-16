@@ -38,11 +38,16 @@ Determine which form was invoked:
 
 - If turning ON or starting any lesson:
   ```bash
+  # Project level
   mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/active
-  [ -f .no-vibe/data/profile.json ] || echo '{"skill_levels":{},"total_sessions":0,"total_layers_completed":0,"common_strengths":[],"common_weaknesses":[]}' > .no-vibe/data/profile.json
   [ -f .no-vibe/data/mistakes.json ] || echo '[]' > .no-vibe/data/mistakes.json
+  # Global level
+  mkdir -p ~/.no-vibe
+  [ -f ~/.no-vibe/profile.json ] || echo '{"skill_levels":{},"total_sessions":0,"total_layers_completed":0,"common_strengths":[],"common_weaknesses":[],"projects":{}}' > ~/.no-vibe/profile.json
+  [ -f ~/.no-vibe/profile.md ] || touch ~/.no-vibe/profile.md
+  [ -f ~/.no-vibe/mistakes.json ] || echo '[]' > ~/.no-vibe/mistakes.json
   ```
-- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first. **Even if skipping Phase 6**, you MUST update `profile.json` and the session JSON with what you observed during the session (skill levels, layers completed, session count). Then `rm -f .no-vibe/active`
+- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first. **Even if skipping Phase 6**, you MUST update global `~/.no-vibe/profile.json`, rewrite `~/.no-vibe/profile.md`, and update the session JSON with what you observed during the session. Then `rm -f .no-vibe/active`
 
 ### 3. Clone any `--ref` URLs
 
