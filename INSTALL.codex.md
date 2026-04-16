@@ -39,7 +39,9 @@ cmd /c mklink /J "$env:USERPROFILE\.agents\skills\no-vibe" "$env:USERPROFILE\.co
 $no-vibe build a REST API handler          # one-shot lesson
 $no-vibe on                                # persistent mode
 $no-vibe --ref pytorch --mode concept      # with reference + mode
-$no-vibe:challenge                         # get a coding challenge
+$no-vibe-challenge                         # get a coding challenge
+$no-vibe-challenge recursion               # challenge with focus area
+$no-vibe-btw add a .gitignore for node     # one-shot escape hatch
 $no-vibe off                               # exit
 ```
 

@@ -75,6 +75,12 @@ Fetch and follow instructions from https://raw.githubusercontent.com/rizukirr/no
 /no-vibe build a linear layer like pytorch's
 ```
 
+Codex equivalent:
+
+```
+$no-vibe build a linear layer like pytorch's
+```
+
 ## Commands
 
 ```
@@ -83,11 +89,24 @@ Fetch and follow instructions from https://raw.githubusercontent.com/rizukirr/no
 /no-vibe <topic>                             # one-shot lesson on a topic
 /no-vibe --ref <url> <topic>                 # attach a reference project
 /no-vibe --mode concept|skill|debug <topic>  # set teaching style
+/no-vibe-btw <task>                          # one-shot escape hatch for AI-written edits
 /no-vibe:challenge                           # get a coding challenge
 /no-vibe:challenge <focus>                   # challenge with focus area
 ```
 
 Flags can be combined: `/no-vibe --ref pytorch --mode concept how does autograd work`
+
+Codex command equivalents:
+
+```
+$no-vibe on
+$no-vibe off
+$no-vibe --ref <url> <topic>
+$no-vibe --mode concept|skill|debug <topic>
+$no-vibe-btw <task>
+$no-vibe-challenge
+$no-vibe-challenge <focus>
+```
 
 ## Modes
 
@@ -102,7 +121,7 @@ Flags can be combined: `/no-vibe --ref pytorch --mode concept how does autograd 
 | Feature | Claude Code | OpenCode | Codex |
 |---------|:-----------:|:--------:|:-----:|
 | Write guard (hook) | ✓ | ✓ | ✓ |
-| Slash commands | ✓ | ✓ | ✓ |
+| Slash/workflow commands | ✓ | ✓ | ✓ |
 | Teaching skill | ✓ | ✓ | ✓ |
 | Challenge command | ✓ | ✓ | ✓ |
 | Learner tracking | ✓ | ✓ | ✓ |
