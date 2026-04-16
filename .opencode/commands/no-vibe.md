@@ -40,6 +40,8 @@ Determine which form was invoked:
 
 ```bash
 mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/active
+[ -f .no-vibe/data/profile.json ] || echo '{"skill_levels":{},"total_sessions":0,"total_layers_completed":0,"common_strengths":[],"common_weaknesses":[]}' > .no-vibe/data/profile.json
+[ -f .no-vibe/data/mistakes.json ] || echo '[]' > .no-vibe/data/mistakes.json
 ```
 
 Then verify with:
@@ -50,7 +52,7 @@ test -f .no-vibe/active
 
 If verification succeeds, explicitly state in chat: `no-vibe is active (.no-vibe/active exists)`.
 
-- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first; then you MUST run:
+- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first. **Even if skipping Phase 6**, you MUST update `profile.json` and the session JSON with what you observed during the session (skill levels, layers completed, session count). Then you MUST run:
 
 ```bash
 rm -f .no-vibe/active

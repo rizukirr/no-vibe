@@ -19,7 +19,7 @@ Reference for all JSON files in `.no-vibe/data/`. Read this before writing any d
 
 ## profile.json — Learner State
 
-Tracks skill levels and patterns across all sessions. Created on first session if missing. Updated at end of each session (Phase 6).
+Tracks skill levels and patterns across all sessions. Initialized by command wrapper on activation. Updated at end of each session (Phase 6) OR when session is closed early (`/no-vibe off`). Must always reflect AI's observations, even from incomplete sessions.
 
 ```json
 {
@@ -45,15 +45,17 @@ Tracks skill levels and patterns across all sessions. Created on first session i
 
 Progression: `new` → `struggling` → `developing` → `comfortable` → `strong`
 
-Update logic (Phase 6):
+Update logic (Phase 6 or early close):
 - mistakes_this_session == 0 → move up one level
 - mistakes_this_session <= 1 and layers_completed >= 5 → move up one level
 - mistakes_this_session >= 3 → move down one level
 - Otherwise → stay
 
+On early close (session incomplete), apply the same logic using partial data. Even one completed layer with zero mistakes is a signal worth recording.
+
 ## mistakes.json — Mistake Log
 
-Append-only array. Created on first mistake if missing. Appended during Phase 4 (review) when an issue is found.
+Append-only array. Created on first mistake if missing. Appended whenever a user mistake is observed.
 
 ```json
 [
@@ -102,7 +104,7 @@ One file per session. Created at Phase 1c. Updated at every phase transition. To
 | `layers_completed` | `number` | Layers user has finished |
 | `current_phase` | `string` | `phase1a`..`phase6` |
 | `current_layer` | `number` | Current layer index (1-based, 0 = not started) |
-| `mistakes_this_session` | `number` | Count of issues found in Phase 4 this session |
+| `mistakes_this_session` | `number` | Count of issues found this session |
 | `refs` | `string[]` | Reference project names used |
 
 ### Status Transitions
@@ -112,9 +114,9 @@ One file per session. Created at Phase 1c. Updated at every phase transition. To
 
 ## Initializing Data Files
 
-When a data file is missing, create it with defaults:
+The command wrapper initializes `profile.json` and `mistakes.json` with defaults on activation. They should always exist when the skill runs:
 - `profile.json` → `{"skill_levels":{},"total_sessions":0,"total_layers_completed":0,"common_strengths":[],"common_weaknesses":[]}`
 - `mistakes.json` → `[]`
-- Session files → created fresh per session
+- Session files → created fresh per session at Phase 1c
 
-Never fail on missing data files. Always initialize with defaults.
+If a data file is missing despite eager init, create it with the defaults above before writing.

@@ -9,6 +9,18 @@ This skill tracks learner progress in `.no-vibe/data/`. See `skills/no-vibe/DATA
 
 Before any data write, ensure the target file exists. If missing, initialize with schema defaults (see DATA-SCHEMA.md "Initializing Data Files").
 
+### Mistake logging (all phases)
+
+Whenever you observe a user mistake — wrong code, misunderstanding, incorrect output — **immediately** append to `.no-vibe/data/mistakes.json` regardless of which phase you are in. Do not wait for Phase 4. Format: `{"category": "<specific-kebab-case-pattern>", "topic": "<session-topic>", "layer": <N>}`. Pattern names must be specific enough to drive a future common-trap layer: `array-bounds-off-by-one-fencepost` not `off-by-one`; `type-confusion-list-vs-scalar` not `type-error`. Reuse an existing category if one matches. Also increment `mistakes_this_session` in the session JSON if it exists.
+
+### Profile update (session end OR session close)
+
+Update `.no-vibe/data/profile.json` when:
+1. **Session completes** (Phase 6 reached) — full update with skill level progression
+2. **Session closed early** (`/no-vibe off` or user abandons) — still write what AI observed: partial skill level based on layers completed and mistakes so far, increment `total_sessions`, add `layers_completed` to `total_layers_completed`, recompute strengths/weaknesses from `mistakes.json`
+
+Profile must always reflect AI's understanding of the learner, even from incomplete sessions.
+
 # no-vibe — Teaching Cycle
 
 You are in **no-vibe mode**. The user has explicitly opted into a learning experience where:
@@ -161,9 +173,7 @@ Use Read to look at the user's file(s). Check (a) the layer's intent is present 
 
 Three outcomes:
 
-**Data tracking:** When an issue is found (small issue or fundamental misunderstanding):
-1. Append to `.no-vibe/data/mistakes.json`: `{"category": "<specific-kebab-case-pattern>", "topic": "<session-topic>", "layer": <N>}`. Pattern names must be specific enough to drive a future common-trap layer (per Phase 1c rule): `array-bounds-off-by-one-fencepost` not `off-by-one`; `type-confusion-list-vs-scalar` not `type-error`. Reuse an existing specific category if one matches.
-2. Increment `mistakes_this_session` in the session JSON.
+**Data tracking:** When an issue is found, log the mistake per the global "Mistake logging (all phases)" rule above.
 
 - **Good** → brief affirmation, then a **compact recap**: 2–4 sentences naming what the user has built across all completed layers so far and how the pieces connect (data flow / call order / who owns what). Keep it to the point — no restating code, no cheerleading, no previewing the next layer. Purpose is to cement the mental model while the layer is fresh. Then advance to Phase 5.
 - **Small issue** → point it out and ask the user to fix. The framing depends on mode:
@@ -200,11 +210,7 @@ Auto-save the synthesis to `.no-vibe/notes/YYYY-MM-DD-<topic>.md` (writes to `.n
 
 **Data tracking:** Update all data files:
 1. Session JSON: set `"status": "completed"`, `"layers_completed"` to final count.
-2. `profile.json` (create with defaults if missing):
-   - Set `skill_levels[<topic-area>]` based on performance (see DATA-SCHEMA.md level update logic)
-   - Increment `total_sessions` and add `layers_completed` to `total_layers_completed`
-   - Recompute `common_weaknesses`: categories with 3+ entries in `mistakes.json`
-   - Recompute `common_strengths`: categories user encountered but has 0 recent mistakes in
+2. Update `profile.json` per the global "Profile update (session end OR session close)" rule above.
 
 ## Curriculum revision triggers
 
