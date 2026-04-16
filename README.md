@@ -24,7 +24,7 @@ Start no-vibe mode and the AI becomes your tutor for the lesson at hand.
 
 **Your files stay yours.** A pre-write guard blocks the AI from touching your project. Every change lands through your keyboard.
 
-All learner data stays local in `.no-vibe/data/`.
+All learner data stays local in two places: project-level `.no-vibe/data/` and global `~/.no-vibe/`.
 
 ## References — learn from real code, not hallucinations
 
