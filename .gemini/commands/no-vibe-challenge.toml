@@ -1,0 +1,49 @@
+description = "Get a coding challenge based on your project or current no-vibe session"
+
+prompt = """
+Generate a hands-on coding challenge. The user writes everything — no AI code in project files.
+
+Focus area (optional): {{args}}
+
+Steps:
+
+1. Activate no-vibe mode:
+   ```
+   mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/active
+   ```
+
+2. Determine challenge context:
+   - Look for in-progress sessions: `grep -rl '"status": "in_progress"' .no-vibe/data/sessions/ 2>/dev/null`
+   - If active session: read session JSON for topic/layer/mode; generate challenge that exercises what the user just learned.
+   - If no session: use `read_file` / `grep_search` / `glob` to analyze the project (stack, patterns, domain); generate a relevant challenge.
+   - If focus area provided: narrow the challenge to that area, combined with session/project context.
+
+3. Read learner profile (`.no-vibe/data/profile.json`, `.no-vibe/data/mistakes.json` if present). Calibrate:
+   - `struggling`/`new` → smaller scope, specific acceptance criteria
+   - `comfortable`/`strong` → broader scope, less hand-holding
+   - Recurring mistake categories → design challenge to practice that area
+
+4. Present the challenge in chat:
+   > **Challenge: {title}**
+   >
+   > {1-3 sentence description}
+   >
+   > **Acceptance criteria:**
+   > - {specific, testable}
+   > - {specific, testable}
+   >
+   > **Run command:** `{exact command to test}`
+   >
+   > Start coding. Ask for review when done, or hints along the way.
+
+   Rules: no code shown; criteria must be observable; 5-20 minute scope.
+
+5. Guide and review:
+   - Answer with hints, not solutions
+   - On "review": use `read_file` to check user's code; give feedback
+   - On completion: log session in `.no-vibe/data/sessions/challenge-<slug>.json` with mode `"skill"`
+
+6. Deactivate (one-shot): `rm -f .no-vibe/active`
+
+Hard rules: never write code to project files (guard enforces this for `write_file`/`replace`); hints only; concrete criteria; always calibrate to profile if available.
+"""

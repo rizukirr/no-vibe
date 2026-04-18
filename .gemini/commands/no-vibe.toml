@@ -1,0 +1,38 @@
+description = "Enter no-vibe mode — AI guides you through writing code yourself, never editing your project files"
+
+prompt = """
+You are entering no-vibe mode. Arguments: {{args}}
+
+Parse the arguments:
+- empty or `on` → turn persistent no-vibe mode on; wait for the user's next message as the topic
+- `off` → turn persistent no-vibe mode off (run Phase 6 synthesis if a lesson is mid-flight, then remove the marker)
+- otherwise → one-shot or persistent-with-topic; extract `--ref <name-or-url>` and `--mode {concept|skill|debug}` flags; remaining text is the topic
+
+Marker management (turning ON or starting a lesson):
+```
+mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/active
+[ -f .no-vibe/data/mistakes.json ] || echo '[]' > .no-vibe/data/mistakes.json
+mkdir -p ~/.no-vibe
+[ -f ~/.no-vibe/profile.json ] || echo '{"skill_levels":{},"total_sessions":0,"total_layers_completed":0,"common_strengths":[],"common_weaknesses":[],"projects":{}}' > ~/.no-vibe/profile.json
+[ -f ~/.no-vibe/profile.md ] || touch ~/.no-vibe/profile.md
+[ -f ~/.no-vibe/mistakes.json ] || echo '[]' > ~/.no-vibe/mistakes.json
+```
+
+Turning OFF: synthesize current lesson if unchecked items exist in `.no-vibe/session.md`; regardless, update `~/.no-vibe/profile.json`, rewrite `~/.no-vibe/profile.md`, and update session JSON with observations, then `rm -f .no-vibe/active`.
+
+For each `--ref <url>` flag:
+```
+name=$(basename "$url" .git)
+[ -d ".no-vibe/refs/$name" ] || git clone --depth 1 "$url" ".no-vibe/refs/$name"
+```
+If `--ref <name>` is a bare name (no `://`, no `/`), use `.no-vibe/refs/$name` as-is and warn if it doesn't exist.
+
+Activate the `no-vibe` skill via `activate_skill` and follow the six-phase teaching cycle in `skills/no-vibe/SKILL.md` starting at Phase 1a (context analysis).
+
+On one-shot completion (after Phase 6), `rm -f .no-vibe/active`. If persistent mode is on, leave the marker in place.
+
+Hard reminders:
+- While `.no-vibe/active` exists, `write_file` / `replace` on paths outside `.no-vibe/` are refused. Show code in chat; user types it.
+- Do not use `run_shell_command` redirection to bypass the guard.
+- `read_file`, `grep_search`, `glob`, `web_fetch` are encouraged for context and reference grounding.
+"""
