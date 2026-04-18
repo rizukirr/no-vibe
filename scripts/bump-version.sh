@@ -20,8 +20,9 @@ ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 PLUGIN_JSON="$ROOT/.claude-plugin/plugin.json"
 MARKETPLACE_JSON="$ROOT/.claude-plugin/marketplace.json"
 GEMINI_JSON="$ROOT/gemini-extension.json"
+PACKAGE_JSON="$ROOT/package.json"
 
-VERSION_FILES=("$PLUGIN_JSON" "$MARKETPLACE_JSON" "$GEMINI_JSON")
+VERSION_FILES=("$PLUGIN_JSON" "$MARKETPLACE_JSON" "$GEMINI_JSON" "$PACKAGE_JSON")
 
 # --- helpers ---
 
