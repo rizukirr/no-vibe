@@ -69,6 +69,14 @@ Paste this into Codex:
 Fetch and follow instructions from https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/INSTALL.codex.md
 ```
 
+### Gemini CLI
+
+Paste this into Gemini CLI:
+
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/INSTALL.gemini.md
+```
+
 ### Your first lesson
 
 ```
@@ -118,13 +126,15 @@ $no-vibe-challenge <focus>
 
 ## Platform support
 
-| Feature | Claude Code | OpenCode | Codex |
-|---------|:-----------:|:--------:|:-----:|
-| Write guard (hook) | ✓ | ✓ | ✓ |
-| Slash/workflow commands | ✓ | ✓ | ✓ |
-| Teaching skill | ✓ | ✓ | ✓ |
-| Challenge command | ✓ | ✓ | ✓ |
-| Learner tracking | ✓ | ✓ | ✓ |
+| Feature | Claude Code | OpenCode | Codex | Gemini CLI |
+|---------|:-----------:|:--------:|:-----:|:----------:|
+| Write guard (hook) | ✓ | ✓ | ✓ | ✗ (soft) |
+| Slash/workflow commands | ✓ | ✓ | ✓ | ✓ |
+| Teaching skill | ✓ | ✓ | ✓ | ✓ |
+| Challenge command | ✓ | ✓ | ✓ | ✓ |
+| Learner tracking | ✓ | ✓ | ✓ | ✓ |
+
+Gemini CLI has no PreToolUse hook — write guard is instruction-based (soft block).
 
 ## Contributing
 
