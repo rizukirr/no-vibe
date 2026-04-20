@@ -16,9 +16,10 @@ Steps:
    [ -f .no-vibe/active ] && was_active=1
    ```
 
-3. Disable the guard for this task:
+3. Disable the guard for this task, then verify removal:
    ```
    rm -f .no-vibe/active
+   test ! -f .no-vibe/active || { echo "FATAL: marker still present"; exit 1; }
    ```
    `write_file` / `replace` on project files will now succeed.
 
@@ -32,6 +33,7 @@ Steps:
    ```
    if [ "$was_active" = "1" ]; then
        mkdir -p .no-vibe && touch .no-vibe/active
+       test -f .no-vibe/active || { echo "FATAL: marker not restored"; exit 1; }
    fi
    ```
 

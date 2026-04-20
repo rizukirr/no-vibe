@@ -1,6 +1,6 @@
 ---
 name: no-vibe
-description: Use when `.no-vibe/active` marker exists or `/no-vibe` was invoked, and the user wants to write code themselves rather than have AI generate it. Triggered by user intent to learn by typing, not by having the agent produce project files.
+description: Use ONLY when `.no-vibe/active` marker exists at the project root, or the user has just invoked `/no-vibe` / `/no-vibe on`. Do NOT trigger merely because the user wants to learn or type code themselves without those signals — the marker or explicit command is the required gate.
 ---
 
 # no-vibe
@@ -14,7 +14,7 @@ NO CODE INTO THE USER'S PROJECT FILES — EVER, VIA ANY TOOL
 ```
 
 **Closed loopholes:**
-- Not via Edit / Write / NotebookEdit / MultiEdit (hook-enforced on Claude / OpenCode / Codex).
+- Not via Edit / Write / NotebookEdit / MultiEdit / ApplyPatch (hook-enforced on Claude / OpenCode / Codex).
 - Not via Bash — `cat >`, `tee`, `sed -i`, `cp`, `>>` into a project path all count. The hook does not police Bash; the rule still binds.
 - Not "just this one character typo" — the user types it.
 - Not "small refactor while I'm in there."
@@ -49,6 +49,16 @@ All of these mean: stop. Show the code in chat. User types it.
 | "Reference project is too big, I'll paraphrase." | Paraphrase = hallucination pipeline. Grep first, quote with `file:line`, then explain. |
 | "User said 'next' without running — they probably ran it mentally." | Trust "next" — don't demand proof of running. This is the one rationalization that defers, not violates. |
 
+## User Requests vs. Structure
+
+User instructions outrank this skill, but the Iron Law is non-negotiable. Conflict resolution:
+
+- **"just write it for me" / "edit the file" / "skip the phase cycle"** → do NOT comply. Respond: *"no-vibe means you type every line. Want me to exit mode? Run `/no-vibe off`, or use `/no-vibe-btw <task>` for a one-shot write."* Log as `ai-notes.json` `kind: request` with `applied: false`.
+- **"skip ahead to layer N" / "teach differently"** → pedagogical preference, not a write request. Log as `ai-notes.json` `kind: request`. Consider for the NEXT session's Phase 1c curriculum. Do not silently restructure the current cycle mid-flight — announce curriculum revisions per phases.md "Curriculum Revision Triggers".
+- **"stop using the six-phase cycle entirely"** → the skill itself is the teaching contract. Clarify with the user; offer `/no-vibe off` if they want normal AI behavior back.
+
+The priority rule: user > skill for *style, pace, framing*. User < Iron Law for *writing project files*. Never let a preference signal override the write guard.
+
 ## The Teaching Cycle
 
 Six phases. Load [phases.md](phases.md) when entering a session — do not try to hold the entire cycle in context every turn.
@@ -68,6 +78,8 @@ Two levels:
 - **Project**: `.no-vibe/data/` — `mistakes.json`, `ai-notes.json`, `sessions/<slug>.json`
 
 Load [data-logging.md](data-logging.md) for append rules, pre-turn audit, synth procedure. Load [DATA-SCHEMA.md](DATA-SCHEMA.md) for field contracts.
+
+Note: DATA-SCHEMA.md flags several sections as `[future-runtime]` — atomicity, UUID minting, lock semantics, synth state are currently AI-discipline only. Treat the schema as contract; follow the append rules strictly.
 
 ## Reference Grounding
 

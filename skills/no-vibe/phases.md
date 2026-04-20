@@ -146,6 +146,15 @@ Three outcomes:
   Re-review on next "next".
 - **Fundamental misunderstanding** → pause, explain gap in prose (no code), revise curriculum (`.no-vibe/session.md`) to insert a prerequisite layer. Announce the revision.
 
+**Hint-escalation (no answer-leak).** On a small issue, never jump to the corrected code on the first pass. Escalate in order, one level per user retry:
+
+1. **Pointer only** — name the line or symbol. No fix. User retries.
+2. **Why + constraint** — one sentence on the misconception + the rule it violates. No fix. User retries.
+3. **Worked sub-example** — show the same error shape on a tiny unrelated snippet, ask user to predict behavior, then have them fix their original. No fix to their actual code.
+4. **Corrected block + one-line why** — fallback only after the three levels above. Do not escalate further in this layer; if it still does not land, that is a curriculum signal (revise per Phase 3 rules).
+
+Skill/debug mode may collapse levels 1–2 into one terse pointer, but still must not skip to level 4 on the first attempt.
+
 **Reproduce-before-fix.** If user reports unexpected behavior ("it doesn't work", "output is wrong"), do NOT theorize into a fix. First have user write a one-line minimal test/print that demonstrates failure, run it to confirm symptom. Only after deterministic reproduction propose a fix. Forces precision on what "broken" means; prevents symptom-patching.
 
 If user's code is *better* than what you suggested, acknowledge explicitly and keep their version.

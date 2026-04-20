@@ -35,9 +35,10 @@ was_active=0
 
 ```bash
 rm -f .no-vibe/active
+test ! -f .no-vibe/active || { echo "FATAL: marker still present"; exit 1; }
 ```
 
-This lets Edit/Write/NotebookEdit/MultiEdit succeed on project files.
+This lets Edit/Write/NotebookEdit/MultiEdit/ApplyPatch succeed on project files.
 
 ### 4. Execute the task
 
@@ -55,6 +56,7 @@ Always restore, even if the task failed:
 ```bash
 if [ "$was_active" = "1" ]; then
     mkdir -p .no-vibe && touch .no-vibe/active
+    test -f .no-vibe/active || { echo "FATAL: marker not restored"; exit 1; }
 fi
 ```
 
