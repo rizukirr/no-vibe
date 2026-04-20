@@ -14,6 +14,17 @@ test -f .no-vibe/active
 
 If present, the guard rules below apply. If absent, behave normally.
 
+## Session start status
+
+On the first turn of every session, before doing anything else, print one
+line to the user: `no-vibe: ON` if `.no-vibe/active` exists, otherwise
+`no-vibe: OFF`. Same for Codex sessions using this skill.
+
+Note: adapt the marker check to the user's environment. POSIX shells use
+`test -f .no-vibe/active`; PowerShell uses `Test-Path .no-vibe\active`;
+cmd uses `if exist .no-vibe\active`. Pick whichever matches the active
+shell — do not assume bash on Windows.
+
 ## Guard rules (when `.no-vibe/active` exists)
 
 1. **Refuse `write_file` and `replace`** on any path outside `.no-vibe/`.

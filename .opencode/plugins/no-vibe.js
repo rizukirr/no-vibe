@@ -88,6 +88,10 @@ export const NoVibePlugin = async ({ directory } = {}) => {
   const projectRoot = path.resolve(directory || process.cwd())
   const skillsDir = getSkillsDir()
   const bootstrap = buildBootstrap(skillsDir)
+  const statusLine = () => {
+    if (!fs.existsSync(path.join(projectRoot, ".no-vibe"))) return null
+    return fs.existsSync(path.join(projectRoot, ".no-vibe", "active")) ? "no-vibe: ON" : "no-vibe: OFF"
+  }
 
   return {
     config: async (config = {}) => {
@@ -113,7 +117,9 @@ export const NoVibePlugin = async ({ directory } = {}) => {
       )
       if (alreadyInjected) return
 
-      firstUserMessage.parts.unshift({ type: "text", text: bootstrap })
+      const status = statusLine()
+      const text = status ? `${status}\n\n${bootstrap}` : bootstrap
+      firstUserMessage.parts.unshift({ type: "text", text })
     },
 
     "tool.execute.before": async (input, output) => {

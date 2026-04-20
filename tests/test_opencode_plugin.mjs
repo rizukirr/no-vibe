@@ -59,6 +59,32 @@ const run = async () => {
     first.text.includes("Data Schema") || first.text.includes("DATA-SCHEMA") || first.text.includes("profile.json"),
     "bootstrap should include data schema content",
   )
+  assert.ok(
+    !first.text.startsWith("no-vibe: ON") && !first.text.startsWith("no-vibe: OFF"),
+    "status line should be absent when project has no .no-vibe/ dir",
+  )
+
+  // Status line present when .no-vibe/ exists
+  const optedInDir = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-optedin-"))
+  fs.mkdirSync(path.join(optedInDir, ".no-vibe"), { recursive: true })
+  const optedInPlugin = await NoVibePlugin({ directory: optedInDir })
+  const onOutput = makeOutput()
+  fs.writeFileSync(path.join(optedInDir, ".no-vibe", "active"), "")
+  await optedInPlugin["experimental.chat.messages.transform"]({}, onOutput)
+  assert.ok(
+    onOutput.messages[0].parts[0].text.startsWith("no-vibe: ON"),
+    "status line should read ON when marker exists",
+  )
+
+  const offOutput = makeOutput()
+  fs.rmSync(path.join(optedInDir, ".no-vibe", "active"))
+  const offPlugin = await NoVibePlugin({ directory: optedInDir })
+  await offPlugin["experimental.chat.messages.transform"]({}, offOutput)
+  assert.ok(
+    offOutput.messages[0].parts[0].text.startsWith("no-vibe: OFF"),
+    "status line should read OFF when dir exists but marker missing",
+  )
+  fs.rmSync(optedInDir, { recursive: true, force: true })
 
   const tempCwd = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-write-guard-"))
   const markerDir = path.join(tempCwd, ".no-vibe")
