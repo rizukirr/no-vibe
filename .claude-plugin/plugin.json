@@ -9,7 +9,7 @@
     "hooks": {
         "PreToolUse": [
             {
-                "matcher": "Edit|Write|NotebookEdit|MultiEdit",
+                "matcher": "Edit|Write|NotebookEdit|MultiEdit|ApplyPatch|apply_patch",
                 "hooks": [
                     {
                         "type": "command",

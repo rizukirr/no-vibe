@@ -207,4 +207,47 @@ EOF
 }
 
 test_marker_allows_write_data
+
+# --- Test 11: ApplyPatch also blocked ---
+test_marker_blocks_apply_patch() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe"
+    touch "$cwd/.no-vibe/active"
+    local input
+    input=$(cat <<EOF
+{"tool_name":"ApplyPatch","tool_input":{"file_path":"$cwd/foo.py"},"cwd":"$cwd"}
+EOF
+)
+    local exit_code
+    echo "$input" | "$HOOK" >/dev/null 2>&1
+    exit_code=$?
+    rm -rf "$cwd"
+    [ "$exit_code" -ne 0 ] && pass "marker + ApplyPatch outside → deny" \
+        || fail "marker + ApplyPatch outside → deny" "got exit $exit_code"
+}
+
+test_marker_blocks_apply_patch
+
+# --- Test 12: missing target path fails closed ---
+test_marker_blocks_missing_target() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe"
+    touch "$cwd/.no-vibe/active"
+    local input
+    input=$(cat <<EOF
+{"tool_name":"Write","tool_input":{"content":"x"},"cwd":"$cwd"}
+EOF
+)
+    local output exit_code
+    output=$(echo "$input" | "$HOOK" 2>&1)
+    exit_code=$?
+    rm -rf "$cwd"
+    [ "$exit_code" -ne 0 ] && pass "marker + missing target → deny (fail closed)" \
+        || fail "marker + missing target → deny (fail closed)" "got exit $exit_code"
+    assert_contains "$output" "no target path was provided" "missing-target deny message present"
+}
+
+test_marker_blocks_missing_target
 summary

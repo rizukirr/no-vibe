@@ -128,13 +128,13 @@ $no-vibe-challenge <focus>
 
 | Feature | Claude Code | OpenCode | Codex | Gemini CLI |
 |---------|:-----------:|:--------:|:-----:|:----------:|
-| Write guard (hook) | ✓ | ✓ | ✓ | ✗ (soft) |
+| Write guard (hook) | ✓ | ✓ | ✗ (soft) | ✗ (soft) |
 | Slash/workflow commands | ✓ | ✓ | ✓ | ✓ |
 | Teaching skill | ✓ | ✓ | ✓ | ✓ |
 | Challenge command | ✓ | ✓ | ✓ | ✓ |
 | Learner tracking | ✓ | ✓ | ✓ | ✓ |
 
-Gemini CLI has no PreToolUse hook — write guard is instruction-based (soft block).
+Codex and Gemini CLI have no bundled PreToolUse hook in this repo — write guard on those surfaces is instruction-based (soft block).
 
 ## Contributing
 

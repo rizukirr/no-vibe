@@ -25,13 +25,12 @@ cmd /c mklink /J "$env:USERPROFILE\.agents\skills\no-vibe" "$env:USERPROFILE\.co
 
 1. Start a Codex session in any project
 2. Run `$no-vibe on` — should create `.no-vibe/active` marker
-3. Try editing a project file — should be blocked with "no-vibe mode is active" message
+3. Ask the assistant to edit a project file — it should refuse with the no-vibe guard message (instruction-based soft block)
 4. Run `$no-vibe off` — should remove marker
 
 ## Requirements
 
 - Codex CLI
-- `jq` (for the write-guard hook)
 
 ## Usage
 
@@ -51,6 +50,6 @@ $no-vibe off                               # exit
 - Verify symlink: `ls -la ~/.agents/skills/no-vibe`
 - Should point to `~/.codex/no-vibe/skills`
 
-**Hook not blocking writes:**
-- Verify `jq` is installed: `which jq`
+**Guard ignored:**
 - Check marker exists: `test -f .no-vibe/active && echo "active"`
+- Remind the model that no-vibe mode is active or use `/no-vibe off` for normal editing

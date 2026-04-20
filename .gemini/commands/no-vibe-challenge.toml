@@ -18,7 +18,7 @@ Steps:
    - If no session: use `read_file` / `grep_search` / `glob` to analyze the project (stack, patterns, domain); generate a relevant challenge.
    - If focus area provided: narrow the challenge to that area, combined with session/project context.
 
-3. Read learner profile (`.no-vibe/data/profile.json`, `.no-vibe/data/mistakes.json` if present). Calibrate:
+3. Read learner profile (`~/.no-vibe/profile.md`, `.no-vibe/data/mistakes.json` if present). Calibrate:
    - `struggling`/`new` → smaller scope, specific acceptance criteria
    - `comfortable`/`strong` → broader scope, less hand-holding
    - Recurring mistake categories → design challenge to practice that area

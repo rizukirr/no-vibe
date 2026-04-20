@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# no-vibe PreToolUse hook: blocks Edit/Write/NotebookEdit/MultiEdit
+# no-vibe PreToolUse hook: blocks Edit/Write/NotebookEdit/MultiEdit/ApplyPatch
 # on paths outside .no-vibe/ when .no-vibe/active exists in cwd.
 #
 # Reads tool call as JSON on stdin. Exit 0 = allow, non-zero = deny.
@@ -20,7 +20,7 @@ fi
 # Parse tool name. Only the four write-style tools matter.
 tool_name=$(echo "$input" | jq -r '.tool_name // empty')
 case "$tool_name" in
-    Edit|Write|NotebookEdit|MultiEdit) ;;
+    Edit|Write|NotebookEdit|MultiEdit|ApplyPatch|apply_patch) ;;
     *) exit 0 ;;
 esac
 
@@ -28,9 +28,14 @@ esac
 # all four currently use file_path or notebook_path at the top level.
 target=$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.notebook_path // empty')
 
-# If we somehow can't find a target, fail open (don't block).
+# If we somehow can't find a target, fail closed (block).
 if [ -z "$target" ]; then
-    exit 0
+    cat >&2 <<EOF
+no-vibe mode is active. Refusing '$tool_name' because no target path was provided.
+Show the code in chat and let the user type it into their project instead.
+To exit no-vibe mode, the user can run \`/no-vibe off\`.
+EOF
+    exit 2
 fi
 
 # Resolve target to absolute path. If it's relative, anchor to cwd.

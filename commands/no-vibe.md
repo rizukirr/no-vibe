@@ -44,12 +44,11 @@ Determine which form was invoked:
   [ -f .no-vibe/data/ai-notes.json ] || echo '[]' > .no-vibe/data/ai-notes.json
   # Global level
   mkdir -p ~/.no-vibe
-  [ -f ~/.no-vibe/profile.json ] || echo '{"skill_levels":{},"total_sessions":0,"total_layers_completed":0,"common_strengths":[],"common_weaknesses":[],"projects":{},"user_preferences":[],"ai_directives":[],"teaching_gaps":{}}' > ~/.no-vibe/profile.json
   [ -f ~/.no-vibe/profile.md ] || touch ~/.no-vibe/profile.md
-  [ -f ~/.no-vibe/mistakes.json ] || echo '[]' > ~/.no-vibe/mistakes.json
-  [ -f ~/.no-vibe/ai-notes.json ] || echo '[]' > ~/.no-vibe/ai-notes.json
+  [ -f ~/.no-vibe/profile.archive.md ] || touch ~/.no-vibe/profile.archive.md
+  [ -f ~/.no-vibe/.synth-state.json ] || echo '{"last_successful_synth":null,"consecutive_failures":0,"no_change_streak":0,"missing_consumed_marker_streak":0,"strict_audit_active":false,"migration_pending":false,"last_project_synced":null,"pruning_cursor":{}}' > ~/.no-vibe/.synth-state.json
   ```
-- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first. **Even if skipping Phase 6**, you MUST update global `~/.no-vibe/profile.json`, rewrite `~/.no-vibe/profile.md`, and update the session JSON with what you observed during the session. Then `rm -f .no-vibe/active`
+- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first. **Even if skipping Phase 6**, you MUST rewrite global `~/.no-vibe/profile.md`, update `~/.no-vibe/.synth-state.json` as needed, and update the session JSON with what you observed during the session. Then `rm -f .no-vibe/active`
 
 ### 3. Clone any `--ref` URLs
 
@@ -63,7 +62,7 @@ If `--ref <name>` is a bare name (no `://`, no `/`), use `.no-vibe/refs/$name` a
 
 ### 4. Load and follow the no-vibe skill
 
-Use the Skill tool to load `no-vibe`. Then follow the six-phase teaching cycle defined in `.claude-plugin/skills/no-vibe/SKILL.md` from Phase 1a (context analysis).
+Use the Skill tool to load `no-vibe`. Then follow the six-phase teaching cycle defined in `skills/no-vibe/SKILL.md` from Phase 1a (context analysis).
 
 If `$ARGUMENTS` was empty or `on` (no topic), wait for the user's next message to be the topic, then begin Phase 1a.
 
@@ -79,7 +78,7 @@ If persistent mode is on, leave the marker in place — the user will continue w
 
 ## Hard reminders
 
-- The hook will refuse Edit/Write/NotebookEdit/MultiEdit on any path outside `.no-vibe/`. Don't try.
+- The hook will refuse Edit/Write/NotebookEdit/MultiEdit/ApplyPatch on any path outside `.no-vibe/`. Don't try.
 - Bash is not blocked, but you must not use it to write to project files either. The skill explains why.
 - Show all code in chat. The user types everything themselves.
 - Read/Grep/Glob/WebFetch are all allowed and encouraged for context analysis and reference grounding.

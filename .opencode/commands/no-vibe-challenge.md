@@ -56,7 +56,7 @@ grep -rl '"status": "in_progress"' .no-vibe/data/sessions/ 2>/dev/null
 
 ### 3. Read learner profile
 
-Read `.no-vibe/data/profile.json` and `.no-vibe/data/mistakes.json` if they exist. Calibrate challenge difficulty:
+Read `~/.no-vibe/profile.md` and `.no-vibe/data/mistakes.json` if they exist. Calibrate challenge difficulty:
 - `struggling`/`new` → smaller scope, more specific acceptance criteria
 - `comfortable`/`strong` → broader scope, less hand-holding
 - Recurring mistake categories → design challenge to practice that area

@@ -45,10 +45,9 @@ mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/a
 [ -f .no-vibe/data/ai-notes.json ] || echo '[]' > .no-vibe/data/ai-notes.json
 # Global level
 mkdir -p ~/.no-vibe
-[ -f ~/.no-vibe/profile.json ] || echo '{"skill_levels":{},"total_sessions":0,"total_layers_completed":0,"common_strengths":[],"common_weaknesses":[],"projects":{},"user_preferences":[],"ai_directives":[],"teaching_gaps":{}}' > ~/.no-vibe/profile.json
 [ -f ~/.no-vibe/profile.md ] || touch ~/.no-vibe/profile.md
-[ -f ~/.no-vibe/mistakes.json ] || echo '[]' > ~/.no-vibe/mistakes.json
-[ -f ~/.no-vibe/ai-notes.json ] || echo '[]' > ~/.no-vibe/ai-notes.json
+[ -f ~/.no-vibe/profile.archive.md ] || touch ~/.no-vibe/profile.archive.md
+[ -f ~/.no-vibe/.synth-state.json ] || echo '{"last_successful_synth":null,"consecutive_failures":0,"no_change_streak":0,"missing_consumed_marker_streak":0,"strict_audit_active":false,"migration_pending":false,"last_project_synced":null,"pruning_cursor":{}}' > ~/.no-vibe/.synth-state.json
 ```
 
 Then verify with:
@@ -59,7 +58,7 @@ test -f .no-vibe/active
 
 If verification succeeds, explicitly state in chat: `no-vibe is active (.no-vibe/active exists)`.
 
-- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first. **Even if skipping Phase 6**, you MUST update global `~/.no-vibe/profile.json`, rewrite `~/.no-vibe/profile.md`, and update the session JSON with what you observed during the session. Then you MUST run:
+- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first. **Even if skipping Phase 6**, you MUST rewrite global `~/.no-vibe/profile.md`, update `~/.no-vibe/.synth-state.json` as needed, and update the session JSON with what you observed during the session. Then you MUST run:
 
 ```bash
 rm -f .no-vibe/active
