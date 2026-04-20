@@ -13,7 +13,7 @@
 - Claude SessionStart hook `hooks/status.sh` prints `no-vibe: ON|OFF` — silent in projects without a `.no-vibe/` dir to avoid noise elsewhere. OpenCode plugin mirrors the same behavior in its bootstrap inject.
 - Command specs are split by platform:
   - Claude-style command docs: `commands/no-vibe.md`, `commands/no-vibe-challenge.md`, `commands/no-vibe-btw.md`
-  - OpenCode command docs: `.opencode/commands/no-vibe.md`, `.opencode/commands/no-vibe-challenge.md`
+  - OpenCode command docs: `.opencode/commands/no-vibe.md`, `.opencode/commands/no-vibe-challenge.md`, `.opencode/commands/no-vibe-btw.md`
   - Gemini CLI commands (TOML): `.gemini/commands/no-vibe.toml`, `.gemini/commands/no-vibe-challenge.toml`, `.gemini/commands/no-vibe-btw.toml`
 - Gemini CLI surface: `gemini-extension.json` + `GEMINI.md` + `.gemini/tool-mapping.md`. No PreToolUse hook equivalent — write guard is instruction-based (soft block); keep `GEMINI.md` guard rules aligned with `hooks/block-writes.sh` and `.opencode/plugins/no-vibe.js` behavior.
 

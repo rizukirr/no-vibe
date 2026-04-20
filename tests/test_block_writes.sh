@@ -196,14 +196,14 @@ test_marker_allows_write_data() {
     mkdir -p "$cwd/.no-vibe/data"
     touch "$cwd/.no-vibe/active"
     local input
-    input=$(cat <<EOF
-{"tool_name":"Write","tool_input":{"file_path":"$cwd/.no-vibe/data/profile.json","content":"{}"},"cwd":"$cwd"}
+input=$(cat <<EOF
+{"tool_name":"Write","tool_input":{"file_path":"$cwd/.no-vibe/data/mistakes.json","content":"[]"},"cwd":"$cwd"}
 EOF
 )
     echo "$input" | "$HOOK" >/dev/null 2>&1
     local exit_code=$?
     rm -rf "$cwd"
-    assert_eq "0" "$exit_code" "marker + Write inside .no-vibe/data/ → allow"
+    assert_eq "0" "$exit_code" "marker + Write to .no-vibe/data/*.json → allow"
 }
 
 test_marker_allows_write_data

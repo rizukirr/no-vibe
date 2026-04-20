@@ -13,7 +13,7 @@ This schema is dense — it describes atomic writes, per-project locks, uuid min
 
 **What the plugin actually implements today:**
 - `.no-vibe/active` marker detection
-- Write guard (`hooks/block-writes.sh` for Claude/Codex, `.opencode/plugins/no-vibe.js` for OpenCode, `GEMINI.md` soft-block for Gemini)
+- Write guard (`hooks/block-writes.sh` for Claude, `.opencode/plugins/no-vibe.js` for OpenCode, instruction-based soft-block for Codex/Gemini via skill + `GEMINI.md`)
 - Status line (`hooks/status.sh`)
 - Command docs (`commands/`, `.opencode/commands/`, `.gemini/commands/`)
 

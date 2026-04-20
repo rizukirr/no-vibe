@@ -14,7 +14,7 @@ NO CODE INTO THE USER'S PROJECT FILES — EVER, VIA ANY TOOL
 ```
 
 **Closed loopholes:**
-- Not via Edit / Write / NotebookEdit / MultiEdit / ApplyPatch (hook-enforced on Claude / OpenCode / Codex).
+- Not via Edit / Write / NotebookEdit / MultiEdit / ApplyPatch (hook-enforced on Claude / OpenCode; instruction-enforced on Codex / Gemini).
 - Not via Bash — `cat >`, `tee`, `sed -i`, `cp`, `>>` into a project path all count. The hook does not police Bash; the rule still binds.
 - Not "just this one character typo" — the user types it.
 - Not "small refactor while I'm in there."

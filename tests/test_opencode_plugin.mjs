@@ -56,7 +56,7 @@ const run = async () => {
   assert.ok(first.text.includes("no-vibe"), "bootstrap should mention no-vibe")
   assert.ok(first.text.includes("OpenCode"), "bootstrap should mention OpenCode")
   assert.ok(
-    first.text.includes("Data Schema") || first.text.includes("DATA-SCHEMA") || first.text.includes("profile.json"),
+    first.text.includes("Data Schema") || first.text.includes("DATA-SCHEMA") || first.text.includes("profile.md"),
     "bootstrap should include data schema content",
   )
   assert.ok(

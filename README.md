@@ -22,7 +22,7 @@ Start no-vibe mode and the AI becomes your tutor for the lesson at hand.
 
 **Adapts to you.** It tracks what you get right, what trips you up, and common mistake patterns across sessions. Weak area? Extra scaffolding. Solid area? Skip ahead. Close mid-lesson? It picks up where you left off.
 
-**Your files stay yours.** A pre-write guard blocks the AI from touching your project. Every change lands through your keyboard.
+**Your files stay yours.** On Claude Code/OpenCode, a hard pre-write guard blocks direct project writes; on Codex/Gemini, the same rule is instruction-enforced (soft). Every change is still intended to land through your keyboard.
 
 All learner data stays local in two places: project-level `.no-vibe/data/` and global `~/.no-vibe/`.
 
