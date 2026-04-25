@@ -49,8 +49,8 @@ grep -rl '"status": "in_progress"' .no-vibe/data/sessions/ 2>/dev/null
 ### 3. Read learner data
 
 If present, read:
-- `.no-vibe/data/profile.json`
-- `.no-vibe/data/mistakes.json`
+- `~/.no-vibe/profile.md` — global learner meta-model (cross-project skill levels, recurring teaching gaps, preferences). See `skills/no-vibe/DATA-SCHEMA.md` for the contract; `~/.no-vibe/.synth-state.json` is bookkeeping only and must NOT be loaded.
+- `.no-vibe/data/mistakes.json` — project-local teaching gaps
 
 Calibrate challenge difficulty:
 - `struggling` or `new`: smaller scope, tighter acceptance criteria

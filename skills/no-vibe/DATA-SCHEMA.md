@@ -306,10 +306,12 @@ If strict mode persists suspiciously long (≥5 consecutive synths) → inject a
 
 ### Skill level computation (feeds synth input, not stored separately)
 
-Per session, compute new skill level from `gaps_this_session`:
-- `gaps_this_session == 0` → move up one level
-- `gaps_this_session <= 1 && layers_completed >= 5` → move up one level
-- `gaps_this_session >= 3` → move down one level
+Per session, compute new skill level from `errors_this_session` (legacy
+sessions may carry `gaps_this_session` / `mistakes_this_session`; treat
+those as `errors_this_session` per the read-tolerance rule below):
+- `errors_this_session == 0` → move up one level
+- `errors_this_session <= 1 && layers_completed >= 5` → move up one level
+- `errors_this_session >= 3` → move down one level
 - Otherwise → stay
 
 Pass the delta (if any) into the synth prompt as "session outcome". Progression: `new` → `struggling` → `developing` → `comfortable` → `strong`.

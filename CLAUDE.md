@@ -14,6 +14,7 @@ No root npm script runner. Run all test suites before finishing plugin changes:
 
 ```bash
 bash tests/test_block_writes.sh
+bash tests/test_block_bash_writes.sh
 bash tests/test_status.sh
 node tests/test_opencode_plugin.mjs
 bash tests/test_escape_hatch.sh
@@ -25,12 +26,18 @@ bash tests/test_gemini_guard.sh
 The same no-vibe behavior is implemented four times, once per host CLI. A change to one surface almost always needs mirrored changes on the others.
 
 **Write-guard enforcement** (hard stop when `.no-vibe/active` exists, allow `.no-vibe/` writes):
-- Claude Code: `hooks/block-writes.sh` — PreToolUse hook for Edit/Write/NotebookEdit/MultiEdit/ApplyPatch
-- OpenCode: `.opencode/plugins/no-vibe.js` — in-process guard in the plugin
-- Codex: instruction-based guard via no-vibe skill/commands (no native PreToolUse hook wiring in this repo)
-- Gemini CLI: **no hook available** — instruction-based soft block via `GEMINI.md`
+- Claude Code: `hooks/block-writes.sh` — PreToolUse hook for Edit/Write/NotebookEdit/MultiEdit/ApplyPatch; `hooks/block-bash-writes.sh` — PreToolUse hook for Bash that rejects `>`, `>>`, `&>`, `&>>`, `tee`, `sed -i` / `--in-place`, `cp`, `mv`, `install`, `dd of=`, and `cat <<EOF >` targeting paths outside the safe-target allowlist below. Variable / command-substitution destinations (`$VAR`, `$(…)`, backticks) fail closed.
+- OpenCode: `.opencode/plugins/no-vibe.js` — in-process guard for both write tools and Bash commands (mirror of the two Claude hooks).
+- Codex: **instruction-based** soft block via `skills/no-vibe/SKILL.md` (Iron Law enumerates the Bash patterns); no native PreToolUse hook wiring.
+- Gemini CLI: **instruction-based** soft block via `GEMINI.md` (write_file/replace + run_shell_command rules) and `.gemini/tool-mapping.md`; no hook surface available.
 
-Path-handling rules must stay in lockstep between `hooks/block-writes.sh` and `.opencode/plugins/no-vibe.js`. If one changes, update the other.
+Path-handling, Bash-parsing rules, and the safe-target allowlist (`.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/{null,stdout,stderr,tty,fd/*}`) must stay in lockstep across all four surfaces:
+- `hooks/block-writes.sh` + `hooks/block-bash-writes.sh` (Claude)
+- `.opencode/plugins/no-vibe.js` (OpenCode)
+- `GEMINI.md` + `.gemini/tool-mapping.md` (Gemini)
+- `skills/no-vibe/SKILL.md` Iron Law (Codex + shared)
+
+If one changes, update the others.
 
 **Status line** (`no-vibe: ON|OFF`, silent when no `.no-vibe/` dir exists to avoid noise in unrelated projects):
 - Claude: `hooks/status.sh` (SessionStart)
@@ -61,4 +68,10 @@ Version numbers are duplicated in:
 - `.claude-plugin/marketplace.json`
 - `gemini-extension.json`
 
-Use `scripts/bump-version.sh <version|patch|minor|major>` to keep them in sync. Do not bump by hand.
+Bump all four by hand and confirm parity with:
+
+```bash
+grep -E '"version"' package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json gemini-extension.json
+```
+
+(A `scripts/bump-version.sh` helper used to live in this repo; it was removed in commit `7f8afda`. If a release ever drifts the four files apart, restore the helper rather than papering over with hand-edits.)

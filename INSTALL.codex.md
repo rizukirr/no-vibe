@@ -26,7 +26,17 @@ cmd /c mklink /J "$env:USERPROFILE\.agents\skills\no-vibe" "$env:USERPROFILE\.co
 1. Start a Codex session in any project
 2. Run `$no-vibe on` — should create `.no-vibe/active` marker
 3. Ask the assistant to edit a project file — it should refuse with the no-vibe guard message (instruction-based soft block)
-4. Run `$no-vibe off` — should remove marker
+4. Ask the assistant to `echo bad > someproj.py` or `sed -i …` on a project file — it should also refuse, citing the Iron Law's Bash list in `skills/no-vibe/SKILL.md`. If it complies, the model is drifting; remind it.
+5. Start a fresh session with an in-progress session JSON in `.no-vibe/data/sessions/` — the assistant should announce the resume hint (topic + `layer N/M, phaseX`) on the first turn (Phase 0 auto-resume).
+6. Run `$no-vibe off` — should remove marker
+
+## Caveat — soft block
+
+Codex has no PreToolUse hook equivalent to Claude Code's
+`hooks/block-writes.sh` / `hooks/block-bash-writes.sh`. Both the file
+write guard and the Bash write-guard are enforced by SKILL.md's Iron
+Law, not a process-level hook. If you need a hard block, use the
+Claude Code or OpenCode surface.
 
 ## Requirements
 

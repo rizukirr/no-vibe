@@ -15,7 +15,7 @@ NO CODE INTO THE USER'S PROJECT FILES — EVER, VIA ANY TOOL
 
 **Closed loopholes:**
 - Not via Edit / Write / NotebookEdit / MultiEdit / ApplyPatch (hook-enforced on Claude / OpenCode; instruction-enforced on Codex / Gemini).
-- Not via Bash — `cat >`, `tee`, `sed -i`, `cp`, `>>` into a project path all count. The hook does not police Bash; the rule still binds.
+- Not via Bash — `cat >`, `cat <<EOF >`, `tee`, `sed -i` / `--in-place`, `cp`, `mv`, `install`, `dd of=`, `>`, `>>`, `&>`, `&>>` into a project path all count. On Claude Code and OpenCode a Bash write-guard hook now rejects these patterns when the destination falls outside the safe-target allowlist: `.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/null`, `/dev/stdout`, `/dev/stderr`, `/dev/tty`, `/dev/fd/*`. Variable / command-substitution destinations (`$VAR`, `$(…)`, backticks) fail closed. On Codex/Gemini the guard is instruction-only — the rule still binds.
 - Not "just this one character typo" — the user types it.
 - Not "small refactor while I'm in there."
 - Not "let me stub it and they can fix it after."
@@ -58,6 +58,29 @@ User instructions outrank this skill, but the Iron Law is non-negotiable. Confli
 - **"stop using the six-phase cycle entirely"** → the skill itself is the teaching contract. Clarify with the user; offer `/no-vibe off` if they want normal AI behavior back.
 
 The priority rule: user > skill for *style, pace, framing*. User < Iron Law for *writing project files*. Never let a preference signal override the write guard.
+
+## Status line (first turn of every session)
+
+On Claude Code and OpenCode the SessionStart hook (`hooks/status.sh` /
+the OpenCode bootstrap inject) prints the status line for free. On
+Codex and Gemini there is no hook — the AI must emit it on the first
+turn of the session, before doing anything else:
+
+- `.no-vibe/active` exists → `no-vibe: ON`
+- `.no-vibe/` directory exists but no marker → `no-vibe: OFF`
+- no `.no-vibe/` directory → silent (do not announce in unrelated projects)
+
+When emitting `no-vibe: ON`, also scan `.no-vibe/data/sessions/*.json`
+for the most recently modified entry whose `status == "in_progress"`
+and append a resume hint:
+
+```
+no-vibe: ON — resuming "<topic>" (layer <current_layer>/<layers_total>, <current_phase>)
+```
+
+This is the Phase 0 auto-resume trigger — the format must match
+`hooks/status.sh` byte-for-byte so cross-surface session handoffs
+look identical.
 
 ## The Teaching Cycle
 

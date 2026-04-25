@@ -92,6 +92,23 @@ check "Rationalization table exists" \
 check "Trusts user's 'next' (defer rule, not violation)" \
   "trust.*next|don.t demand proof"
 
+# Bash write-guard discipline (must mirror the hard hook on Claude/OpenCode)
+check "Bash guard enumerates redirection operators (>, >>, &>)" \
+  ">>?|&>"
+
+check "Bash guard names tee/sed -i/cp/mv as mutators" \
+  "tee.*sed|sed -i|tee\\b.*cp\\b|mv\\b.*install"
+
+check "Bash guard cites safe-target allowlist (.no-vibe + /tmp + /dev/null)" \
+  "/tmp.*\\.no-vibe|\\.no-vibe.*/tmp|/dev/null"
+
+check "Bash guard fails closed on \$VAR / command-substitution destinations" \
+  "fail closed|\\\$VAR|command.substitut|backtick"
+
+# Session resume hint discipline (parallel to status hook)
+check "Session-resume hint instruction is present" \
+  "resuming.*layer|in_progress.*resume|sessions/.*\\.json"
+
 echo
 echo "Results: ${PASS} passed, ${FAIL} failed"
 if [[ $FAIL -gt 0 ]]; then

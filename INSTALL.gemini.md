@@ -29,12 +29,19 @@ under `.gemini/commands/` are auto-discovered.
    bootstraps learner state.
 2. Ask the assistant to edit a project file — it should refuse with the
    no-vibe guard message (soft-block; see caveat below).
-3. Run `/no-vibe off` — removes the marker.
+3. Ask the assistant to `echo bad > someproj.py` or `sed -i 's/x/y/'
+   src/file` — it should also refuse, citing the Bash guard rules in
+   `GEMINI.md`. If it complies, the model is drifting; remind it.
+4. Start a fresh session in a project with an in-progress session JSON
+   under `.no-vibe/data/sessions/` — first turn should print
+   `no-vibe: ON — resuming "<topic>" (layer N/M, phaseX)`.
+5. Run `/no-vibe off` — removes the marker.
 
 ## Caveat — soft block
 
 Gemini CLI has no PreToolUse hook equivalent to Claude Code's
-`hooks/block-writes.sh`. The write guard is enforced by strong
+`hooks/block-writes.sh` or `hooks/block-bash-writes.sh`. Both the
+write guard and the Bash write-guard are enforced by strong
 instructions in `GEMINI.md` and the skill content, not a process-level
 hook. If you need a hard block, use the Claude Code or OpenCode surface.
 

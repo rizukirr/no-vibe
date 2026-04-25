@@ -86,6 +86,45 @@ const run = async () => {
   )
   fs.rmSync(optedInDir, { recursive: true, force: true })
 
+  // --- Test: status line surfaces resume hint for in-progress session ---
+  const resumeDir = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-resume-"))
+  fs.mkdirSync(path.join(resumeDir, ".no-vibe", "data", "sessions"), { recursive: true })
+  fs.writeFileSync(path.join(resumeDir, ".no-vibe", "active"), "")
+  fs.writeFileSync(
+    path.join(resumeDir, ".no-vibe", "data", "sessions", "build-a-linear-layer.json"),
+    JSON.stringify({
+      topic: "Build a Linear Layer",
+      status: "in_progress",
+      current_layer: 3,
+      layers_total: 7,
+      current_phase: "phase3",
+    }),
+  )
+  const resumePlugin = await NoVibePlugin({ directory: resumeDir })
+  const resumeOutput = makeOutput()
+  await resumePlugin["experimental.chat.messages.transform"]({}, resumeOutput)
+  const resumeText = resumeOutput.messages[0].parts[0].text
+  assert.ok(
+    resumeText.startsWith('no-vibe: ON — resuming "Build a Linear Layer" (layer 3/7, phase3)'),
+    `status line should surface resume hint; got: ${resumeText.slice(0, 120)}`,
+  )
+
+  // Completed sessions should NOT trigger the resume hint
+  fs.writeFileSync(
+    path.join(resumeDir, ".no-vibe", "data", "sessions", "build-a-linear-layer.json"),
+    JSON.stringify({ topic: "Build a Linear Layer", status: "completed" }),
+  )
+  const completedPlugin = await NoVibePlugin({ directory: resumeDir })
+  const completedOutput = makeOutput()
+  await completedPlugin["experimental.chat.messages.transform"]({}, completedOutput)
+  const completedText = completedOutput.messages[0].parts[0].text
+  assert.ok(
+    completedText.startsWith("no-vibe: ON\n") || completedText.startsWith("no-vibe: ON\r\n") ||
+      completedText === "no-vibe: ON" || completedText.match(/^no-vibe: ON(?!\s*—)/),
+    `completed-only sessions should not surface resume hint; got: ${completedText.slice(0, 120)}`,
+  )
+  fs.rmSync(resumeDir, { recursive: true, force: true })
+
   const tempCwd = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-write-guard-"))
   const markerDir = path.join(tempCwd, ".no-vibe")
   const markerPath = path.join(markerDir, "active")

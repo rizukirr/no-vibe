@@ -165,7 +165,8 @@ EOF
         || fail "marker + MultiEdit outside → deny" "got exit $exit_code"
 }
 
-# --- Test 9: Bash tool not blocked (loophole — handled by skill instruction) ---
+# --- Test 9: Bash tool not blocked by THIS hook (Bash has its own guard,
+#     hooks/block-bash-writes.sh; this hook is scoped to Edit/Write only) ---
 test_marker_allows_bash() {
     local cwd
     cwd=$(make_sandbox)

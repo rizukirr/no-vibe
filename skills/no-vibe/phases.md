@@ -17,12 +17,18 @@ Rhythm: introduce → user types → user runs + sees output → user says "next
 
 Before Phase 1a:
 
-1. Read all files in `.no-vibe/data/sessions/`. Look for `status: "in_progress"`.
-2. If found:
+1. **Shortcut**: on Claude Code / OpenCode the SessionStart status line
+   already surfaces the most recent in-progress session as
+   `no-vibe: ON — resuming "<topic>" (layer N/M, phaseX)`. If you see
+   that line, treat it as the trigger — skip step 2's directory walk
+   and go straight to step 3 with the named session. On Codex/Gemini
+   (no hook surface) you must do the directory walk yourself.
+2. Read all files in `.no-vibe/data/sessions/`. Look for `status: "in_progress"`. Pick the most recently modified one if multiple exist.
+3. If found:
    > "Found incomplete session: **{topic}** ({layers_completed}/{layers_total} layers). Continue where you left off, or start fresh?"
-3. Continue → read session JSON, resume at `current_phase` + `current_layer`. If `current_phase == "phase1c"`, re-present curriculum for approval. If Phase 2 or later, enter directly at recorded phase.
-4. Start fresh → set old session's `status: "abandoned"`. Proceed to Phase 1a.
-5. No incomplete session → Phase 1a normally.
+4. Continue → read session JSON, resume at `current_phase` + `current_layer`. If `current_phase == "phase1c"`, re-present curriculum for approval. If Phase 2 or later, enter directly at recorded phase.
+5. Start fresh → set old session's `status: "abandoned"`. Proceed to Phase 1a.
+6. No incomplete session → Phase 1a normally.
 
 ## Phase 1a — Context analysis & targeted clarification
 
