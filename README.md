@@ -1,6 +1,6 @@
 # no-vibe
 
-Turn your AI coding assistant into a tutor that helps you finish projects by hand. The AI guides you on what to write, explains the why, and reviews your work—but it never modifies your files. You keep the muscle memory; the AI provides the knowledge
+Turn your AI assistant into a personal tutor that empowers you to write the code yourself. It shows you what to build and explains the 'why' while reviewing your work. The plugin adapts to your level and improves its teaching based on your learning progress, all without touching your project files. Keep the muscle memory, lose the dependency.
 
 ## Why
 
