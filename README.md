@@ -1,6 +1,6 @@
 # no-vibe
 
-Turn your AI coding assistant into a tutor and help you finish your project by your hand. The AI shows what to write, explains the *why*, and reviews what you type — but never edits your project files. You keep the muscle memory, the AI keeps the explanations.
+Turn your AI coding assistant into a tutor that helps you finish projects by hand. The AI guides you on what to write, explains the why, and reviews your work—but it never modifies your files. You keep the muscle memory; the AI provides the knowledge
 
 ## Why
 
