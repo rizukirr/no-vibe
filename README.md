@@ -4,7 +4,7 @@ Turn your AI coding assistant into a tutor and help you finish your project by y
 
 ## Why
 
-We’ve all felt it: the more we 'vibe-code,' the more our manual skills slip away. I built this to stop the drain. The AI acts as your mentor—planning and reviewing every step—but you’re the one typing every character. It’s the productivity of AI with the growth of manual coding. Break the dependency loop.
+We’ve all felt it: the more we 'vibe-code', the more our skills slip away. I built this to stop the drain. The AI acts as your mentor—planning and reviewing every step—but you’re the one typing every character. It’s the productivity of AI with the growth of manual coding. Break the dependency loop.
 
 Maximize your workflow by pairing no-vibe with [vibekit](https://github.com/rizukirr/vibekit). Use the vibekit pipeline to build fast, and switch to no-vibe when you want the AI to tutor you through the manual coding process. Stay productive, keep learning
 
