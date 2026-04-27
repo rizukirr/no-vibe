@@ -49,6 +49,46 @@ All of these mean: stop. Show the code in chat. User types it.
 | "Reference project is too big, I'll paraphrase." | Paraphrase = hallucination pipeline. Grep first, quote with `file:line`, then explain. |
 | "User said 'next' without running — they probably ran it mentally." | Trust "next" — don't demand proof of running. This is the one rationalization that defers, not violates. |
 
+## Turn Response Contract
+
+The Iron Law blocks writes; this contract blocks process drift. On Codex and Gemini there is no PreToolUse hook, so the contract IS the enforcement. On Claude and OpenCode it is still required — hooks catch writes, not phase discipline.
+
+**While `no-vibe: ON`, every reply MUST begin with a one-line header in this exact format:**
+
+```
+[no-vibe] Phase: <0|1a|1b|1c|2|3|4|5|6> · Session: <slug-or-none> · Layer: <n/total-or-->  · Next: <one short action>
+```
+
+Examples:
+- `[no-vibe] Phase: 3 · Session: rust-cli-args · Layer: 2/5 · Next: user types arg parser stub`
+- `[no-vibe] Phase: 1c · Session: none · Layer: - · Next: confirm curriculum draft`
+- `[no-vibe] Phase: 0 · Session: none · Layer: - · Next: scan sessions/ for in_progress to resume`
+
+Rules:
+- Header is the first line. No greeting, preamble, or tool call before it.
+- `Phase:` uses the human form shown in "The Teaching Cycle" (`1a`, `3`, etc.) — distinct from the JSON enum `phase1a..phase6` written to `sessions/<slug>.json` `current_phase`. Do not put the JSON form in the header or the human form in the JSON.
+- The header is a *display* artifact only. Do not write it to any file. It does not replace, alter, or duplicate the SessionStart status line (`no-vibe: ON ...`) emitted once per session per the "Status line" section above.
+- `Next:` is an action-verb clause ("user types X", "I quote ref Y at file:line", "log mistake then advance to Phase 5") — never "continue", "help user", "discuss".
+- One reply = one phase. If the turn would cross a phase boundary, stop at the boundary and let the next turn open the new phase with its own header.
+- If you do not know the phase, you are in Phase 0 — auto-resume per the "Status line" section, or ask. Do not invent a phase.
+- The contract is **universal**: it applies to every reply while `no-vibe: ON` regardless of turn type (teaching, clarifying question, status reply, off-topic) and regardless of mode (concept / skill / debug). Strict universality is the point — every conditional carve-out is a drift surface.
+- **On a missed header, self-correct**: emit the header on the very next reply. Do not log a `mistakes.json` or `ai-notes.json` entry for the miss — neither schema has a slot for AI process drift, and inventing one would break the parallel-surface contract in DATA-SCHEMA.md. The header itself is the enforcement artifact; if drift recurs the user will issue a `correction` ai-note via the normal path.
+
+### Per-turn action order
+
+Triggers and field rules for `mistakes.json`, `ai-notes.json`, and `sessions/<slug>.json` are defined in [data-logging.md](data-logging.md) ("Teaching-gap logging", "AI-note logging", "Pre-turn gap-action audit", "Session outcome"). Those are the canonical triggers — not "decision points" or "review moments". This skill does not redefine them.
+
+The order on every turn while `no-vibe: ON`:
+
+1. **Read** `.no-vibe/data/sessions/<current>.json` if a session is active. If the file disagrees with your in-context state, trust the file.
+2. **Run** the pre-turn gap-action audit per data-logging.md when `errors_this_session >= 1`.
+3. **Emit** the Turn Response Contract header.
+4. **Act** for the current phase — chat-only, no project writes (Iron Law).
+5. **Log** per data-logging.md triggers before ending the turn (Phase 4 user error → `mistakes.json`; user correction/feedback/request/complaint/preference → `ai-notes.json`).
+6. **Update** `sessions/<slug>.json` if `current_phase`, `current_layer`, `status`, `errors_this_session`, `entries_this_session`, `layers_completed`, `unapplied_gaps`, or `revision_id` changed this turn (per zero-regression invariants in DATA-SCHEMA.md). On a curriculum revision turn, `revision_id` must be bumped in the same turn that rewrites `.no-vibe/session.md` — see phases.md "Curriculum Revision Triggers" for the three-step discipline.
+
+If a turn produced no triggering event, that is fine — silence is the correct outcome. Do not invent a log entry to "show work".
+
 ## User Requests vs. Structure
 
 User instructions outrank this skill, but the Iron Law is non-negotiable. Conflict resolution:
