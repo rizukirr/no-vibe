@@ -1,6 +1,6 @@
 {
   "name": "no-vibe",
   "description": "Tutor-style coding mode: AI teaches; user writes all code. Blocks AI writes to project files while active.",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "contextFileName": "GEMINI.md"
 }
