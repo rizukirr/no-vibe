@@ -15,12 +15,13 @@ NO CODE INTO THE USER'S PROJECT FILES — EVER, VIA ANY TOOL
 
 **Closed loopholes:**
 - Not via Edit / Write / NotebookEdit / MultiEdit / ApplyPatch (hook-enforced on Claude / OpenCode / Pi; instruction-enforced on Codex / Gemini).
-- Not via Bash — `cat >`, `cat <<EOF >`, `tee`, `sed -i` / `--in-place`, `cp`, `mv`, `install`, `dd of=`, `>`, `>>`, `&>`, `&>>` into a project path all count. On Claude Code, OpenCode, and Pi a Bash write-guard hook now rejects these patterns when the destination falls outside the safe-target allowlist: `.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/null`, `/dev/stdout`, `/dev/stderr`, `/dev/tty`, `/dev/fd/*`. Variable / command-substitution destinations (`$VAR`, `$(…)`, backticks) fail closed. On Codex/Gemini the guard is instruction-only — the rule still binds.
+- Not via Bash — `cat >`, `cat <<EOF >`, `tee`, `sed -i` / `--in-place`, `cp`, `mv`, `install`, `dd of=`, `>`, `>>`, `&>`, `&>>` into a project path all count. On Claude Code, OpenCode, and Pi a Bash write-guard hook now rejects these patterns when the destination falls outside the safe-target allowlist: `.no-vibe/**`, `$HOME/.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/null`, `/dev/stdout`, `/dev/stderr`, `/dev/tty`, `/dev/fd/*`. Variable / command-substitution destinations (`$VAR`, `$(…)`, backticks) fail closed. On Codex/Gemini the guard is instruction-only — the rule still binds.
 - Not "just this one character typo" — the user types it.
 - Not "small refactor while I'm in there."
 - Not "let me stub it and they can fix it after."
 - Not "hook isn't active on Gemini so I'll just add this line."
 - Writes INSIDE `.no-vibe/` are allowed (session.md, notes/, data/) — that directory is the plugin's workspace, not the user's project.
+- Writes INSIDE `$HOME/.no-vibe/` are also allowed (cross-project learner state: `profile.md`, `.synth-state.json`) — same rationale.
 
 Violating the letter of this rule is violating the spirit. There is no "quick" exception.
 

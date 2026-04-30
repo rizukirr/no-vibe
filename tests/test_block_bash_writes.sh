@@ -26,6 +26,14 @@ run_hook() {
         | "$HOOK" 2>&1
 }
 
+run_hook_with_home() {
+    # $1 = cwd, $2 = HOME override, $3 = bash command
+    local cwd="$1" home="$2" cmd="$3"
+    jq -n --arg cwd "$cwd" --arg cmd "$cmd" \
+        '{tool_name:"Bash",tool_input:{command:$cmd},cwd:$cwd}' \
+        | HOME="$home" "$HOOK" 2>&1
+}
+
 # --- Test 1: no marker → allow any command ---
 test_no_marker_allows() {
     local cwd; cwd=$(mktemp -d)
@@ -220,4 +228,29 @@ test_substitution_denied
 test_relative_project_denied
 test_non_bash_allowed
 test_amp_redirect_denied
+
+# --- Test 20: redirect into $HOME/.no-vibe/ (global learner state) → allow ---
+test_redirect_into_home_scratch_allowed() {
+    local cwd; cwd=$(make_sandbox)
+    local fake_home; fake_home=$(mktemp -d -p "$SANDBOX_ROOT")
+    mkdir -p "$fake_home/.no-vibe"
+    run_hook_with_home "$cwd" "$fake_home" "echo hi > $fake_home/.no-vibe/profile.md" >/dev/null
+    local rc=$?
+    rm -rf "$cwd" "$fake_home"
+    assert_eq "0" "$rc" "redirect into \$HOME/.no-vibe/ → allow"
+}
+
+# --- Test 21: redirect into fake $HOME path outside .no-vibe → deny ---
+test_redirect_into_home_other_denied() {
+    local cwd; cwd=$(make_sandbox)
+    local fake_home; fake_home=$(mktemp -d -p "$SANDBOX_ROOT")
+    local out; out=$(run_hook_with_home "$cwd" "$fake_home" "echo bad > $fake_home/notes.md")
+    local rc=$?
+    rm -rf "$cwd" "$fake_home"
+    [ "$rc" -ne 0 ] && pass "redirect into other \$HOME path → deny" \
+        || fail "redirect into other \$HOME path → deny" "got exit $rc"
+}
+
+test_redirect_into_home_scratch_allowed
+test_redirect_into_home_other_denied
 summary

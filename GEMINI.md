@@ -40,8 +40,9 @@ shell — do not assume bash on Windows.
 
 ## Guard rules (when `.no-vibe/active` exists)
 
-1. **Refuse `write_file` and `replace`** on any path outside `.no-vibe/`.
+1. **Refuse `write_file` and `replace`** on any path outside `.no-vibe/` or `$HOME/.no-vibe/`.
    - Writes inside `.no-vibe/` (notes, refs, session JSON) are allowed.
+   - Writes inside `$HOME/.no-vibe/` (cross-project learner state: `profile.md`, `.synth-state.json`) are allowed.
    - If the skill or user asks for code that would modify a project file,
      show the code in a fenced block in chat and tell the user to type it
      themselves.
@@ -55,6 +56,7 @@ shell — do not assume bash on Windows.
 
    **Safe targets** (writes allowed):
    - Anywhere under `.no-vibe/**`
+   - Anywhere under `$HOME/.no-vibe/**` (global learner state)
    - Anywhere under `/tmp/**` or `/var/tmp/**`
    - `/dev/null`, `/dev/stdout`, `/dev/stderr`, `/dev/tty`, `/dev/fd/*`
 

@@ -20,12 +20,13 @@ Gemini CLI equivalents when executing skill steps:
 ## Write-guard reminder
 
 When `.no-vibe/active` exists, `write_file` and `replace` are refused on
-paths outside `.no-vibe/`. The same rule applies to `run_shell_command`:
-self-enforce rejection of `>`, `>>`, `&>`, `&>>`, `tee`, `sed -i` /
-`--in-place`, `cp`, `mv`, `install`, `dd of=…`, and `cat <<EOF >`
-heredoc-redirects when the destination falls outside `.no-vibe/**`,
-`/tmp/**`, `/var/tmp/**`, or `/dev/{null,stdout,stderr,tty,fd/*}`. Variable or command-substituted destinations
-(`$VAR`, `$(…)`, backticks) — fail closed.
+paths outside `.no-vibe/` and `$HOME/.no-vibe/`. The same rule applies to
+`run_shell_command`: self-enforce rejection of `>`, `>>`, `&>`, `&>>`,
+`tee`, `sed -i` / `--in-place`, `cp`, `mv`, `install`, `dd of=…`, and
+`cat <<EOF >` heredoc-redirects when the destination falls outside
+`.no-vibe/**`, `$HOME/.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, or
+`/dev/{null,stdout,stderr,tty,fd/*}`. Variable or command-substituted
+destinations (`$VAR`, `$(…)`, backticks) — fail closed.
 
 `2>&1` and other fd-merge forms (no file target) are fine. Read-only
 shells (`ls`, `git status`, `grep`, `cat`, build/test invocations that

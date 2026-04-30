@@ -251,4 +251,50 @@ EOF
 }
 
 test_marker_blocks_missing_target
+
+# --- Test 13: Write into $HOME/.no-vibe/ (global learner state) → allow ---
+test_marker_allows_write_home_scratch() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe"
+    touch "$cwd/.no-vibe/active"
+    local fake_home
+    fake_home=$(mktemp -d)
+    mkdir -p "$fake_home/.no-vibe"
+    local input
+    input=$(cat <<EOF
+{"tool_name":"Write","tool_input":{"file_path":"$fake_home/.no-vibe/profile.md","content":"x"},"cwd":"$cwd"}
+EOF
+)
+    local exit_code
+    HOME="$fake_home" bash -c "echo '$input' | '$HOOK' >/dev/null 2>&1"
+    exit_code=$?
+    rm -rf "$cwd" "$fake_home"
+    assert_eq "0" "$exit_code" "marker + Write to \$HOME/.no-vibe/profile.md → allow"
+}
+
+test_marker_allows_write_home_scratch
+
+# --- Test 14: Write to fake-HOME path outside .no-vibe → still deny ---
+test_marker_blocks_other_home_path() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe"
+    touch "$cwd/.no-vibe/active"
+    local fake_home
+    fake_home=$(mktemp -d)
+    local input
+    input=$(cat <<EOF
+{"tool_name":"Write","tool_input":{"file_path":"$fake_home/notes.md","content":"x"},"cwd":"$cwd"}
+EOF
+)
+    local exit_code
+    HOME="$fake_home" bash -c "echo '$input' | '$HOOK' >/dev/null 2>&1"
+    exit_code=$?
+    rm -rf "$cwd" "$fake_home"
+    [ "$exit_code" -ne 0 ] && pass "marker + Write to other \$HOME path → deny" \
+        || fail "marker + Write to other \$HOME path → deny" "got exit $exit_code"
+}
+
+test_marker_blocks_other_home_path
 summary

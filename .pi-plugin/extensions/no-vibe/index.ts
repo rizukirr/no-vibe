@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
@@ -59,9 +60,12 @@ const canonicalize = (absolutePath: string): string => {
 };
 
 const isWithinNoVibeDir = (cwd: string, absoluteTargetPath: string): boolean => {
-  const allowedRoot = canonicalize(path.resolve(cwd, ".no-vibe"));
+  const projectRoot = canonicalize(path.resolve(cwd, ".no-vibe"));
+  const homeRoot = canonicalize(path.resolve(os.homedir(), ".no-vibe"));
   const canonicalTarget = canonicalize(absoluteTargetPath);
-  return canonicalTarget === allowedRoot || canonicalTarget.startsWith(`${allowedRoot}${path.sep}`);
+  if (canonicalTarget === projectRoot || canonicalTarget.startsWith(`${projectRoot}${path.sep}`)) return true;
+  if (canonicalTarget === homeRoot || canonicalTarget.startsWith(`${homeRoot}${path.sep}`)) return true;
+  return false;
 };
 
 const isSafeBashTarget = (cwd: string, rawPath: string): boolean => {
@@ -76,8 +80,10 @@ const isSafeBashTarget = (cwd: string, rawPath: string): boolean => {
   if (p === "/tmp" || p.startsWith("/tmp/") || p === "/var/tmp" || p.startsWith("/var/tmp/")) return true;
   const abs = path.isAbsolute(p) ? path.resolve(p) : path.resolve(cwd, p);
   const scratch = canonicalize(path.resolve(cwd, ".no-vibe"));
+  const homeScratch = canonicalize(path.resolve(os.homedir(), ".no-vibe"));
   const canonical = canonicalize(abs);
   if (canonical === scratch || canonical.startsWith(`${scratch}${path.sep}`)) return true;
+  if (canonical === homeScratch || canonical.startsWith(`${homeScratch}${path.sep}`)) return true;
   if (canonical === "/tmp" || canonical.startsWith("/tmp/")) return true;
   if (canonical === "/var/tmp" || canonical.startsWith("/var/tmp/")) return true;
   return false;
@@ -218,7 +224,7 @@ export default async function (pi: ExtensionAPI) {
       if (reason) {
         return {
           block: true,
-          reason: `no-vibe mode is active. Refusing Bash command — ${reason}. Safe targets: '.no-vibe/**', '/tmp/**', '/var/tmp/**', '/dev/{null,stdout,stderr,tty,fd/*}'. Variable / command-substitution destinations fail closed. Show the code in chat and let the user run it. Run '/no-vibe off' to disable.`,
+          reason: `no-vibe mode is active. Refusing Bash command — ${reason}. Safe targets: '.no-vibe/**', '$HOME/.no-vibe/**', '/tmp/**', '/var/tmp/**', '/dev/{null,stdout,stderr,tty,fd/*}'. Variable / command-substitution destinations fail closed. Show the code in chat and let the user run it. Run '/no-vibe off' to disable.`,
         };
       }
       return;

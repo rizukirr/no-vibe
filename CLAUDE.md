@@ -26,14 +26,14 @@ node tests/test_pi_plugin.mjs
 
 The same no-vibe behavior is implemented five times, once per host CLI. A change to one surface almost always needs mirrored changes on the others.
 
-**Write-guard enforcement** (hard stop when `.no-vibe/active` exists, allow `.no-vibe/` writes):
+**Write-guard enforcement** (hard stop when `.no-vibe/active` exists, allow writes inside `.no-vibe/` and `$HOME/.no-vibe/`):
 - Claude Code: `hooks/block-writes.sh` — PreToolUse hook for Edit/Write/NotebookEdit/MultiEdit/ApplyPatch; `hooks/block-bash-writes.sh` — PreToolUse hook for Bash that rejects `>`, `>>`, `&>`, `&>>`, `tee`, `sed -i` / `--in-place`, `cp`, `mv`, `install`, `dd of=`, and `cat <<EOF >` targeting paths outside the safe-target allowlist below. Variable / command-substitution destinations (`$VAR`, `$(…)`, backticks) fail closed.
 - OpenCode: `.opencode/plugins/no-vibe.js` — in-process guard for both write tools and Bash commands (mirror of the two Claude hooks).
 - Pi: `.pi-plugin/extensions/no-vibe/index.ts` — TS extension using `pi.on("tool_call", ...)` for `write`/`edit` and dangerous `bash`; mirror of the OpenCode plugin (hard block).
 - Codex: **instruction-based** soft block via `skills/no-vibe/SKILL.md` (Iron Law enumerates the Bash patterns); no native PreToolUse hook wiring.
 - Gemini CLI: **instruction-based** soft block via `GEMINI.md` (write_file/replace + run_shell_command rules) and `.gemini/tool-mapping.md`; no hook surface available.
 
-Path-handling, Bash-parsing rules, and the safe-target allowlist (`.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/{null,stdout,stderr,tty,fd/*}`) must stay in lockstep across all five surfaces:
+Path-handling, Bash-parsing rules, and the safe-target allowlist (`.no-vibe/**`, `$HOME/.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/{null,stdout,stderr,tty,fd/*}`) must stay in lockstep across all five surfaces:
 - `hooks/block-writes.sh` + `hooks/block-bash-writes.sh` (Claude)
 - `.opencode/plugins/no-vibe.js` (OpenCode)
 - `.pi-plugin/extensions/no-vibe/index.ts` (Pi)

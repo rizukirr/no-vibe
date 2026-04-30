@@ -49,14 +49,18 @@ if command -v realpath >/dev/null 2>&1; then
     # -m so it doesn't fail if the file doesn't exist yet
     abs_target=$(realpath -m "$abs_target")
     scratch_root=$(realpath -m "$cwd/.no-vibe")
+    home_scratch_root=$(realpath -m "${HOME:-/root}/.no-vibe")
 else
     abs_target=$(cd "$(dirname "$abs_target")" 2>/dev/null && pwd)/$(basename "$abs_target")
     scratch_root="$cwd/.no-vibe"
+    home_scratch_root="${HOME:-/root}/.no-vibe"
 fi
 
-# Allow writes inside .no-vibe/ (the scratch escape hatch).
+# Allow writes inside project-local .no-vibe/ (scratch escape hatch) and
+# global ~/.no-vibe/ (cross-project learner state: profile.md, synth-state).
 case "$abs_target" in
     "$scratch_root"/*|"$scratch_root") exit 0 ;;
+    "$home_scratch_root"/*|"$home_scratch_root") exit 0 ;;
 esac
 
 # Otherwise — deny.

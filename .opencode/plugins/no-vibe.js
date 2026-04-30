@@ -1,4 +1,5 @@
 import fs from "node:fs"
+import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -64,8 +65,10 @@ const isSafeBashTarget = (cwd, rawPath) => {
   if (p === "/tmp" || p.startsWith("/tmp/") || p === "/var/tmp" || p.startsWith("/var/tmp/")) return true
   const abs = path.isAbsolute(p) ? path.resolve(p) : path.resolve(cwd, p)
   const scratch = canonicalizePathForAllowlist(path.resolve(cwd, ".no-vibe"))
+  const homeScratch = canonicalizePathForAllowlist(path.resolve(os.homedir(), ".no-vibe"))
   const canonical = canonicalizePathForAllowlist(abs)
   if (canonical === scratch || canonical.startsWith(`${scratch}${path.sep}`)) return true
+  if (canonical === homeScratch || canonical.startsWith(`${homeScratch}${path.sep}`)) return true
   if (canonical === "/tmp" || canonical.startsWith("/tmp/")) return true
   if (canonical === "/var/tmp" || canonical.startsWith("/var/tmp/")) return true
   return false
@@ -175,9 +178,12 @@ const canonicalizePathForAllowlist = (absolutePath) => {
 }
 
 const isWithinNoVibeDir = (cwd, absoluteTargetPath) => {
-  const allowedRoot = canonicalizePathForAllowlist(path.resolve(cwd, ".no-vibe"))
+  const projectRoot = canonicalizePathForAllowlist(path.resolve(cwd, ".no-vibe"))
+  const homeRoot = canonicalizePathForAllowlist(path.resolve(os.homedir(), ".no-vibe"))
   const canonicalTarget = canonicalizePathForAllowlist(absoluteTargetPath)
-  return canonicalTarget === allowedRoot || canonicalTarget.startsWith(`${allowedRoot}${path.sep}`)
+  if (canonicalTarget === projectRoot || canonicalTarget.startsWith(`${projectRoot}${path.sep}`)) return true
+  if (canonicalTarget === homeRoot || canonicalTarget.startsWith(`${homeRoot}${path.sep}`)) return true
+  return false
 }
 
 export const NoVibePlugin = async ({ directory } = {}) => {
@@ -276,7 +282,7 @@ export const NoVibePlugin = async ({ directory } = {}) => {
         const reason = inspectBashCommand(cwd, command)
         if (reason) {
           throw new Error(
-            `no-vibe mode is active. Refusing Bash command — ${reason}. Safe targets: '.no-vibe/**', '/tmp/**', '/var/tmp/**', '/dev/{null,stdout,stderr,tty,fd/*}'. Variable / command-substitution destinations fail closed. Show the code in chat and let the user run it. Run '/no-vibe off' to disable.`,
+            `no-vibe mode is active. Refusing Bash command — ${reason}. Safe targets: '.no-vibe/**', '$HOME/.no-vibe/**', '/tmp/**', '/var/tmp/**', '/dev/{null,stdout,stderr,tty,fd/*}'. Variable / command-substitution destinations fail closed. Show the code in chat and let the user run it. Run '/no-vibe off' to disable.`,
           )
         }
         return

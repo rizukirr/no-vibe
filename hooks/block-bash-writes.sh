@@ -35,8 +35,9 @@ safe-target allowlist:
 
 Reason: $1
 
-Safe targets (writes allowed): \`.no-vibe/**\`, \`/tmp/**\`, \`/var/tmp/**\`,
-\`/dev/null\`, \`/dev/stdout\`, \`/dev/stderr\`, \`/dev/tty\`, \`/dev/fd/*\`.
+Safe targets (writes allowed): \`.no-vibe/**\`, \`\$HOME/.no-vibe/**\`,
+\`/tmp/**\`, \`/var/tmp/**\`, \`/dev/null\`, \`/dev/stdout\`, \`/dev/stderr\`,
+\`/dev/tty\`, \`/dev/fd/*\`.
 Variable or command-substitution destinations (\`\$VAR\`, \`\$(…)\`, backticks)
 fail closed.
 
@@ -46,11 +47,13 @@ EOF
     exit 2
 }
 
-# Resolve canonical .no-vibe root once.
+# Resolve canonical .no-vibe roots once: project-local + global learner state.
 if command -v realpath >/dev/null 2>&1; then
     scratch_root=$(realpath -m "$cwd/.no-vibe")
+    home_scratch_root=$(realpath -m "${HOME:-/root}/.no-vibe")
 else
     scratch_root="$cwd/.no-vibe"
+    home_scratch_root="${HOME:-/root}/.no-vibe"
 fi
 
 is_safe_path() {
@@ -80,6 +83,7 @@ is_safe_path() {
     fi
     case "$abs" in
         "$scratch_root"|"$scratch_root"/*) return 0 ;;
+        "$home_scratch_root"|"$home_scratch_root"/*) return 0 ;;
         /tmp|/tmp/*|/var/tmp|/var/tmp/*) return 0 ;;
     esac
     return 1
