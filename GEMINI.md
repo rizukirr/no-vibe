@@ -46,7 +46,7 @@ shell — do not assume bash on Windows.
      show the code in a fenced block in chat and tell the user to type it
      themselves.
 2. **Refuse `run_shell_command`** when the command writes outside the
-   safe set. The Claude/OpenCode hooks reject these patterns; you must
+   safe set. The Claude/OpenCode/Pi hooks reject these patterns; you must
    self-enforce the same list:
    - Output redirection: `>`, `>>`, `&>`, `&>>` (fd-merge `2>&1` alone
      is fine — it's not a file write).

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repo purpose
 
-This repo **is** the `no-vibe` plugin itself — not a consumer of it. It ships tutor-style coding mode across four AI CLIs (Claude Code, OpenCode, Codex, Gemini CLI). When users install it, AI stops writing their project files and walks them through writing code themselves.
+This repo **is** the `no-vibe` plugin itself — not a consumer of it. It ships tutor-style coding mode across five AI CLIs (Claude Code, OpenCode, Codex, Gemini CLI, Pi). When users install it, AI stops writing their project files and walks them through writing code themselves.
 
 Do **not** confuse "developing this plugin" with "being in no-vibe mode". Editing files inside this repo is normal plugin development — the no-vibe write guard does not apply here unless `.no-vibe/active` exists at the repo root.
 
@@ -19,21 +19,24 @@ bash tests/test_status.sh
 node tests/test_opencode_plugin.mjs
 bash tests/test_escape_hatch.sh
 bash tests/test_gemini_guard.sh
+node tests/test_pi_plugin.mjs
 ```
 
 ## Architecture — parallel surfaces, one behavior
 
-The same no-vibe behavior is implemented four times, once per host CLI. A change to one surface almost always needs mirrored changes on the others.
+The same no-vibe behavior is implemented five times, once per host CLI. A change to one surface almost always needs mirrored changes on the others.
 
 **Write-guard enforcement** (hard stop when `.no-vibe/active` exists, allow `.no-vibe/` writes):
 - Claude Code: `hooks/block-writes.sh` — PreToolUse hook for Edit/Write/NotebookEdit/MultiEdit/ApplyPatch; `hooks/block-bash-writes.sh` — PreToolUse hook for Bash that rejects `>`, `>>`, `&>`, `&>>`, `tee`, `sed -i` / `--in-place`, `cp`, `mv`, `install`, `dd of=`, and `cat <<EOF >` targeting paths outside the safe-target allowlist below. Variable / command-substitution destinations (`$VAR`, `$(…)`, backticks) fail closed.
 - OpenCode: `.opencode/plugins/no-vibe.js` — in-process guard for both write tools and Bash commands (mirror of the two Claude hooks).
+- Pi: `.pi-plugin/extensions/no-vibe/index.ts` — TS extension using `pi.on("tool_call", ...)` for `write`/`edit` and dangerous `bash`; mirror of the OpenCode plugin (hard block).
 - Codex: **instruction-based** soft block via `skills/no-vibe/SKILL.md` (Iron Law enumerates the Bash patterns); no native PreToolUse hook wiring.
 - Gemini CLI: **instruction-based** soft block via `GEMINI.md` (write_file/replace + run_shell_command rules) and `.gemini/tool-mapping.md`; no hook surface available.
 
-Path-handling, Bash-parsing rules, and the safe-target allowlist (`.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/{null,stdout,stderr,tty,fd/*}`) must stay in lockstep across all four surfaces:
+Path-handling, Bash-parsing rules, and the safe-target allowlist (`.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/{null,stdout,stderr,tty,fd/*}`) must stay in lockstep across all five surfaces:
 - `hooks/block-writes.sh` + `hooks/block-bash-writes.sh` (Claude)
 - `.opencode/plugins/no-vibe.js` (OpenCode)
+- `.pi-plugin/extensions/no-vibe/index.ts` (Pi)
 - `GEMINI.md` + `.gemini/tool-mapping.md` (Gemini)
 - `skills/no-vibe/SKILL.md` Iron Law (Codex + shared)
 
@@ -42,16 +45,18 @@ If one changes, update the others.
 **Status line** (`no-vibe: ON|OFF`, silent when no `.no-vibe/` dir exists to avoid noise in unrelated projects):
 - Claude: `hooks/status.sh` (SessionStart)
 - OpenCode: bootstrap inject in `.opencode/plugins/no-vibe.js`
+- Pi: `before_agent_start` injection in `.pi-plugin/extensions/no-vibe/index.ts`
 
-**Command specs** — one logical command, four physical copies:
+**Command specs** — one logical command, five physical copies:
 - `commands/no-vibe*.md` (Claude)
 - `.opencode/commands/no-vibe*.md` (OpenCode)
+- `.pi-plugin/prompts/no-vibe*.md` (Pi)
 - `.gemini/commands/no-vibe*.toml` (Gemini)
 - Codex reuses Claude's `commands/` via `INSTALL.codex.md`
 
 **Teaching logic** lives in `skills/no-vibe/SKILL.md` (six-phase cycle) and is shared across all surfaces. Data contracts for learner tracking are in `skills/no-vibe/DATA-SCHEMA.md` — session/mistake/ai-note JSON plus global `profile.md` + synth-state contracts must match.
 
-**Entrypoints:** `index.js` re-exports `.opencode/plugins/no-vibe.js` for OpenCode's plugin loader. Claude discovers via `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`. Gemini via `gemini-extension.json` + `GEMINI.md`.
+**Entrypoints:** `index.js` re-exports `.opencode/plugins/no-vibe.js` for OpenCode's plugin loader. Claude discovers via `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`. Gemini via `gemini-extension.json` + `GEMINI.md`. Pi via `.pi-plugin/plugin.json` and the `pi` key in `package.json` (`skills`, `prompts`, `extensions`).
 
 ## Two data-file semantics that are easy to misread
 
@@ -67,11 +72,12 @@ Version numbers are duplicated in:
 - `.claude-plugin/plugin.json`
 - `.claude-plugin/marketplace.json`
 - `gemini-extension.json`
+- `.pi-plugin/plugin.json`
 
-Bump all four by hand and confirm parity with:
+Bump all five by hand and confirm parity with:
 
 ```bash
-grep -E '"version"' package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json gemini-extension.json
+grep -E '"version"' package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json gemini-extension.json .pi-plugin/plugin.json
 ```
 
-(A `scripts/bump-version.sh` helper used to live in this repo; it was removed in commit `7f8afda`. If a release ever drifts the four files apart, restore the helper rather than papering over with hand-edits.)
+(A `scripts/bump-version.sh` helper used to live in this repo; it was removed in commit `7f8afda`. If a release ever drifts the five files apart, restore the helper rather than papering over with hand-edits.) The pi parity test (`tests/test_pi_plugin.mjs`) also asserts that `package.json` and `.pi-plugin/plugin.json` versions match.

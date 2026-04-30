@@ -14,7 +14,7 @@ Maximize your workflow by pairing no-vibe with [vibekit](https://github.com/rizu
 - **Show the why.** Each step says where the code goes, what it does, and what the next run should print.
 - **Real code, not hallucinations.** Attach `--ref <url>` and the AI quotes actual source with `file:line` citations instead of inventing APIs.
 - **Adapts to you.** Tracks where you stumble across sessions. Weak area → more scaffolding. Solid area → skip ahead. Closed mid-lesson → resumes.
-- **Your files stay yours.** PreToolUse hooks on Claude Code/OpenCode block writes (file *and* Bash) outside `.no-vibe/**`. Codex/Gemini enforce the same rule via instruction.
+- **Your files stay yours.** Hard write-guards on Claude Code, OpenCode, and Pi block writes (file *and* Bash) outside `.no-vibe/**`. Codex/Gemini enforce the same rule via instruction.
 
 Learner data is local: project-level `.no-vibe/data/`, global `~/.no-vibe/`.
 
@@ -29,7 +29,7 @@ Learner data is local: project-level `.no-vibe/data/`, global `~/.no-vibe/`.
 
 Restart Claude Code.
 
-### OpenCode / Codex / Gemini CLI
+### OpenCode / Codex / Gemini CLI / Pi
 
 Paste into the relevant CLI:
 
@@ -37,7 +37,7 @@ Paste into the relevant CLI:
 Fetch and follow instructions from https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/INSTALL.opencode.md
 ```
 
-(Swap `INSTALL.opencode.md` for `INSTALL.codex.md` or `INSTALL.gemini.md` as appropriate. Manual install: see each file directly.)
+(Swap `INSTALL.opencode.md` for `INSTALL.codex.md`, `INSTALL.gemini.md`, or `INSTALL.pi.md` as appropriate. Manual install: see each file directly.)
 
 ### Your first lesson
 
@@ -70,13 +70,13 @@ Flags combine: `/no-vibe --ref pytorch --mode concept how does autograd work`.
 
 ## Platform support
 
-| Feature | Claude Code | OpenCode | Codex | Gemini CLI |
-|---|:-:|:-:|:-:|:-:|
-| File-write guard (hook) | ✓ | ✓ | soft | soft |
-| Bash-write guard (hook) | ✓ | ✓ | soft | soft |
-| Status + resume hint | ✓ | ✓ | soft | soft |
-| Commands | ✓ | ✓ | ✓ | ✓ |
-| Skill + learner tracking | ✓ | ✓ | ✓ | ✓ |
+| Feature | Claude Code | OpenCode | Pi | Codex | Gemini CLI |
+|---|:-:|:-:|:-:|:-:|:-:|
+| File-write guard (hook) | ✓ | ✓ | ✓ | soft | soft |
+| Bash-write guard (hook) | ✓ | ✓ | ✓ | soft | soft |
+| Status + resume hint | ✓ | ✓ | ✓ | soft | soft |
+| Commands | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Skill + learner tracking | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 "soft" = instruction-enforced (no hook surface available); the rule still binds.
 

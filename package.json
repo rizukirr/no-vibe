@@ -2,5 +2,11 @@
   "name": "no-vibe",
   "version": "1.2.0",
   "type": "module",
-  "exports": "./index.js"
+  "exports": "./index.js",
+  "keywords": ["pi-package"],
+  "pi": {
+    "skills": ["./skills"],
+    "prompts": ["./.pi-plugin/prompts"],
+    "extensions": ["./.pi-plugin/extensions"]
+  }
 }

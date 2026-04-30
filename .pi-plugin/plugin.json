@@ -1,0 +1,5 @@
+{
+  "name": "no-vibe",
+  "description": "Tutor-style coding mode. AI teaches in chat and refuses to write project files while .no-vibe/active exists.",
+  "version": "1.2.0"
+}

@@ -14,8 +14,8 @@ NO CODE INTO THE USER'S PROJECT FILES — EVER, VIA ANY TOOL
 ```
 
 **Closed loopholes:**
-- Not via Edit / Write / NotebookEdit / MultiEdit / ApplyPatch (hook-enforced on Claude / OpenCode; instruction-enforced on Codex / Gemini).
-- Not via Bash — `cat >`, `cat <<EOF >`, `tee`, `sed -i` / `--in-place`, `cp`, `mv`, `install`, `dd of=`, `>`, `>>`, `&>`, `&>>` into a project path all count. On Claude Code and OpenCode a Bash write-guard hook now rejects these patterns when the destination falls outside the safe-target allowlist: `.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/null`, `/dev/stdout`, `/dev/stderr`, `/dev/tty`, `/dev/fd/*`. Variable / command-substitution destinations (`$VAR`, `$(…)`, backticks) fail closed. On Codex/Gemini the guard is instruction-only — the rule still binds.
+- Not via Edit / Write / NotebookEdit / MultiEdit / ApplyPatch (hook-enforced on Claude / OpenCode / Pi; instruction-enforced on Codex / Gemini).
+- Not via Bash — `cat >`, `cat <<EOF >`, `tee`, `sed -i` / `--in-place`, `cp`, `mv`, `install`, `dd of=`, `>`, `>>`, `&>`, `&>>` into a project path all count. On Claude Code, OpenCode, and Pi a Bash write-guard hook now rejects these patterns when the destination falls outside the safe-target allowlist: `.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/null`, `/dev/stdout`, `/dev/stderr`, `/dev/tty`, `/dev/fd/*`. Variable / command-substitution destinations (`$VAR`, `$(…)`, backticks) fail closed. On Codex/Gemini the guard is instruction-only — the rule still binds.
 - Not "just this one character typo" — the user types it.
 - Not "small refactor while I'm in there."
 - Not "let me stub it and they can fix it after."
@@ -61,10 +61,11 @@ The priority rule: user > skill for *style, pace, framing*. User < Iron Law for 
 
 ## Status line (first turn of every session)
 
-On Claude Code and OpenCode the SessionStart hook (`hooks/status.sh` /
-the OpenCode bootstrap inject) prints the status line for free. On
-Codex and Gemini there is no hook — the AI must emit it on the first
-turn of the session, before doing anything else:
+On Claude Code, OpenCode, and Pi the host runtime prints the status
+line for free (Claude `hooks/status.sh` SessionStart, OpenCode bootstrap
+inject, Pi `before_agent_start` extension injection). On Codex and
+Gemini there is no hook — the AI must emit it on the first turn of the
+session, before doing anything else:
 
 - `.no-vibe/active` exists → `no-vibe: ON`
 - `.no-vibe/` directory exists but no marker → `no-vibe: OFF`

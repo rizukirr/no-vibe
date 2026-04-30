@@ -92,7 +92,7 @@ check "Rationalization table exists" \
 check "Trusts user's 'next' (defer rule, not violation)" \
   "trust.*next|don.t demand proof"
 
-# Bash write-guard discipline (must mirror the hard hook on Claude/OpenCode)
+# Bash write-guard discipline (must mirror the hard hook on Claude/OpenCode/Pi)
 check "Bash guard enumerates redirection operators (>, >>, &>)" \
   ">>?|&>"
 

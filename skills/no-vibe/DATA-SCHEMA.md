@@ -13,9 +13,9 @@ This schema is dense — it describes atomic writes, per-project locks, uuid min
 
 **What the plugin actually implements today:**
 - `.no-vibe/active` marker detection
-- Write guard (`hooks/block-writes.sh` for Claude, `.opencode/plugins/no-vibe.js` for OpenCode, instruction-based soft-block for Codex/Gemini via skill + `GEMINI.md`)
-- Status line (`hooks/status.sh`)
-- Command docs (`commands/`, `.opencode/commands/`, `.gemini/commands/`)
+- Write guard (`hooks/block-writes.sh` + `hooks/block-bash-writes.sh` for Claude, `.opencode/plugins/no-vibe.js` for OpenCode, `.pi-plugin/extensions/no-vibe/index.ts` for Pi, instruction-based soft-block for Codex/Gemini via skill + `GEMINI.md`)
+- Status line (`hooks/status.sh` for Claude; OpenCode bootstrap inject; Pi `before_agent_start` injection)
+- Command docs (`commands/`, `.opencode/commands/`, `.pi-plugin/prompts/`, `.gemini/commands/`)
 
 **What is `[future-runtime]` and currently performed via AI discipline + Edit tool:**
 - All JSON writes (no tmp+rename atomicity — AI uses the Edit tool, same risk as any text file)
