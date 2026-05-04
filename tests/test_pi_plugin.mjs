@@ -59,6 +59,11 @@ const run = async () => {
     assert.ok(body.includes("$ARGUMENTS"), `${name} must reference $ARGUMENTS`)
   }
 
+  // C5 — Turn Response Contract injection (parity with other surfaces)
+  const piMainPrompt = fs.readFileSync(path.join(promptsDir, "no-vibe.md"), "utf8")
+  assert.ok(piMainPrompt.includes("Turn Response Contract"), "pi prompt no-vibe.md must include Turn Response Contract section")
+  assert.ok(piMainPrompt.includes("[no-vibe] Phase:"), "pi prompt no-vibe.md must include header format string")
+
   console.log("ok — pi plugin parity checks pass")
 }
 
