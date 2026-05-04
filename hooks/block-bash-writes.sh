@@ -12,8 +12,36 @@
 
 set -u
 
+# Normalize Windows-style drive paths (`C:/foo`, `c:\foo`) to MSYS form
+# (`/c/foo`) so prefix comparisons stay consistent on Git Bash. MSYS
+# converts paths automatically when crossing the bash/native-binary
+# boundary, which can produce mixed forms within a single hook run
+# (e.g. cwd received via jq becomes `C:/...` while paths embedded in
+# command strings keep `/c/...`). Without this, the allowlist match
+# silently fails on Windows.
+normalize_path() {
+    local p="$1"
+    # Backslashes → forward slashes.
+    p=$(printf '%s' "$p" | tr '\\' '/')
+    # `C:/foo` or `c:/foo` → `/c/foo` (portable, no bash 4 lowercase op).
+    case "$p" in
+        [A-Za-z]:/*)
+            local drive
+            drive=$(printf '%s' "${p%%:*}" | tr '[:upper:]' '[:lower:]')
+            p="/$drive${p#?:}"
+            ;;
+        [A-Za-z]:)
+            local drive
+            drive=$(printf '%s' "${p%%:*}" | tr '[:upper:]' '[:lower:]')
+            p="/$drive"
+            ;;
+    esac
+    printf '%s' "$p"
+}
+
 input=$(cat)
 cwd=$(echo "$input" | jq -r '.cwd // empty')
+cwd=$(normalize_path "$cwd")
 
 # If marker doesn't exist, allow everything.
 if [ -z "$cwd" ] || [ ! -f "$cwd/.no-vibe/active" ]; then
@@ -48,12 +76,13 @@ EOF
 }
 
 # Resolve canonical .no-vibe roots once: project-local + global learner state.
+home_dir=$(normalize_path "${HOME:-/root}")
 if command -v realpath >/dev/null 2>&1; then
-    scratch_root=$(realpath -m "$cwd/.no-vibe")
-    home_scratch_root=$(realpath -m "${HOME:-/root}/.no-vibe")
+    scratch_root=$(normalize_path "$(realpath -m "$cwd/.no-vibe")")
+    home_scratch_root=$(normalize_path "$(realpath -m "$home_dir/.no-vibe")")
 else
     scratch_root="$cwd/.no-vibe"
-    home_scratch_root="${HOME:-/root}/.no-vibe"
+    home_scratch_root="$home_dir/.no-vibe"
 fi
 
 is_safe_path() {
@@ -73,6 +102,7 @@ is_safe_path() {
         /dev/null|/dev/stdout|/dev/stderr|/dev/fd/*|/dev/tty) return 0 ;;
         /tmp|/tmp/*|/var/tmp|/var/tmp/*) return 0 ;;
     esac
+    p=$(normalize_path "$p")
     local abs
     case "$p" in
         /*) abs="$p" ;;
@@ -81,6 +111,7 @@ is_safe_path() {
     if command -v realpath >/dev/null 2>&1; then
         abs=$(realpath -m "$abs" 2>/dev/null || echo "$abs")
     fi
+    abs=$(normalize_path "$abs")
     case "$abs" in
         "$scratch_root"|"$scratch_root"/*) return 0 ;;
         "$home_scratch_root"|"$home_scratch_root"/*) return 0 ;;

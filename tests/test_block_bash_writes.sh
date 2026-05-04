@@ -253,4 +253,34 @@ test_redirect_into_home_other_denied() {
 
 test_redirect_into_home_scratch_allowed
 test_redirect_into_home_other_denied
+
+# --- Test 22: mixed Windows-form cwd vs MSYS-form target → allow ---
+# Regression for the path-form mismatch on Git Bash, where jq converts
+# command-line --arg paths but leaves embedded path strings untouched,
+# producing a `C:/...` cwd alongside a `/c/...` target inside the same
+# tool call. Pure Linux runs are unaffected (no drive letters → the
+# substitution below is a no-op).
+test_mixed_path_form_allowed() {
+    local cwd; cwd=$(make_sandbox)
+    case "$cwd" in
+        /[A-Za-z]/*)
+            local drive="${cwd:1:1}"
+            local rest="${cwd:2}"
+            local win_cwd="${drive}:${rest}"
+            local msys_target="$cwd/.no-vibe/notes.md"
+            local out; out=$(jq -n --arg cwd "$win_cwd" --arg cmd "echo hi > $msys_target" \
+                '{tool_name:"Bash",tool_input:{command:$cmd},cwd:$cwd}' | "$HOOK" 2>&1)
+            local rc=$?
+            rm -rf "$cwd"
+            [ "$rc" = "0" ] && pass "mixed-form cwd vs target → allow" \
+                || fail "mixed-form cwd vs target → allow" "got exit $rc | out: $out"
+            ;;
+        *)
+            rm -rf "$cwd"
+            pass "mixed-form cwd vs target → allow (skipped on non-MSYS)"
+            ;;
+    esac
+}
+test_mixed_path_form_allowed
+
 summary
