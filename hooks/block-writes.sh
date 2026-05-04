@@ -6,11 +6,33 @@
 
 set -u
 
+# Normalize Windows-style drive paths (`C:/foo`, `c:\foo`) to MSYS form
+# (`/c/foo`) so prefix comparisons stay consistent on Git Bash. See
+# block-bash-writes.sh for the full rationale — same fix, same reason.
+normalize_path() {
+    local p="$1"
+    p=$(printf '%s' "$p" | tr '\\' '/')
+    case "$p" in
+        [A-Za-z]:/*)
+            local drive
+            drive=$(printf '%s' "${p%%:*}" | tr '[:upper:]' '[:lower:]')
+            p="/$drive${p#?:}"
+            ;;
+        [A-Za-z]:)
+            local drive
+            drive=$(printf '%s' "${p%%:*}" | tr '[:upper:]' '[:lower:]')
+            p="/$drive"
+            ;;
+    esac
+    printf '%s' "$p"
+}
+
 # Read all of stdin
 input=$(cat)
 
 # Parse cwd from input (jq required)
 cwd=$(echo "$input" | jq -r '.cwd // empty')
+cwd=$(normalize_path "$cwd")
 
 # If marker doesn't exist, allow everything.
 if [ -z "$cwd" ] || [ ! -f "$cwd/.no-vibe/active" ]; then
@@ -38,6 +60,10 @@ EOF
     exit 2
 fi
 
+# Normalize the target before path joining so a Windows-form target
+# combined with an MSYS-form cwd produces a coherent absolute path.
+target=$(normalize_path "$target")
+
 # Resolve target to absolute path. If it's relative, anchor to cwd.
 case "$target" in
     /*) abs_target="$target" ;;
@@ -45,15 +71,16 @@ case "$target" in
 esac
 
 # Resolve symlinks and .. — use realpath if available, else manual cleanup.
+home_dir=$(normalize_path "${HOME:-/root}")
 if command -v realpath >/dev/null 2>&1; then
     # -m so it doesn't fail if the file doesn't exist yet
-    abs_target=$(realpath -m "$abs_target")
-    scratch_root=$(realpath -m "$cwd/.no-vibe")
-    home_scratch_root=$(realpath -m "${HOME:-/root}/.no-vibe")
+    abs_target=$(normalize_path "$(realpath -m "$abs_target")")
+    scratch_root=$(normalize_path "$(realpath -m "$cwd/.no-vibe")")
+    home_scratch_root=$(normalize_path "$(realpath -m "$home_dir/.no-vibe")")
 else
     abs_target=$(cd "$(dirname "$abs_target")" 2>/dev/null && pwd)/$(basename "$abs_target")
     scratch_root="$cwd/.no-vibe"
-    home_scratch_root="${HOME:-/root}/.no-vibe"
+    home_scratch_root="$home_dir/.no-vibe"
 fi
 
 # Allow writes inside project-local .no-vibe/ (scratch escape hatch) and
