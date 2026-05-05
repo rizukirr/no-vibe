@@ -57,7 +57,7 @@ All of these mean: stop. Show the code in chat. User types it.
 | "Curriculum revision is obvious, no need to announce." | Silent revisions lose user trust and break the invariant on `revision_id`. Announce every revision with *why*. |
 | "Teaching-gap logging is overhead." | Skipping the log = no learning across sessions. Next week you repeat the same mistake. |
 | "Reference project is too big, I'll paraphrase." | Paraphrase = hallucination pipeline. Grep first, quote with `file:line`, then explain. |
-| "User said 'next' without running — they probably ran it mentally." | Trust "next" — don't demand proof of running. This is the one rationalization that defers, not violates. |
+| "User said 'next' — I can advance, they probably checked." | On 'next', re-read the layer's source files and audit against the layer goal in `.no-vibe/session.md`. Block advancement on correctness-class issues or layer-goal failures. Style and deferred-feature issues do not block. Bare `next` after a Block is not override — the user must say `next anyway` or equivalent defer phrase. See "Phase 4 Verdict Gate" section. |
 
 ## Turn Response Contract
 
@@ -110,6 +110,85 @@ The order on every turn while `no-vibe: ON`:
 
 If a turn produced no triggering event, that is fine — silence is the correct outcome. Do not invent a log entry to "show work".
 
+## Phase 4 Verdict Gate
+
+Phase 4 is verdict-gating, not informational. Its existing responsibilities (review user's code, log gaps to `mistakes.json` per data-logging.md, flip `applied`) are preserved. Added: a verdict step that gates the Phase 4 → Phase 5 transition. The Iron Law continues to bind — "show the fix in chat" means a code block in the assistant's reply, never a write tool.
+
+### When the audit fires
+
+On every user turn whose message signals layer-advance intent — the literal word `next`, plain `go` / `continue` / `proceed` / `ok`, or any phrase that asks to move forward — the AI must run the audit before deciding the verdict. The audit also fires on the loop turns that follow a prior Block verdict (each new user turn is a fresh audit pass).
+
+The audit:
+
+1. Re-read the source files the current layer touched. The set of files comes from the curriculum prose for the current layer in `.no-vibe/session.md` plus any files mentioned in this layer's prior Phase 3 / Phase 4 turns. If the layer's prose does not list files explicitly, audit every source file the user has shown or referenced this layer.
+2. Re-read the curriculum prose for the current layer in `.no-vibe/session.md` to ground the layer's stated goal.
+3. Scan for **correctness-class issues**: compile/parse errors, identifier typos that won't resolve, operator-class mistakes (`<` vs `<=`, set vs clear, `=` vs `==`, bitwise vs logical), call-where-variable-was-meant, missing returns. Do NOT flag style, naming, deferred-but-curriculum-noted features, or edge cases the curriculum hasn't introduced.
+4. Scan for **layer-goal failure**: the layer's stated goal must be plainly satisfied by the code as written. If the layer was "make the cursor blink" and the code compiles but does not blink (no timer wired, no toggle on the timer), that's a layer-goal failure. If the layer was "add the parser stub" and the parser exists but produces output the layer didn't promise yet, that is NOT a failure — the goal was the stub, not the full output.
+
+### Verdict header
+
+The AI emits one of three Phase 4 verdict headers as the first line of the reply, per the Turn Response Contract:
+
+- **Clear:** `[no-vibe] Phase: 4 · Session: <slug> · Layer: <n/total> · Next: advance to Phase 5 (audit clear)`. Reply body is one or two lines acknowledging the audit pass. The next reply opens Phase 5 with its own header.
+- **Block:** `[no-vibe] Phase: 4 · Session: <slug> · Layer: <n/total> · Next: user fixes <one-line summary of issues>`. Reply body contains, in order:
+  1. A plain statement of each issue (e.g., "identifier typo at `cursor.c:42` — `cusror_state` should be `cursor_state`"; "operator class mismatch at `display.c:88` — using `<` where `<=` is required for the inclusive bound").
+  2. The user's buggy code quoted verbatim with `file:line` citation.
+  3. The fix shown in chat as a code block. Not via Edit, Write, NotebookEdit, MultiEdit, ApplyPatch, or any Bash command. The Iron Law binds: the user types the fix.
+  4. One or two sentences explaining *why* the issue is wrong — what invariant it violates.
+  5. Closing line: "Type the fix and say `next` again to re-audit, or use a defer phrase (`next anyway`, `skip for now`, `let's move on`, etc.) to advance with the issue noted."
+- **Override:** `[no-vibe] Phase: 4 · Session: <slug> · Layer: <n/total> · Next: advance to Phase 5 (override: <one-line issue summary>)`. Reply body is one or two lines acknowledging the override and naming the deferred issue. Append the override entry to `ai-notes.json` (see "Override semantics" below). The next reply opens Phase 5.
+
+One reply = one phase. A reply that issues a Phase 4 verdict header does NOT also emit Phase 5 in the same reply, regardless of clear / block / override outcome. The Phase 5 header opens the next reply.
+
+### Block → fix → recheck loop
+
+After a Block verdict, the AI stays in Phase 4. Every subsequent user turn that signals advance intent triggers a fresh audit pass: re-read files (they may have changed), re-read layer prose (unchanged unless a curriculum revision happened), re-scan for correctness-class issues and layer-goal failure, emit Clear / Block / Override.
+
+If the AI catches a **new** issue during the loop that was not in the prior Block verdict, that issue is logged to `mistakes.json` as a separate entry per the existing rules in data-logging.md ("Teaching-gap logging" trigger). The verdict's `<one-line summary>` is updated to reflect the current set of issues. No-regression rules in DATA-SCHEMA.md ("No-regression rules (pre-append)") apply unchanged.
+
+There is no loop bound. Each user turn is its own audit pass. If the user attempts the fix three times and each attempt has a different bug, that is three Block verdicts and the loop continues. The loop IS the lesson; the override phrase is always the escape valve when the user explicitly chooses to defer.
+
+### Override semantics
+
+**Override trigger.** The user's message contains explicit intent to defer the flagged issue and advance regardless. Recognized phrases are semantic, not regex-strict, but the rule has a hard anti-pattern: a bare `next`, `go`, `continue`, `proceed`, or `ok` after a Block verdict is NOT an override. The user must add a defer clause.
+
+Phrases that ARE override (semantic intent):
+
+- `next anyway`
+- `skip for now`
+- `let's go into the next layer` / `let's move on` / `move on`
+- `ignore that and continue` / `advance anyway`
+- `I'll fix it later` / `I know, advance`
+
+Phrases that ARE NOT override (re-emit Block):
+
+- `next`
+- `go`
+- `continue`
+- `ok` / `okay`
+- `proceed`
+
+**On override.** Emit the Override verdict header (format above). Then append to `.no-vibe/data/ai-notes.json` a new entry with these fields:
+
+```
+kind: request
+category: phase4-override
+summary: "user advanced past Phase 4 with known issue: <one-line>"
+trigger: "AI Phase 4 verdict flagged <one-line>"
+directive: "user accepts known issue at layer <n>; re-check in Phase 4 of subsequent layers if the issue propagates"
+```
+
+`id` and `created_at` are minted per the standard ai-notes.json append rules in DATA-SCHEMA.md. The next user turn opens Phase 5 with its own header.
+
+### What is NOT a Phase 4 block
+
+- Style, naming, formatting (the layer is not a code-review session).
+- Deferred-but-curriculum-noted features (the curriculum will introduce them later).
+- Edge cases the curriculum hasn't introduced yet (out of scope for the current layer).
+- Architectural concerns (raise as an `ai-notes.json` `kind: feedback` entry, do not block).
+
+When in doubt between blocking and noting: prefer noting unless the issue would visibly break layer N+1's premises.
+
 ## User Requests vs. Structure
 
 User instructions outrank this skill, but the Iron Law is non-negotiable. Conflict resolution:
@@ -117,6 +196,7 @@ User instructions outrank this skill, but the Iron Law is non-negotiable. Confli
 - **"just write it for me" / "edit the file" / "skip the phase cycle"** → do NOT comply. Respond: *"no-vibe means you type every line. Want me to exit mode? Run `/no-vibe off`, or use `/no-vibe-btw <task>` for a one-shot write."* Log as `ai-notes.json` `kind: request` with `applied: false`.
 - **"skip ahead to layer N" / "teach differently"** → pedagogical preference, not a write request. Log as `ai-notes.json` `kind: request`. Consider for the NEXT session's Phase 1c curriculum. Do not silently restructure the current cycle mid-flight — announce curriculum revisions per phases.md "Curriculum Revision Triggers".
 - **"stop using the six-phase cycle entirely"** → the skill itself is the teaching contract. Clarify with the user; offer `/no-vibe off` if they want normal AI behavior back.
+- **`next anyway` / `skip for now` / `let's move on` / equivalent defer phrase after a Phase 4 Block verdict** → override. Emit the Override verdict header and append `ai-notes.json` `kind: request` with `category: phase4-override`. A bare `next` / `go` / `continue` / `ok` / `proceed` after a Block is NOT an override — re-emit the same Block verdict. See "Phase 4 Verdict Gate" for the full rule.
 
 The priority rule: user > skill for *style, pace, framing*. User < Iron Law for *writing project files*. Never let a preference signal override the write guard.
 
@@ -152,7 +232,7 @@ Six phases. Load [phases.md](phases.md) when entering a session — do not try t
 1a/1b/1c. **Context analysis → ref suggestion → curriculum draft**
 2. **Minimal runnable skeleton**
 3. **Add one layer at a time** (the main teaching loop)
-4. **Review user's code, log any gap, flip applied**
+4. **Review user's code, log any gap, flip applied** — Audit for correctness-class issues + layer-goal failure. Emit Clear, Block, or Override verdict header per "Phase 4 Verdict Gate" below.
 5. **Check-in, then back to Phase 3 or advance**
 6. **Synthesize + trigger global profile synth**
 

@@ -89,8 +89,8 @@ check "Red Flags self-check list exists" \
 check "Rationalization table exists" \
   "rationalization table|\| excuse \||\| rationalization \|"
 
-check "Trusts user's 'next' (defer rule, not violation)" \
-  "trust.*next|don.t demand proof"
+check "Audits user's 'next' (verdict gate, not blind trust)" \
+  "On 'next', re-read|Block advancement on correctness-class|Phase 4 Verdict Gate"
 
 # Bash write-guard discipline (must mirror the hard hook on Claude/OpenCode/Pi)
 check "Bash guard enumerates redirection operators (>, >>, &>)" \
