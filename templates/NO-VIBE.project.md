@@ -7,27 +7,38 @@ experience. NOT for lesson state — that lives in `.no-vibe/session.md`.
 
 ## Format
 
-For each layer, structure the chat reply as:
+This describes a *pattern of prose*, not literal section headings. Write
+each layer's reply as flowing text that contains these elements in order.
+Do **not** turn the elements into labeled sections like "Show code" or
+"Explain code" — only `Where:` and `Run:` are meant to appear as literal
+labels (they're locator anchors).
 
-```
-**<title>** — short description and the goal of this layer.
+The elements, in order:
 
-Where: <file path>:<line number or anchor — e.g. "inside fn handle_request, after the let mut buf line">
+1. A bold one-line title plus a sentence stating what this layer adds and why it's the next step.
+2. A `Where:` line giving the file + line number or unambiguous anchor (e.g. `Where: src/cursor.c:42, after the cursor_init() declaration`).
+3. The code block. For replacements or deletions, quote the existing code first so the user can find it, then show the new version.
+4. One sentence on *why* this code is shaped this way — the code already shows *what*, so don't restate it.
+5. A `Run:` line with the command and a one-line expected output signature.
 
-For replacements or deletions, quote the existing code first so the user
-can locate it unambiguously, then show the new code.
+### Concrete example (this is how the layer should look in chat)
 
-<code block with the change>
+> **Add the blink timer.** Cursor blink needs a 500 ms tick before we wire the toggle in the next layer.
+>
+> Where: `src/cursor.c:42`, immediately after the existing `cursor_init()` declaration.
+>
+> ```c
+> static struct timer_t blink_timer;
+> timer_init(&blink_timer, 500);
+> ```
+>
+> A static timer keeps the blink state local to this file — exposing it would let other modules accidentally restart the blink mid-frame.
+>
+> Run: `make && ./build/cursor_demo` → expected: compiles cleanly, no visible change yet.
 
-One-sentence why this code is shaped this way.
+Note how the example weaves the elements as prose. There is no "Show code" heading, no "Explain code" heading — just one bold title at the top, then text, then code, then text, then a `Run:` line.
 
-Run: <command> → expected: <one-line output signature>
-```
-
-Multi-block layers (e.g., one change in two files): repeat the
-Where/code/why pattern per block. One run command per layer at the end.
-Never dump all blocks first and explain after — the explanation lives
-next to the block it's about.
+Multi-block layers (e.g., a change in two files): repeat the title/Where/code/why pattern per block, then **one** `Run:` line at the end. Never dump all blocks first and explain after — the explanation lives next to the block it's about.
 
 ## Conventions
 
