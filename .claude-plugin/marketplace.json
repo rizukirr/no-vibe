@@ -1,19 +1,19 @@
 {
     "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
     "name": "no-vibe",
-    "description": "Tutor mode for AI coding assistants. AI shows code in chat, never writes to your files. Adapts via two NO-VIBE.md files (global style + project canvas).",
+    "description": "Forces you to write code yourself. AI shows and reviews, never writes to your files.",
     "owner": {
         "name": "rizukirr"
     },
     "plugins": [
         {
             "name": "no-vibe",
-            "description": "Tutor mode for AI coding assistants. AI shows code in chat, never writes to your files. Adapts via two NO-VIBE.md files (global style + project canvas).",
-            "version": "2.0.0",
+            "description": "A Claude Code plugin that forces you to write code yourself. AI shows code in chat and reviews your work, but never writes to your project files. Top-down learning with reference projects.",
+            "version": "1.2.4",
             "author": {
                 "name": "rizukirr"
             },
-            "source": "./runtimes/claude",
+            "source": "./",
             "category": "learning",
             "homepage": "https://github.com/rizukirr/no-vibe",
             "tags": [
@@ -24,5 +24,5 @@
             ]
         }
     ],
-    "version": "2.0.0"
+    "version": "1.2.4"
 }

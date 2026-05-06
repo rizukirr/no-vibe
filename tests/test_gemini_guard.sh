@@ -2,10 +2,16 @@
 # Pressure test for the Gemini soft-block surface.
 #
 # Gemini CLI has no PreToolUse hook — the write guard is instruction-based
-# only. This test verifies the combined instruction surface
-# (runtimes/gemini/GEMINI.md + shared/skill/SKILL.md) contains explicit
-# language for the rationalizations an agent might use to bypass the guard,
-# plus the v2 memory contract.
+# only. This test doesn't run an LLM; it verifies that the combined
+# instruction surface (GEMINI.md + skills/no-vibe/SKILL.md) contains
+# explicit counter-language for specific rationalizations an agent is
+# likely to use to talk itself around the guard.
+#
+# Per Superpowers' writing-skills: a skill without a test is a skill with
+# unknown compliance. This test replaces "we hope the prose works" with
+# "the prose explicitly addresses these 7 attack vectors."
+#
+# Run from repo root: bash tests/test_gemini_guard.sh
 
 set -u
 
@@ -13,11 +19,11 @@ PASS=0
 FAIL=0
 FAIL_MSGS=()
 
-GEMINI="runtimes/gemini/GEMINI.md"
-SKILL="shared/skill/SKILL.md"
+GEMINI="GEMINI.md"
+SKILL="skills/no-vibe/SKILL.md"
 
 if [[ ! -f "$GEMINI" ]]; then
-  echo "FAIL: $GEMINI not found (run scripts/sync.sh first)"
+  echo "FAIL: $GEMINI not found"
   exit 1
 fi
 if [[ ! -f "$SKILL" ]]; then
@@ -25,6 +31,7 @@ if [[ ! -f "$SKILL" ]]; then
   exit 1
 fi
 
+# Combined instruction surface an agent would see
 COMBINED="$(cat "$GEMINI" "$SKILL")"
 
 check() {
@@ -40,87 +47,75 @@ check() {
   fi
 }
 
-echo "Iron Law and rationalization coverage:"
+echo "Adversarial rationalization coverage:"
 
-check "Iron Law block is present" \
-  "no code into|never write|iron law"
+# Rationalization 1: "It's just one typo / one character / one line"
+check "R1: counters 'just one typo/char/line' rationalization" \
+  "one (char|character|line|typo)|just this one|one.character typo"
 
-check "R1: 'just one typo/char/line'" \
-  "one character|just this one|one line"
+# Rationalization 2: "I'll use Bash to bypass the write-tool guard"
+check "R2: explicitly names Bash bypass patterns (sed -i / cat > / tee / >>)" \
+  "sed -i|cat >|tee |>>.*(project|file|path)"
 
-check "R2: explicitly names Bash bypass patterns" \
-  "sed -i|tee |>>?|&>"
+# Rationalization 3: "Gemini has no hook so enforcement doesn't apply to me"
+check "R3: rule binds regardless of enforcement" \
+  "rule.*(binds|applies|holds).*(regardless|enforcement)|hook isn.t active|hook.*(does not|doesn't)|no.*hook"
 
-check "R3: rule binds regardless of enforcement (Codex/Gemini have no hook)" \
-  "instruction-enforced|hook.*(no|missing)|binds regardless"
+# Rationalization 4: "Small refactor while I'm in there"
+check "R4: counters 'small refactor while I'm in there'" \
+  "(small |)refactor.*(while|in there)|while I.m in"
 
-check "R4: 'small refactor while I'm in there'" \
-  "small refactor|while.*in there|in there"
+# Rationalization 5: "Stub it, user can fix after"
+check "R5: counters 'stub it and they can fix after'" \
+  "stub.*(they|user).*(fix|after)|let me stub"
 
-check "R5: 'stub it and let them fix it'" \
-  "stub.*(fix|after)|stub.*them"
+# Rationalization 6: "I'll write to a scratch path outside .no-vibe"
+check "R6: counters 'scratch file outside .no-vibe'" \
+  "scratch.*(file|path).*outside|outside.*\.no-vibe"
 
+# Rationalization 7: "Curriculum revision doesn't really need announcing"
+check "R7: curriculum revisions must be announced, never silent" \
+  "silent.*revision|revision.*(announce|never silent)|announce.*revision"
+
+# Iron Law presence (Superpowers structural pattern)
 echo
-echo "Bash write-guard discipline:"
+echo "Structural discipline:"
+check "Iron Law block is present" \
+  "NO CODE INTO|no code.*project files.*ever|iron law"
 
+check "Red Flags self-check list exists" \
+  "red flag"
+
+check "Rationalization table exists" \
+  "rationalization table|\| excuse \||\| rationalization \|"
+
+check "Audits user's 'next' (verdict gate, not blind trust)" \
+  "On 'next', re-read|Block advancement on correctness-class|Phase 4 Verdict Gate"
+
+# Bash write-guard discipline (must mirror the hard hook on Claude/OpenCode/Pi)
 check "Bash guard enumerates redirection operators (>, >>, &>)" \
   ">>?|&>"
 
 check "Bash guard names tee/sed -i/cp/mv as mutators" \
-  "tee.*sed|sed -i|cp.*mv|mv.*install"
+  "tee.*sed|sed -i|tee\\b.*cp\\b|mv\\b.*install"
 
-check "Bash guard cites safe-target allowlist" \
-  "/tmp.*\\.no-vibe|\\.no-vibe.*/tmp|safe-target"
+check "Bash guard cites safe-target allowlist (.no-vibe + /tmp + /dev/null)" \
+  "/tmp.*\\.no-vibe|\\.no-vibe.*/tmp|/dev/null"
 
-check "Bash guard fails closed on variable destinations" \
+check "Bash guard fails closed on \$VAR / command-substitution destinations" \
   "fail closed|\\\$VAR|command.substitut|backtick"
 
-echo
-echo "v2 memory contract:"
-
-check "Two NO-VIBE.md files mentioned (global + project)" \
-  "NO-VIBE\\.md"
-
-check "Eight-clause default style mentioned" \
-  "12-year|feynman|eight clause|plain words"
-
-check "Memory archive folder mentioned" \
-  "memory/|archive"
-
-check "Status line / session resume hint" \
-  "session\\.md|resuming.*layers|no-vibe: ON"
-
-echo
-echo "v1 artifacts must be ABSENT (regression check):"
-
-absent_check() {
-  local name="$1"
-  local pattern="$2"
-  if echo "$COMBINED" | grep -qE "$pattern"; then
-    printf '  \033[31mFAIL\033[0m %s (forbidden pattern present: %s)\n' "$name" "$pattern"
-    FAIL=$((FAIL + 1))
-    FAIL_MSGS+=("$name")
-  else
-    printf '  \033[32mPASS\033[0m %s\n' "$name"
-    PASS=$((PASS + 1))
-  fi
-}
-
-absent_check "no Turn Response Contract header" \
-  "Turn Response Contract|\\[no-vibe\\] Phase:"
-absent_check "no mistakes.json references" \
-  "mistakes\\.json"
-absent_check "no ai-notes.json references" \
-  "ai-notes\\.json"
-absent_check "no DATA-SCHEMA references" \
-  "DATA-SCHEMA"
-absent_check "no pck_gap enum" \
-  "pck_gap"
+# Session resume hint discipline (parallel to status hook)
+check "Session-resume hint instruction is present" \
+  "resuming.*layer|in_progress.*resume|sessions/.*\\.json"
 
 echo
 echo "Results: ${PASS} passed, ${FAIL} failed"
 if [[ $FAIL -gt 0 ]]; then
   echo
+  echo "Failed checks indicate rationalizations that the Gemini soft-block"
+  echo "surface does not explicitly address. Add explicit counter-language"
+  echo "to GEMINI.md or skills/no-vibe/SKILL.md until all pass."
   for msg in "${FAIL_MSGS[@]}"; do
     echo "  - $msg"
   done

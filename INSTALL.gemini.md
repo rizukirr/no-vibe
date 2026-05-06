@@ -1,151 +1,64 @@
-# Install no-vibe — Gemini CLI
+# no-vibe — Gemini CLI Installation
 
-Gemini CLI uses extensions. Install copies the extension tree into Gemini's extensions directory.
+## Install
 
-## Prerequisites
-
-- **Git**
-- **Bash**, **Awk**, and **jq** (required for the `sync.sh` step to regenerate runtime files).
-  - *Windows:* These are included with **Git Bash**. Ensure they are in your PATH if using PowerShell.
-
-## Steps (script)
-
-If you have a Bash environment (Linux, macOS, or Git Bash on Windows):
+Gemini CLI loads extensions from `~/.gemini/extensions/<name>/` (user scope)
+or `<project>/.gemini/extensions/<name>/` (workspace scope). Clone the repo
+and symlink it in:
 
 ```bash
-git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
-rm -rf "$HOME/.gemini/extensions/no-vibe"
-bash ~/tools/no-vibe/install/install-gemini.sh
+git clone https://github.com/rizukirr/no-vibe.git ~/.gemini/no-vibe
+mkdir -p ~/.gemini/extensions
+ln -s ~/.gemini/no-vibe ~/.gemini/extensions/no-vibe
 ```
 
-Default destination: `~/.gemini/extensions/no-vibe/`.
-
-To install elsewhere: `NO_VIBE_DEST=/custom/path bash ~/tools/no-vibe/install/install-gemini.sh`
-
-Restart Gemini CLI after install.
-
-## Manual installation (no script)
-
-For when the script can't be run.
-
-### Option A: Bash / Zsh (Linux, macOS, Git Bash)
-
-```bash
-# 1. Clone
-git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
-REPO=~/tools/no-vibe
-DEST="$HOME/.gemini/extensions/no-vibe"
-
-# 2. Remove old Gemini no-vibe extension first
-rm -rf "$DEST"
-
-# 3. Regenerate runtimes/gemini/ from /shared/ (GEMINI.md + .toml commands)
-bash "$REPO/scripts/sync.sh"
-
-# 4. Create destination tree
-mkdir -p "$DEST/.gemini/commands" "$DEST/skills/no-vibe"
-
-# 5. Copy runtime adapter
-cp "$REPO/runtimes/gemini/gemini-extension.json" "$DEST/"
-cp "$REPO/runtimes/gemini/GEMINI.md" "$DEST/"
-cp "$REPO/runtimes/gemini/.gemini/tool-mapping.md" "$DEST/.gemini/"
-cp "$REPO/runtimes/gemini/.gemini/commands/"*.toml "$DEST/.gemini/commands/"
-
-# 6. Copy skill prose
-cp "$REPO/shared/skill/"*.md "$DEST/skills/no-vibe/"
-
-# 7. Seed global ~/.no-vibe/ if first install
-mkdir -p "$HOME/.no-vibe/memory"
-[ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp "$REPO/shared/templates/NO-VIBE.global.md" "$HOME/.no-vibe/NO-VIBE.md"
-[ -f "$HOME/.no-vibe/memory/README.md" ] || cp "$REPO/shared/templates/memory-readme.md" "$HOME/.no-vibe/memory/README.md"
-
-# 8. Clean up
-rm -rf ~/tools/no-vibe
-```
-
-### Option B: Windows (PowerShell)
-
-Run these in a PowerShell terminal. Note: Step 3 still requires `bash` (e.g., from Git Bash) to be in your PATH.
+On Windows (PowerShell):
 
 ```powershell
-# 1. Clone
-git clone -b v2 https://github.com/rizukirr/no-vibe.git "$HOME\tools\no-vibe"
-$REPO = "$HOME\tools\no-vibe"
-$DEST = "$HOME\.gemini\extensions\no-vibe"
-
-# 2. Remove old Gemini no-vibe extension first
-if (Test-Path $DEST) { Remove-Item -Recurse -Force $DEST }
-
-# 3. Regenerate runtimes (requires bash/awk/jq in PATH)
-bash "$REPO\scripts\sync.sh"
-
-# 4. Create destination tree
-New-Item -ItemType Directory -Force -Path "$DEST\.gemini\commands", "$DEST\skills\no-vibe", "$HOME\.no-vibe\memory"
-
-# 5. Copy runtime adapter
-Copy-Item "$REPO\runtimes\gemini\gemini-extension.json" "$DEST\"
-Copy-Item "$REPO\runtimes\gemini\GEMINI.md" "$DEST\"
-Copy-Item "$REPO\runtimes\gemini\.gemini\tool-mapping.md" "$DEST\.gemini\"
-Copy-Item "$REPO\runtimes\gemini\.gemini\commands\*.toml" "$DEST\.gemini\commands\"
-
-# 6. Copy skill prose
-Copy-Item "$REPO\shared\skill\*.md" "$DEST\skills\no-vibe\"
-
-# 7. Seed global ~/.no-vibe/ if first install
-if (-not (Test-Path "$HOME\.no-vibe\NO-VIBE.md")) { Copy-Item "$REPO\shared\templates\NO-VIBE.global.md" "$HOME\.no-vibe\NO-VIBE.md" }
-if (-not (Test-Path "$HOME\.no-vibe\memory\README.md")) { Copy-Item "$REPO\shared\templates\memory-readme.md" "$HOME\.no-vibe\memory\README.md" }
-
-# 8. Clean up
-Remove-Item -Recurse -Force $REPO
+git clone https://github.com/rizukirr/no-vibe.git "$env:USERPROFILE\.gemini\no-vibe"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.gemini\extensions"
+cmd /c mklink /J "$env:USERPROFILE\.gemini\extensions\no-vibe" "$env:USERPROFILE\.gemini\no-vibe"
 ```
 
-Then restart Gemini CLI.
-
-## Updating an existing install
-
-If the user already has no-vibe installed at `~/.gemini/extensions/no-vibe/`, compare **installed** vs **latest** first:
-
-```bash
-# Installed version
-installed=$(jq -r '.version // empty' "$HOME/.gemini/extensions/no-vibe/gemini-extension.json" 2>/dev/null)
-
-# Latest version (from a freshly cloned no-vibe repo)
-latest=$(jq -r '.version // empty' "$HOME/tools/no-vibe/runtimes/gemini/gemini-extension.json" 2>/dev/null)
-
-printf 'installed=%s\nlatest=%s\n' "$installed" "$latest"
-
-if [ -n "$installed" ] && [ -n "$latest" ] && [ "$installed" = "$latest" ]; then
-  echo "Up-to-date: skip reinstall."
-else
-  echo "Version differs (or unknown): reinstall."
-fi
-```
-
-If versions differ, remove then reinstall:
-
-```bash
-rm -rf "$HOME/.gemini/extensions/no-vibe"
-```
-
-Then run the script or manual install steps above. Don't touch `~/.no-vibe/` — user data, survives upgrades.
+Restart Gemini CLI. The extension's `GEMINI.md` context and TOML commands
+under `.gemini/commands/` are auto-discovered.
 
 ## Verify
 
-- `~/.gemini/extensions/no-vibe/gemini-extension.json` exists.
-- `~/.gemini/extensions/no-vibe/GEMINI.md` exists.
-- `~/.gemini/extensions/no-vibe/.gemini/commands/` contains five `.toml` command files.
-- `~/.gemini/extensions/no-vibe/skills/no-vibe/SKILL.md` exists.
-- `~/.no-vibe/NO-VIBE.md` exists (seeded if missing).
-- After Gemini restart, the slash commands `/no-vibe`, `/no-vibe-btw`, `/no-vibe-challenge`, `/no-vibe-forget`, `/no-vibe-clear` are available.
+1. In any project, run `/no-vibe on` — creates `.no-vibe/active` and
+   bootstraps learner state.
+2. Ask the assistant to edit a project file — it should refuse with the
+   no-vibe guard message (soft-block; see caveat below).
+3. Ask the assistant to `echo bad > someproj.py` or `sed -i 's/x/y/'
+   src/file` — it should also refuse, citing the Bash guard rules in
+   `GEMINI.md`. If it complies, the model is drifting; remind it.
+4. Start a fresh session in a project with an in-progress session JSON
+   under `.no-vibe/data/sessions/` — first turn should print
+   `no-vibe: ON — resuming "<topic>" (layer N/M, phaseX)`.
+5. Run `/no-vibe off` — removes the marker.
 
-## What gets installed
+## Caveat — soft block
 
-- Extension manifest (`gemini-extension.json`).
-- `GEMINI.md` (auto-loaded by Gemini CLI on session start).
-- Five `.toml` command definitions under `.gemini/commands/`.
-- Skill prose under `skills/no-vibe/`.
-- Global `~/.no-vibe/NO-VIBE.md` seeded if missing.
+Gemini CLI has no PreToolUse hook equivalent to Claude Code's
+`hooks/block-writes.sh` or `hooks/block-bash-writes.sh`. Both the
+write guard and the Bash write-guard are enforced by strong
+instructions in `GEMINI.md` and the skill content, not a process-level
+hook. If you need a hard block, use the Claude Code or OpenCode surface.
 
-## Enforcement
+## Usage
 
-**Soft.** Gemini CLI has no write-hook surface for third-party extensions. Enforcement is instruction-only: the rule lives in `GEMINI.md` and binds the AI behaviorally. There is no kernel-level guard. If the model deviates, only the instruction stops it.
+```
+/no-vibe build a REST API handler          # one-shot lesson
+/no-vibe on                                # persistent mode
+/no-vibe --ref pytorch --mode concept      # with reference + mode
+/no-vibe-challenge                         # get a coding challenge
+/no-vibe-challenge recursion               # challenge with focus area
+/no-vibe-btw add a .gitignore for node     # one-shot escape hatch
+/no-vibe off                               # exit
+```
+
+## Troubleshooting
+
+- Commands not found: verify `~/.gemini/extensions/no-vibe/.gemini/commands/` contains the `.toml` files.
+- Context missing: verify `~/.gemini/extensions/no-vibe/GEMINI.md` exists and the `@` includes resolve (paths are relative to `GEMINI.md`).
+- Guard ignored: Gemini enforcement is instruction-based; if the model drifts, remind it of `.no-vibe/active` or use `/no-vibe off` and a stricter surface.
