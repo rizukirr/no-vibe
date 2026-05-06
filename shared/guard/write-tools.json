@@ -1,0 +1,15 @@
+{
+  "$comment": "Tool names that count as project-file writes. Hook implementations on Claude / OpenCode / Pi block these when .no-vibe/active exists and the target is outside the safe-target allowlist.",
+  "tools": [
+    "Edit",
+    "Write",
+    "NotebookEdit",
+    "MultiEdit",
+    "ApplyPatch",
+    "apply_patch"
+  ],
+  "path_fields": [
+    "file_path",
+    "notebook_path"
+  ]
+}
