@@ -44,6 +44,27 @@ skill_body=$(awk '
     { print }
 ' "$SHARED/skill/SKILL.md")
 
+# Build command list prose from shared/commands/*.md frontmatter.
+commands_prose=$(
+    {
+        echo "## Command list (Codex)"
+        echo
+        echo "Codex may not show these in \`$\` autocomplete. They are still valid no-vibe commands."
+        echo
+        echo "Invoke by typing the command name explicitly in chat (for example: \`/no-vibe\`)."
+        echo
+        for src in "$SHARED/commands"/*.md; do
+            [ -f "$src" ] || continue
+            name=$(basename "$src" .md)
+            description=$(awk '
+                /^description:/ { sub(/^description:[[:space:]]*/, ""); print; exit }
+            ' "$src")
+            [ -n "$description" ] || description="No description."
+            printf -- "- \`/%s\` — %s\n" "$name" "$description"
+        done
+    }
+)
+
 # Format guard/patterns.json into prose for instruction-only runtimes.
 patterns_prose=$(cat <<'EOF'
 **Safe targets** (writes allowed):
@@ -71,8 +92,9 @@ EOF
 codex_template="$RUNTIMES/codex/AGENTS.md.template"
 codex_target="$RUNTIMES/codex/AGENTS.md"
 if [ -f "$codex_template" ]; then
-    rendered=$(awk -v skill="$skill_body" -v patterns="$patterns_prose" '
+    rendered=$(awk -v skill="$skill_body" -v commands="$commands_prose" -v patterns="$patterns_prose" '
         /<!-- INJECT:SKILL_BODY -->/ { print skill; next }
+        /<!-- INJECT:COMMAND_LIST -->/ { print commands; next }
         /<!-- INJECT:GUARD_PATTERNS -->/ { print patterns; next }
         { print }
     ' "$codex_template")
@@ -84,8 +106,9 @@ fi
 gemini_template="$RUNTIMES/gemini/GEMINI.md.template"
 gemini_target="$RUNTIMES/gemini/GEMINI.md"
 if [ -f "$gemini_template" ]; then
-    rendered=$(awk -v skill="$skill_body" -v patterns="$patterns_prose" '
+    rendered=$(awk -v skill="$skill_body" -v commands="$commands_prose" -v patterns="$patterns_prose" '
         /<!-- INJECT:SKILL_BODY -->/ { print skill; next }
+        /<!-- INJECT:COMMAND_LIST -->/ { print commands; next }
         /<!-- INJECT:GUARD_PATTERNS -->/ { print patterns; next }
         { print }
     ' "$gemini_template")

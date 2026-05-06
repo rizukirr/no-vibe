@@ -77,6 +77,7 @@ Don't touch `~/.no-vibe/` — user data, survives upgrades. `.no-vibe/codex/skil
 - `<project>/AGENTS.md` exists and starts with the no-vibe header.
 - `<project>/.no-vibe/codex/skill/` and `.no-vibe/codex/commands/` contain the skill prose and command files.
 - `~/.no-vibe/NO-VIBE.md` exists (seeded from template if it didn't already).
+- In Codex, `$` autocomplete may not list no-vibe commands. Invoke by typing command names directly in chat (for example `/no-vibe`, `/no-vibe-forget`, `/no-vibe-clear`).
 
 ## What gets installed
 

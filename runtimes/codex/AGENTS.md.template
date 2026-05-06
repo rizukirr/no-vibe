@@ -20,6 +20,8 @@ Before doing anything else, emit one of:
 
 <!-- INJECT:SKILL_BODY -->
 
+<!-- INJECT:COMMAND_LIST -->
+
 ## Bash write-guard (instruction-enforced on Codex)
 
 When `.no-vibe/active` exists, never run a Bash command that writes outside the safe-target allowlist:

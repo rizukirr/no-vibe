@@ -135,6 +135,19 @@ Every layer leaves the user's code runnable with new visible output. No broken i
 
 `/no-vibe`, `/no-vibe on`, `/no-vibe off`, `/no-vibe-btw`, `/no-vibe-challenge`, `/no-vibe-forget`, `/no-vibe-clear`. Specs in `shared/commands/`.
 
+
+## Command list (Codex)
+
+Codex may not show these in `$` autocomplete. They are still valid no-vibe commands.
+
+Invoke by typing the command name explicitly in chat (for example: `/no-vibe`).
+
+- `/no-vibe` - Enter no-vibe tutor mode — AI guides you through writing code yourself, never editing your project files
+- `/no-vibe-btw` - One-shot escape hatch — let AI write code to project files for a single task, then restore no-vibe mode
+- `/no-vibe-challenge` - Get a coding challenge based on your project or current no-vibe session
+- `/no-vibe-clear` - Wipe everything — both NO-VIBE.md files, both memory/ folders, project .no-vibe/, marker, global ~/.no-vibe/. Irreversible.
+- `/no-vibe-forget` - Reset both NO-VIBE.md files to defaults; archive prior versions to memory/
+
 ## Bash write-guard (instruction-enforced on Codex)
 
 When `.no-vibe/active` exists, never run a Bash command that writes outside the safe-target allowlist:
@@ -155,7 +168,7 @@ When `.no-vibe/active` exists, never run a Bash command that writes outside the 
 - `dd of=PATH`
 - `cat <<EOF > PATH` heredoc redirects
 
-**Fail-closed:** variable or command-substituted destinations (`$VAR`, `$(...)`, backticks) — refuse, do not try to resolve.
+**Fail-closed:** variable or command-substituted destinations (`$VAR`, `$(...)`, backticks) - refuse, do not try to resolve.
 
 Show code in chat; user runs it.
 
