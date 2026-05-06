@@ -13,6 +13,19 @@ Tell the user to run these two slash commands in Claude Code:
 
 Then restart Claude Code.
 
+## Updating an existing install
+
+If the user already has no-vibe installed and you're upgrading to a newer version:
+
+- **Marketplace path:** run `/plugin update no-vibe@no-vibe` in Claude Code. No clone needed.
+- **Manual / offline path:** check the version in `~/.claude/plugins/no-vibe/.claude-plugin/plugin.json` (`.version`) and compare to `VERSION` in this repo. If an existing install is present, remove it first, then reinstall:
+
+  ```bash
+  rm -rf "$HOME/.claude/plugins/no-vibe"
+  ```
+
+  Then run the script or manual steps above. Don't touch `~/.no-vibe/` — it holds the user's tutor profile and project state and survives upgrades.
+
 ## Verify
 
 After restart, the user should see four new slash commands:

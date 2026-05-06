@@ -63,6 +63,22 @@ rm -rf ~/tools/no-vibe
 
 Then restart Pi.
 
+## Updating an existing install
+
+The Pi script **skips** if any existing install is detected — it won't auto-update. To upgrade, **remove the existing install first**, then re-run the install:
+
+```bash
+# Check version in the existing install
+jq -r '.version' "$HOME/.pi/plugins/no-vibe/plugin.json" 2>/dev/null
+
+# Remove ALL known Pi install locations (they're mutually exclusive in practice but be thorough)
+rm -rf "$HOME/.agents/skills/no-vibe"
+rm -rf "$HOME/.pi/plugins/no-vibe"
+rm -rf "$HOME/.pi/extensions/no-vibe"
+```
+
+Then run the script or manual install steps above. Don't touch `~/.no-vibe/` — user data, survives upgrades.
+
 ## Verify
 
 - `~/.pi/plugins/no-vibe/plugin.json` exists.

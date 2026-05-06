@@ -52,6 +52,16 @@ rm -rf ~/tools/no-vibe
 
 Then restart OpenCode.
 
+## Updating an existing install
+
+If the user already has no-vibe installed at `~/.config/opencode/plugins/no-vibe/`, remove it before reinstalling:
+
+```bash
+rm -rf "$HOME/.config/opencode/plugins/no-vibe"
+```
+
+Then run the script or manual install steps above. Don't touch `~/.no-vibe/` — user data, survives upgrades.
+
 ## Verify
 
 - `~/.config/opencode/plugins/no-vibe/plugins/no-vibe.js` exists.

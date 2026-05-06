@@ -53,6 +53,20 @@ rm -rf ~/tools/no-vibe
 
 Then restart Gemini CLI.
 
+## Updating an existing install
+
+If the user already has no-vibe installed at `~/.gemini/extensions/no-vibe/`, check the version and remove before reinstalling:
+
+```bash
+# Check existing version
+jq -r '.version' "$HOME/.gemini/extensions/no-vibe/gemini-extension.json" 2>/dev/null
+
+# Remove the existing extension
+rm -rf "$HOME/.gemini/extensions/no-vibe"
+```
+
+Then run the script or manual install steps above. Don't touch `~/.no-vibe/` — user data, survives upgrades.
+
 ## Verify
 
 - `~/.gemini/extensions/no-vibe/gemini-extension.json` exists.
