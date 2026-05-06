@@ -50,13 +50,14 @@ Three patterns:
 - Pi TS extension does the same.
 
 **B — instruction-only runtimes get text injection at sync time** (Codex, Gemini):
-- `scripts/sync.sh` reads `shared/skill/SKILL.md` and `shared/guard/patterns.json`, injects them into `runtimes/codex/AGENTS.md.template` and `runtimes/gemini/GEMINI.md.template`, writes generated `.md` files with `AUTO-GENERATED FROM /shared` headers.
+- `scripts/sync.sh` bundles **all** `shared/skill/*.md` files (SKILL + phases + teaching-style + reference-grounding + curriculum) into a single `skill_body` blob and injects it — together with `shared/guard/patterns.json` prose — into `runtimes/codex/AGENTS.md.template` and `runtimes/gemini/GEMINI.md.template`, writing generated `.md` files with `AUTO-GENERATED FROM /shared` headers.
+- The same bundle is also written into `runtimes/codex/skills/no-vibe/SKILL.md` so Codex's home-level skill discovery surface (`~/.codex/no-vibe/skills/no-vibe/SKILL.md`) sees the full discipline standalone, not just a stub. The four command-scoped skills under `runtimes/codex/skills/no-vibe-{btw,challenge,forget,clear}/` stay hand-maintained.
 - Same script converts `shared/commands/*.md` to Gemini's `.toml` format.
-- `tests/test_sync.sh` enforces no drift (CI-runnable as `scripts/sync.sh --check`).
+- `tests/test_sync.sh` enforces no drift (CI-runnable as `scripts/sync.sh --check`) and asserts every skill doc is bundled into Codex/Gemini outputs and referenced by Pi/OpenCode bootstrap loaders.
 
-**C — skill prose** (`shared/skill/*.md`): every runtime's discovery mechanism points at the shared path; no copying needed in-repo.
+**C — skill prose** (`shared/skill/*.md`): for Claude (where the skill loader resolves files lazily) the directory is copied to `runtimes/claude/skills/no-vibe/` at sync time. For Pi and OpenCode the bootstrap loader concatenates all five files at session start and inlines them into the system prompt — these runtimes have no lazy file-load path for the model, so SKILL.md's references to phase/curriculum docs would otherwise be dangling pointers.
 
-If you change `shared/guard/patterns.json` or `shared/skill/SKILL.md`, run `bash scripts/sync.sh` to regenerate Codex/Gemini outputs.
+If you change anything under `shared/guard/` or `shared/skill/` (any of the five files), run `bash scripts/sync.sh` to regenerate Codex/Gemini outputs and the Codex home-level skill, plus the Claude skills tree.
 
 ## Memory model
 
