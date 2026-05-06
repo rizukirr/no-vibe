@@ -46,16 +46,16 @@ grep -rl '"status": "in_progress"' .no-vibe/data/sessions/ 2>/dev/null
 - If no active session exists: inspect the project to infer stack/domain and generate a relevant challenge.
 - If a focus area was provided: narrow challenge scope to that area while keeping project/session relevance.
 
-### 3. Read learner data
+### 3. Read teaching preferences
 
 If present, read:
-- `~/.no-vibe/profile.md` — global learner meta-model (cross-project skill levels, recurring teaching gaps, preferences). See `skills/no-vibe/DATA-SCHEMA.md` for the contract; `~/.no-vibe/.synth-state.json` is bookkeeping only and must NOT be loaded.
-- `.no-vibe/data/mistakes.json` — project-local teaching gaps
+- `~/.no-vibe/NO-VIBE.md` — global teaching style + user additions (style preferences, topic competence notes).
+- `.no-vibe/NO-VIBE.md` — project canvas (format, conventions, notes specific to this codebase).
 
 Calibrate challenge difficulty:
-- `struggling` or `new`: smaller scope, tighter acceptance criteria
-- `comfortable` or `strong`: broader scope, less hand-holding
-- recurring mistakes: challenge should exercise that category
+- Global `## User additions` mentions topic competence ("solid on Go", "new to async") → tune scope accordingly.
+- Project `## Conventions` names patterns the user has committed to → align challenge to those patterns.
+- Project `## Notes` may flag deferred items worth reinforcing in the challenge.
 
 ### 4. Present the challenge
 
