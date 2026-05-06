@@ -53,7 +53,7 @@ const run = async () => {
   for (const name of ["no-vibe.md", "no-vibe-btw.md", "no-vibe-challenge.md"]) {
     const p = path.join(promptsDir, name)
     assert.ok(fs.existsSync(p), `pi prompt ${name} must exist`)
-    const body = fs.readFileSync(p, "utf8")
+    const body = fs.readFileSync(p, "utf8").replace(/\r\n/g, "\n")
     assert.ok(body.startsWith("---\n"), `${name} must start with YAML frontmatter`)
     assert.ok(/\ndescription:/.test(body), `${name} must declare description in frontmatter`)
     assert.ok(body.includes("$ARGUMENTS"), `${name} must reference $ARGUMENTS`)
