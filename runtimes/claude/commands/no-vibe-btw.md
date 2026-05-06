@@ -1,9 +1,8 @@
 ---
 description: One-shot escape hatch — let AI write code to project files for a single task, then restore no-vibe mode
 argument-hint: <task>
+# AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh
 ---
-
-<!-- AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh -->
 
 # /no-vibe-btw
 

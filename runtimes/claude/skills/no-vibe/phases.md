@@ -1,4 +1,4 @@
-<!-- AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh -->
+# AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh
 
 # Teaching Cycle Phases
 

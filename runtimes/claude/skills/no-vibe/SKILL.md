@@ -1,9 +1,8 @@
 ---
 name: no-vibe
 description: Active when `.no-vibe/active` exists or user invoked `/no-vibe` / `/no-vibe on`. Turns AI into a tutor — user types every line. Adapts via two memory files: `~/.no-vibe/NO-VIBE.md` (style) and `.no-vibe/NO-VIBE.md` (project canvas).
+# AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh
 ---
-
-<!-- AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh -->
 
 # no-vibe
 

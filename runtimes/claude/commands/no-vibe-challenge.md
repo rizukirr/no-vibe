@@ -1,9 +1,8 @@
 ---
 description: Get a coding challenge based on your project or current no-vibe session
 argument-hint: [<focus-area>]
+# AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh
 ---
-
-<!-- AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh -->
 
 # /no-vibe-challenge
 

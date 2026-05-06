@@ -126,7 +126,7 @@ done
 # and commands at <source>/commands/. Hooks read <source>/shared/guard/*.json.
 # Populate all three from /shared/.
 
-CLAUDE_GENERATED_HEADER='<!-- AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh -->'
+CLAUDE_GENERATED_HEADER='# AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh'
 
 claude_skills_dir="$RUNTIMES/claude/skills/no-vibe"
 claude_commands_dir="$RUNTIMES/claude/commands"
@@ -137,8 +137,12 @@ if [ "$CHECK_MODE" = "0" ]; then
 fi
 
 # Skill / command files have YAML frontmatter that Claude parses. Insert
-# the AUTO-GENERATED header AFTER the closing `---` so frontmatter detection
-# still sees `---` on line 1. For files without frontmatter, prepend.
+# the AUTO-GENERATED header INSIDE the frontmatter as a YAML `#` comment
+# (just before the closing `---`). YAML parsers ignore `#` lines, so the
+# marker stays visible to humans editing the file but doesn't bleed into
+# Claude Code's command-listing description (which used to pick up the
+# marker when it sat as the first prose line after the frontmatter).
+# For files without frontmatter, prepend.
 inject_header() {
     local src="$1"
     local header="$2"
@@ -146,7 +150,7 @@ inject_header() {
         BEGIN { in_fm=0; emitted=0; first=1 }
         first && /^---$/ { print; in_fm=1; first=0; next }
         first { print hdr; print ""; print; emitted=1; first=0; next }
-        in_fm && /^---$/ { print; print ""; print hdr; in_fm=0; emitted=1; next }
+        in_fm && /^---$/ { print hdr; print; in_fm=0; emitted=1; next }
         { print }
     ' "$src"
 }

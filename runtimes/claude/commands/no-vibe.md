@@ -1,9 +1,8 @@
 ---
 description: Enter no-vibe tutor mode — AI guides you through writing code yourself, never editing your project files
 argument-hint: [on|off|<topic>] [--ref <name-or-url>] [--mode concept|skill|debug]
+# AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh
 ---
-
-<!-- AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh -->
 
 # /no-vibe
 

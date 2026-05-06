@@ -1,9 +1,8 @@
 ---
 description: Wipe everything — both NO-VIBE.md files, both memory/ folders, project .no-vibe/, marker, global ~/.no-vibe/. Irreversible.
 argument-hint:
+# AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh
 ---
-
-<!-- AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh -->
 
 # /no-vibe-clear
 

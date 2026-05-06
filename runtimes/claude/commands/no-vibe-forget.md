@@ -1,9 +1,8 @@
 ---
 description: Reset both NO-VIBE.md files to defaults; archive prior versions to memory/
 argument-hint:
+# AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh
 ---
-
-<!-- AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh -->
 
 # /no-vibe-forget
 
