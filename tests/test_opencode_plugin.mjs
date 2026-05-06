@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, "..")
-const skillsDir = path.join(repoRoot, "skills")
+const skillsDir = path.join(repoRoot, "shared", "skill")
 
 const makeOutput = () => ({
   messages: [
@@ -28,19 +28,16 @@ const run = async () => {
   const fakeProjectDir = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-plugin-project-"))
   const plugin = await NoVibePlugin({ directory: fakeProjectDir })
 
+  // --- config: skills path points at shared/skill ---
   const config = {}
   await plugin.config(config)
   assert.ok(config.skills?.paths?.length, "skills paths should be populated")
   assert.ok(
     config.skills.paths.some((p) => path.resolve(p) === skillsDir),
-    "skills path should include plugin-bundled skills dir",
+    "skills path should include shared/skill",
   )
 
-  assert.ok(
-    !config.skills.paths.some((p) => path.resolve(p) === path.join(fakeProjectDir, "skills")),
-    "skills path should not depend on current project directory",
-  )
-
+  // --- bootstrap injection in absence of .no-vibe/ → no status line ---
   const output = makeOutput()
   const originalPartsCount = output.messages[0].parts.length
   await plugin["experimental.chat.messages.transform"]({}, output)
@@ -54,17 +51,21 @@ const run = async () => {
   )
   assert.notEqual(first.text, "Teach me linear layers", "first text part should be injected bootstrap")
   assert.ok(first.text.includes("no-vibe"), "bootstrap should mention no-vibe")
-  assert.ok(first.text.includes("OpenCode"), "bootstrap should mention OpenCode")
+  assert.ok(first.text.includes("OpenCode"), "bootstrap should mention OpenCode tool mapping")
   assert.ok(
-    first.text.includes("Data Schema") || first.text.includes("DATA-SCHEMA") || first.text.includes("profile.md"),
-    "bootstrap should include data schema content",
+    first.text.includes("NO-VIBE.md") || first.text.includes("Iron Law"),
+    "bootstrap should include v2 skill body (NO-VIBE.md memory or Iron Law)",
+  )
+  assert.ok(
+    !first.text.includes("DATA-SCHEMA"),
+    "bootstrap must NOT reference v1 DATA-SCHEMA (deleted in v2)",
   )
   assert.ok(
     !first.text.startsWith("no-vibe: ON") && !first.text.startsWith("no-vibe: OFF"),
-    "status line should be absent when project has no .no-vibe/ dir",
+    "status line absent when project has no .no-vibe/ dir",
   )
 
-  // Status line present when .no-vibe/ exists
+  // --- Status line present when .no-vibe/ exists ---
   const optedInDir = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-optedin-"))
   fs.mkdirSync(path.join(optedInDir, ".no-vibe"), { recursive: true })
   const optedInPlugin = await NoVibePlugin({ directory: optedInDir })
@@ -86,51 +87,58 @@ const run = async () => {
   )
   fs.rmSync(optedInDir, { recursive: true, force: true })
 
-  // --- Test: status line surfaces resume hint for in-progress session ---
+  // --- Resume hint sourced from session.md curriculum ---
   const resumeDir = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-resume-"))
-  fs.mkdirSync(path.join(resumeDir, ".no-vibe", "data", "sessions"), { recursive: true })
+  fs.mkdirSync(path.join(resumeDir, ".no-vibe"), { recursive: true })
   fs.writeFileSync(path.join(resumeDir, ".no-vibe", "active"), "")
   fs.writeFileSync(
-    path.join(resumeDir, ".no-vibe", "data", "sessions", "build-a-linear-layer.json"),
-    JSON.stringify({
-      topic: "Build a Linear Layer",
-      status: "in_progress",
-      current_layer: 3,
-      layers_total: 7,
-      current_phase: "phase3",
-    }),
+    path.join(resumeDir, ".no-vibe", "session.md"),
+    `# Lesson: Build a Linear Layer
+Mode: concept
+
+## Curriculum
+- [x] 1. Skeleton
+- [x] 2. Forward
+- [x] 3. Bias
+- [ ] 4. Activation
+- [ ] 5. Backward
+- [ ] 6. Compare
+- [ ] 7. Synth
+`,
   )
   const resumePlugin = await NoVibePlugin({ directory: resumeDir })
   const resumeOutput = makeOutput()
   await resumePlugin["experimental.chat.messages.transform"]({}, resumeOutput)
   const resumeText = resumeOutput.messages[0].parts[0].text
   assert.ok(
-    resumeText.startsWith('no-vibe: ON — resuming "Build a Linear Layer" (layer 3/7, phase3)'),
-    `status line should surface resume hint; got: ${resumeText.slice(0, 120)}`,
+    resumeText.startsWith('no-vibe: ON — resuming "Build a Linear Layer" (3/7 layers complete)'),
+    `status line should surface curriculum-based resume hint; got: ${resumeText.slice(0, 120)}`,
   )
 
-  // Completed sessions should NOT trigger the resume hint
+  // Fully-checked curriculum → no resume hint
   fs.writeFileSync(
-    path.join(resumeDir, ".no-vibe", "data", "sessions", "build-a-linear-layer.json"),
-    JSON.stringify({ topic: "Build a Linear Layer", status: "completed" }),
+    path.join(resumeDir, ".no-vibe", "session.md"),
+    `# Lesson: Done
+## Curriculum
+- [x] 1. step
+- [x] 2. step
+`,
   )
   const completedPlugin = await NoVibePlugin({ directory: resumeDir })
   const completedOutput = makeOutput()
   await completedPlugin["experimental.chat.messages.transform"]({}, completedOutput)
   const completedText = completedOutput.messages[0].parts[0].text
   assert.ok(
-    completedText.startsWith("no-vibe: ON\n") || completedText.startsWith("no-vibe: ON\r\n") ||
-      completedText === "no-vibe: ON" || completedText.match(/^no-vibe: ON(?!\s*—)/),
-    `completed-only sessions should not surface resume hint; got: ${completedText.slice(0, 120)}`,
+    completedText.match(/^no-vibe: ON(?!\s*—)/),
+    `fully-complete curriculum should not surface resume hint; got: ${completedText.slice(0, 120)}`,
   )
   fs.rmSync(resumeDir, { recursive: true, force: true })
 
+  // --- Write guard: outside .no-vibe is blocked ---
   const tempCwd = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-write-guard-"))
   const markerDir = path.join(tempCwd, ".no-vibe")
-  const markerPath = path.join(markerDir, "active")
-
-  fs.mkdirSync(path.join(markerDir, "notes"), { recursive: true })
-  fs.writeFileSync(markerPath, "")
+  fs.mkdirSync(path.join(markerDir, "memory"), { recursive: true })
+  fs.writeFileSync(path.join(markerDir, "active"), "")
 
   try {
     let deniedError = null
@@ -146,40 +154,30 @@ const run = async () => {
     assert.ok(deniedError, "write outside .no-vibe should be blocked")
     assert.match(
       String(deniedError.message || deniedError),
-      /no-vibe|refusing write/i,
+      /no-vibe|cannot write/i,
       "blocked write should return a guard-related error",
     )
 
+    // --- Write inside .no-vibe is allowed ---
     await plugin["tool.execute.before"](
-      { tool: "write", cwd: tempCwd, args: { filePath: ".no-vibe/notes/session.md" } },
-      { args: { filePath: ".no-vibe/notes/session.md" } },
+      { tool: "write", cwd: tempCwd, args: { filePath: ".no-vibe/NO-VIBE.md" } },
+      { args: { filePath: ".no-vibe/NO-VIBE.md" } },
+    )
+    await plugin["tool.execute.before"](
+      { tool: "write", cwd: tempCwd, args: { filePath: ".no-vibe/memory/NO-VIBE-2026-01-01.md" } },
+      { args: { filePath: ".no-vibe/memory/NO-VIBE-2026-01-01.md" } },
     )
   } finally {
     fs.rmSync(tempCwd, { recursive: true, force: true })
   }
 
-  // --- Test: write to .no-vibe/data/ is allowed ---
-  const tempCwd2 = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-data-write-"))
-  const markerDir2 = path.join(tempCwd2, ".no-vibe")
-  fs.mkdirSync(path.join(markerDir2, "data", "sessions"), { recursive: true })
-  fs.writeFileSync(path.join(markerDir2, "active"), "")
-
-  try {
-    await plugin["tool.execute.before"](
-      { tool: "write", cwd: tempCwd2, args: { filePath: ".no-vibe/data/profile.json" } },
-      { args: { filePath: ".no-vibe/data/profile.json" } },
-    )
-  } finally {
-    fs.rmSync(tempCwd2, { recursive: true, force: true })
-  }
-
   fs.rmSync(fakeProjectDir, { recursive: true, force: true })
 
-  console.log("PASS test_opencode_plugin bootstrap/config")
+  console.log("ok — opencode plugin v2 bootstrap/config/guard")
 }
 
 run().catch((err) => {
-  console.error("FAIL test_opencode_plugin bootstrap/config")
+  console.error("FAIL test_opencode_plugin")
   console.error(err)
   process.exit(1)
 })

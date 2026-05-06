@@ -5,12 +5,12 @@ import { fileURLToPath } from "node:url"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, "..")
-const piPluginDir = path.join(repoRoot, ".pi-plugin")
+const piPluginDir = path.join(repoRoot, "runtimes", "pi", ".pi-plugin")
 
 const run = async () => {
-  // C1 — manifest
+  // C1 — manifest exists and well-formed
   const manifestPath = path.join(piPluginDir, "plugin.json")
-  assert.ok(fs.existsSync(manifestPath), ".pi-plugin/plugin.json must exist")
+  assert.ok(fs.existsSync(manifestPath), "runtimes/pi/.pi-plugin/plugin.json must exist")
   const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"))
   for (const key of ["name", "description", "version"]) {
     assert.ok(manifest[key], `manifest must contain '${key}'`)
@@ -25,9 +25,9 @@ const run = async () => {
   }
 
   // Version parity with manifest
-  assert.equal(pkg.version, manifest.version, "package.json version must match .pi-plugin/plugin.json version")
+  assert.equal(pkg.version, manifest.version, "package.json version must match plugin.json version")
 
-  // C3 — extension exists
+  // C3 — extension exists with v2 hooks
   const extPath = path.join(piPluginDir, "extensions", "no-vibe", "index.ts")
   assert.ok(fs.existsSync(extPath), "pi extension index.ts must exist")
   const extSrc = fs.readFileSync(extPath, "utf8")
@@ -35,8 +35,8 @@ const run = async () => {
   assert.ok(extSrc.includes("tool_call"), "extension must hook 'tool_call' for write-guard enforcement")
   assert.ok(extSrc.includes(".no-vibe") && extSrc.includes("active"), "extension must check '.no-vibe/active' marker")
 
-  // Parity with OpenCode plugin allowlist (canonicalize, /tmp, /var/tmp, /dev/{null,...})
-  const ocSrc = fs.readFileSync(path.join(repoRoot, ".opencode/plugins/no-vibe.js"), "utf8")
+  // Parity with OpenCode plugin allowlist
+  const ocSrc = fs.readFileSync(path.join(repoRoot, "runtimes/opencode/plugins/no-vibe.js"), "utf8")
   const allowlistTokens = ["/tmp", "/var/tmp", "/dev/null", "/dev/stdout", "/dev/stderr", "/dev/tty", "/dev/fd/"]
   for (const tok of allowlistTokens) {
     assert.ok(extSrc.includes(tok), `pi extension must include allowlist token '${tok}'`)
@@ -48,23 +48,27 @@ const run = async () => {
     assert.ok(extSrc.includes(pat), `pi extension must inspect bash pattern '${pat}'`)
   }
 
-  // C4 — prompts present with frontmatter and $ARGUMENTS
-  const promptsDir = path.join(piPluginDir, "prompts")
-  for (const name of ["no-vibe.md", "no-vibe-btw.md", "no-vibe-challenge.md"]) {
+  // C4 — shared command prose present
+  const promptsDir = path.join(repoRoot, "shared", "commands")
+  for (const name of ["no-vibe.md", "no-vibe-btw.md", "no-vibe-challenge.md", "no-vibe-forget.md", "no-vibe-clear.md"]) {
     const p = path.join(promptsDir, name)
-    assert.ok(fs.existsSync(p), `pi prompt ${name} must exist`)
+    assert.ok(fs.existsSync(p), `shared/commands/${name} must exist`)
     const body = fs.readFileSync(p, "utf8")
     assert.ok(body.startsWith("---\n"), `${name} must start with YAML frontmatter`)
     assert.ok(/\ndescription:/.test(body), `${name} must declare description in frontmatter`)
-    assert.ok(body.includes("$ARGUMENTS"), `${name} must reference $ARGUMENTS`)
   }
 
-  // C5 — Turn Response Contract injection (parity with other surfaces)
-  const piMainPrompt = fs.readFileSync(path.join(promptsDir, "no-vibe.md"), "utf8")
-  assert.ok(piMainPrompt.includes("Turn Response Contract"), "pi prompt no-vibe.md must include Turn Response Contract section")
-  assert.ok(piMainPrompt.includes("[no-vibe] Phase:"), "pi prompt no-vibe.md must include header format string")
+  // C5 — v2 has no Turn Response Contract; explicitly assert it's gone
+  const noVibeBody = fs.readFileSync(path.join(promptsDir, "no-vibe.md"), "utf8")
+  assert.ok(!noVibeBody.includes("Turn Response Contract"), "v2 commands must not include the v1 Turn Response Contract")
+  assert.ok(!noVibeBody.includes("[no-vibe] Phase:"), "v2 commands must not include the v1 phase header format")
 
-  console.log("ok — pi plugin parity checks pass")
+  // C6 — shared skill memory contract present
+  const skillBody = fs.readFileSync(path.join(repoRoot, "shared/skill/SKILL.md"), "utf8")
+  assert.ok(skillBody.includes("NO-VIBE.md"), "SKILL.md must reference NO-VIBE.md memory file")
+  assert.ok(skillBody.includes("Iron Law"), "SKILL.md must include Iron Law")
+
+  console.log("ok — pi plugin v2 parity checks pass")
 }
 
 run().catch((err) => {
