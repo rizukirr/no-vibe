@@ -1,6 +1,6 @@
 {
   "name": "no-vibe",
   "description": "Tutor mode for AI coding assistants. AI shows code in chat and reviews your work, but never writes to your project files.",
-  "version": "1.2.4",
+  "version": "2.0.0",
   "contextFileName": "GEMINI.md"
 }
