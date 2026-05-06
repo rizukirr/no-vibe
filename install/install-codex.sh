@@ -33,7 +33,10 @@ mkdir -p "$PROJECT_ROOT/.no-vibe/codex/skill" "$PROJECT_ROOT/.no-vibe/codex/comm
 cp "$REPO_ROOT/shared/skill"/*.md "$PROJECT_ROOT/.no-vibe/codex/skill/"
 cp "$REPO_ROOT/shared/commands"/*.md "$PROJECT_ROOT/.no-vibe/codex/commands/"
 
-mkdir -p "$HOME/.codex/no-vibe/skills/no-vibe-forget" "$HOME/.codex/no-vibe/skills/no-vibe-clear"
+mkdir -p "$HOME/.codex/no-vibe/skills/no-vibe" "$HOME/.codex/no-vibe/skills/no-vibe-btw" "$HOME/.codex/no-vibe/skills/no-vibe-challenge" "$HOME/.codex/no-vibe/skills/no-vibe-forget" "$HOME/.codex/no-vibe/skills/no-vibe-clear"
+cp "$REPO_ROOT/runtimes/codex/skills/no-vibe/SKILL.md" "$HOME/.codex/no-vibe/skills/no-vibe/SKILL.md"
+cp "$REPO_ROOT/runtimes/codex/skills/no-vibe-btw/SKILL.md" "$HOME/.codex/no-vibe/skills/no-vibe-btw/SKILL.md"
+cp "$REPO_ROOT/runtimes/codex/skills/no-vibe-challenge/SKILL.md" "$HOME/.codex/no-vibe/skills/no-vibe-challenge/SKILL.md"
 cp "$REPO_ROOT/runtimes/codex/skills/no-vibe-forget/SKILL.md" "$HOME/.codex/no-vibe/skills/no-vibe-forget/SKILL.md"
 cp "$REPO_ROOT/runtimes/codex/skills/no-vibe-clear/SKILL.md" "$HOME/.codex/no-vibe/skills/no-vibe-clear/SKILL.md"
 

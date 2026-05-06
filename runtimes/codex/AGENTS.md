@@ -135,7 +135,6 @@ Every layer leaves the user's code runnable with new visible output. No broken i
 
 `/no-vibe`, `/no-vibe on`, `/no-vibe off`, `/no-vibe-btw`, `/no-vibe-challenge`, `/no-vibe-forget`, `/no-vibe-clear`. Specs in `shared/commands/`.
 
-
 ## Bash write-guard (instruction-enforced on Codex)
 
 When `.no-vibe/active` exists, never run a Bash command that writes outside the safe-target allowlist:
@@ -156,7 +155,7 @@ When `.no-vibe/active` exists, never run a Bash command that writes outside the 
 - `dd of=PATH`
 - `cat <<EOF > PATH` heredoc redirects
 
-**Fail-closed:** variable or command-substituted destinations (`$VAR`, `$(...)`, backticks) - refuse, do not try to resolve.
+**Fail-closed:** variable or command-substituted destinations (`$VAR`, `$(...)`, backticks) — refuse, do not try to resolve.
 
 Show code in chat; user runs it.
 
