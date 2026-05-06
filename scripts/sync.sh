@@ -35,14 +35,47 @@ if [ ! -f "$SHARED/skill/SKILL.md" ]; then
     exit 1
 fi
 
-# Strip frontmatter from SKILL.md.
-skill_body=$(awk '
-    BEGIN { in_fm=0; done=0 }
-    NR==1 && /^---$/ { in_fm=1; next }
-    in_fm && /^---$/ { in_fm=0; done=1; next }
-    in_fm { next }
-    { print }
-' "$SHARED/skill/SKILL.md")
+# Strip frontmatter from a markdown file.
+strip_frontmatter() {
+    awk '
+        BEGIN { in_fm=0 }
+        NR==1 && /^---$/ { in_fm=1; next }
+        in_fm && /^---$/ { in_fm=0; next }
+        in_fm { next }
+        { print }
+    ' "$1"
+}
+
+# Bundle all shared/skill/*.md into one blob for instruction-only runtimes
+# (Codex, Gemini, Pi) that cannot lazy-load files at teaching time. Order
+# matters: SKILL.md is the entry point; the rest are referenced from it.
+SKILL_FILES=(
+    "$SHARED/skill/SKILL.md"
+    "$SHARED/skill/phases.md"
+    "$SHARED/skill/teaching-style.md"
+    "$SHARED/skill/reference-grounding.md"
+    "$SHARED/skill/curriculum.md"
+)
+
+# Header marker stamped into generated files. Goes inside YAML frontmatter
+# as a `#` comment (parsers ignore it) so `---` stays on line 1 for skill
+# loaders that require it.
+GENERATED_HEADER='# AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh'
+
+skill_body=""
+for sf in "${SKILL_FILES[@]}"; do
+    if [ ! -f "$sf" ]; then
+        echo "ERROR: $sf not found" >&2
+        exit 1
+    fi
+    body=$(strip_frontmatter "$sf")
+    rel="shared/skill/$(basename "$sf")"
+    if [ -z "$skill_body" ]; then
+        skill_body="$body"
+    else
+        skill_body=$(printf '%s\n\n<!-- ===== %s ===== -->\n\n%s' "$skill_body" "$rel" "$body")
+    fi
+done
 
 # Format guard/patterns.json into prose for instruction-only runtimes.
 patterns_prose=$(cat <<'EOF'
@@ -77,6 +110,28 @@ if [ -f "$codex_template" ]; then
         { print }
     ' "$codex_template")
     emit "$codex_target" "$rendered"
+fi
+
+# --- Generate Codex home-level main skill ---
+# `runtimes/codex/skills/no-vibe/SKILL.md` is shipped to
+# `~/.codex/no-vibe/skills/no-vibe/SKILL.md` by install-codex.sh for
+# Codex's skill-discovery surface. It must stand alone (not just point
+# at shared/) — bundle the full skill body inline, same as AGENTS.md.
+# The other four command-scoped skills (no-vibe-btw / -challenge /
+# -forget / -clear) stay hand-maintained as small command stubs.
+codex_main_skill="$RUNTIMES/codex/skills/no-vibe/SKILL.md"
+if [ -f "$SHARED/skill/SKILL.md" ] && [ -d "$RUNTIMES/codex/skills/no-vibe" ]; then
+    # Reuse shared SKILL.md's frontmatter verbatim (name + description),
+    # inject AUTO-GENERATED marker as a YAML comment inside it, then
+    # append the bundled skill_body as the body.
+    fm=$(awk -v hdr="$GENERATED_HEADER" '
+        BEGIN { in_fm=0; emitted=0 }
+        NR==1 && /^---$/ { print; in_fm=1; next }
+        in_fm && /^---$/ { print hdr; print; in_fm=0; emitted=1; next }
+        in_fm { print }
+    ' "$SHARED/skill/SKILL.md")
+    rendered=$(printf '%s\n\n%s\n' "$fm" "$skill_body")
+    emit "$codex_main_skill" "$rendered"
 fi
 
 # --- Generate Gemini GEMINI.md ---
@@ -126,8 +181,6 @@ done
 # and commands at <source>/commands/. Hooks read <source>/shared/guard/*.json.
 # Populate all three from /shared/.
 
-CLAUDE_GENERATED_HEADER='# AUTO-GENERATED FROM /shared — DO NOT EDIT — run scripts/sync.sh'
-
 claude_skills_dir="$RUNTIMES/claude/skills/no-vibe"
 claude_commands_dir="$RUNTIMES/claude/commands"
 claude_guard_dir="$RUNTIMES/claude/shared/guard"
@@ -160,7 +213,7 @@ for src in "$SHARED/skill"/*.md; do
     [ -f "$src" ] || continue
     name=$(basename "$src")
     dest="$claude_skills_dir/$name"
-    rendered=$(inject_header "$src" "$CLAUDE_GENERATED_HEADER")
+    rendered=$(inject_header "$src" "$GENERATED_HEADER")
     emit "$dest" "$rendered"
 done
 
@@ -169,7 +222,7 @@ for src in "$SHARED/commands"/*.md; do
     [ -f "$src" ] || continue
     name=$(basename "$src")
     dest="$claude_commands_dir/$name"
-    rendered=$(inject_header "$src" "$CLAUDE_GENERATED_HEADER")
+    rendered=$(inject_header "$src" "$GENERATED_HEADER")
     emit "$dest" "$rendered"
 done
 

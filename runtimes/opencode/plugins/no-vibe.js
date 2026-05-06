@@ -40,12 +40,37 @@ const stripFrontmatter = (content) => {
   return match ? match[1] : content
 }
 
+// Bundle every shared/skill/*.md into the bootstrap. OpenCode registers
+// the shared/skill directory as a skills path, but only SKILL.md has
+// frontmatter — phases.md / curriculum.md / teaching-style.md /
+// reference-grounding.md are companion docs, not standalone skills, so
+// they are not auto-discovered. Inline them so the model sees the full
+// teaching discipline at session start. Order matches scripts/sync.sh.
+const SKILL_FILES = [
+  "SKILL.md",
+  "phases.md",
+  "teaching-style.md",
+  "reference-grounding.md",
+  "curriculum.md",
+]
+
 const buildBootstrap = () => {
-  const skillPath = path.join(SHARED_DIR, "skill", "SKILL.md")
-  let skillBody = "You are in no-vibe tutor mode. Teach in chat; never write project files."
-  if (fs.existsSync(skillPath)) {
-    skillBody = stripFrontmatter(fs.readFileSync(skillPath, "utf8")).trim()
+  const parts = []
+  for (const name of SKILL_FILES) {
+    const p = path.join(SHARED_DIR, "skill", name)
+    if (!fs.existsSync(p)) continue
+    const body = stripFrontmatter(fs.readFileSync(p, "utf8")).trim()
+    if (!body) continue
+    if (parts.length === 0) {
+      parts.push(body)
+    } else {
+      parts.push(`<!-- ===== shared/skill/${name} ===== -->\n\n${body}`)
+    }
   }
+  const skillBody =
+    parts.length > 0
+      ? parts.join("\n\n")
+      : "You are in no-vibe tutor mode. Teach in chat; never write project files."
   return [
     `<!-- ${BOOTSTRAP_SENTINEL} -->`,
     "<EXTREMELY_IMPORTANT>",
