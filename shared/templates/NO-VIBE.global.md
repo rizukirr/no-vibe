@@ -27,4 +27,12 @@ Add a line below for each clause that doesn't fit you. Examples:
 AI may also add lines here when it observes a deviation across 2+ sessions.
 You can edit or delete any line. Run `/no-vibe-forget` to reset to default
 (prior version archived to ~/.no-vibe/memory/).
+
+Project teaching preferences
+
+Use this default teaching structure in every response:
+  1) <title>
+  2) <short description + purpose or goals of this section>
+  3) <show code>
+  4) <explain code>
 -->
