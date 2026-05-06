@@ -16,25 +16,33 @@ const stripFrontmatter = (content: string): string => {
   return match ? match[1] : content;
 };
 
-const buildBootstrap = (): string => {
+const readNoVibeMd = (label: string, p: string): string => {
+  if (!fs.existsSync(p)) return "";
+  const body = fs.readFileSync(p, "utf8");
+  return `\n\n=== ${label} (${p}) ===\n${body}\n=== END ${label} ===`;
+};
+
+const buildBootstrap = (cwd: string): string => {
   const skillPath = path.join(SKILLS_DIR, "no-vibe", "SKILL.md");
-  const schemaPath = path.join(SKILLS_DIR, "no-vibe", "DATA-SCHEMA.md");
   let skillBody = "You are in no-vibe mode. Teach in chat and never write project files directly.";
-  let schemaBody = "";
 
   if (fs.existsSync(skillPath)) {
     skillBody = stripFrontmatter(fs.readFileSync(skillPath, "utf8")).trim();
   }
-  if (fs.existsSync(schemaPath)) {
-    schemaBody = "\n\n## Data Schema Reference\n\n" + stripFrontmatter(fs.readFileSync(schemaPath, "utf8")).trim();
-  }
+
+  // Adaptation Iron Law: inject both NO-VIBE.md files into the system
+  // prompt so the AI literally cannot start a teaching reply without
+  // seeing the user's stated preferences.
+  const globalNoVibe = readNoVibeMd("USER TEACHING PREFERENCES", path.join(os.homedir(), ".no-vibe", "NO-VIBE.md"));
+  const projectNoVibe = readNoVibeMd("PROJECT TEACHING CANVAS", path.join(cwd, ".no-vibe", "NO-VIBE.md"));
 
   return [
     "<EXTREMELY_IMPORTANT>",
     "no-vibe mode is available in this repository.",
     "",
     skillBody,
-    schemaBody,
+    globalNoVibe,
+    projectNoVibe,
     "",
     "**Tool Mapping for Pi:**",
     "Pi's built-in tools are `read`, `write`, `edit`, `bash`. The write guard refuses `write`/`edit` outside `.no-vibe/` and rejects destructive `bash` patterns when `.no-vibe/active` exists. Show code in chat — do not call write tools on project files.",
@@ -201,10 +209,11 @@ const statusLine = (projectRoot: string): string | null => {
 };
 
 export default async function (pi: ExtensionAPI) {
-  const bootstrap = buildBootstrap();
-
   pi.on("before_agent_start", async (event: any) => {
     const cwd = path.resolve(event?.cwd || process.cwd());
+    // Build per-session so NO-VIBE.md content reflects the current cwd
+    // and any user edits since the last session start.
+    const bootstrap = buildBootstrap(cwd);
     const status = statusLine(cwd);
     const framed = status ? `${status}\n\n${bootstrap}` : bootstrap;
     return { systemPrompt: `${event.systemPrompt}\n\n${framed}` };

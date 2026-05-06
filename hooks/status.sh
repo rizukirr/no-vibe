@@ -53,4 +53,22 @@ if [ -d "$sessions_dir" ] && command -v jq >/dev/null 2>&1; then
 fi
 
 echo "$line"
+
+# --- Adaptation Iron Law: inject both NO-VIBE.md files into the system
+# prompt so the AI literally cannot start a teaching reply without seeing
+# the user's stated preferences. SKILL.md says "MUST read before any
+# teaching reply" — this hook makes the read free. ---
+
+emit_no_vibe_md() {
+    local label="$1" path="$2"
+    [ -f "$path" ] || return 0
+    echo
+    echo "=== $label ($path) ==="
+    cat "$path"
+    echo "=== END $label ==="
+}
+
+emit_no_vibe_md "USER TEACHING PREFERENCES" "$HOME/.no-vibe/NO-VIBE.md"
+emit_no_vibe_md "PROJECT TEACHING CANVAS"   "$cwd/.no-vibe/NO-VIBE.md"
+
 exit 0

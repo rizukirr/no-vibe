@@ -16,19 +16,25 @@ const PLUGIN_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 
 const getSkillsDir = () => path.resolve(PLUGIN_ROOT, "skills")
 
-const buildBootstrap = (skillsDir) => {
+const readNoVibeMd = (label, p) => {
+  if (!fs.existsSync(p)) return ""
+  const body = fs.readFileSync(p, "utf8")
+  return `\n\n=== ${label} (${p}) ===\n${body}\n=== END ${label} ===`
+}
+
+const buildBootstrap = (skillsDir, cwd) => {
   const skillPath = path.join(skillsDir, "no-vibe", "SKILL.md")
-  const schemaPath = path.join(skillsDir, "no-vibe", "DATA-SCHEMA.md")
   let skillBody = "You are in no-vibe mode. Teach in chat and never write project files directly."
-  let schemaBody = ""
 
   if (fs.existsSync(skillPath)) {
     skillBody = stripFrontmatter(fs.readFileSync(skillPath, "utf8")).trim()
   }
 
-  if (fs.existsSync(schemaPath)) {
-    schemaBody = "\n\n## Data Schema Reference\n\n" + stripFrontmatter(fs.readFileSync(schemaPath, "utf8")).trim()
-  }
+  // Adaptation Iron Law: inject both NO-VIBE.md files into the system
+  // prompt so the AI literally cannot start a teaching reply without
+  // seeing the user's stated preferences.
+  const globalNoVibe = readNoVibeMd("USER TEACHING PREFERENCES", path.join(os.homedir(), ".no-vibe", "NO-VIBE.md"))
+  const projectNoVibe = readNoVibeMd("PROJECT TEACHING CANVAS", path.join(cwd, ".no-vibe", "NO-VIBE.md"))
 
   return [
     `<!-- ${BOOTSTRAP_SENTINEL} -->`,
@@ -36,7 +42,8 @@ const buildBootstrap = (skillsDir) => {
     "no-vibe mode is available in this repository.",
     "",
     skillBody,
-    schemaBody,
+    globalNoVibe,
+    projectNoVibe,
     "",
     "**Tool Mapping for OpenCode:**",
     "When skill content references tools you do not have, use OpenCode equivalents:",
@@ -189,7 +196,7 @@ const isWithinNoVibeDir = (cwd, absoluteTargetPath) => {
 export const NoVibePlugin = async ({ directory } = {}) => {
   const projectRoot = path.resolve(directory || process.cwd())
   const skillsDir = getSkillsDir()
-  const bootstrap = buildBootstrap(skillsDir)
+  const bootstrap = buildBootstrap(skillsDir, projectRoot)
   const resumeHint = () => {
     const sessionsDir = path.join(projectRoot, ".no-vibe", "data", "sessions")
     if (!fs.existsSync(sessionsDir)) return null
