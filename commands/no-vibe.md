@@ -40,10 +40,14 @@ Determine which form was invoked:
   ```bash
   # Project level
   mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/active
-  [ -f .no-vibe/NO-VIBE.md ] || cp "${CLAUDE_PLUGIN_ROOT}/templates/NO-VIBE.project.md" .no-vibe/NO-VIBE.md
+  # NO-VIBE.md seeding: the SessionStart hook re-seeds from templates/ on
+  # next session, so this is a best-effort same-session seed. Fails closed
+  # (silent) if CLAUDE_PLUGIN_ROOT isn't set (e.g., on Codex inheriting
+  # Claude's commands/) — the hook still covers it next time.
+  [ -f .no-vibe/NO-VIBE.md ] || cp "${CLAUDE_PLUGIN_ROOT:-}/templates/NO-VIBE.project.md" .no-vibe/NO-VIBE.md 2>/dev/null || true
   # Global level
   mkdir -p ~/.no-vibe
-  [ -f ~/.no-vibe/NO-VIBE.md ] || cp "${CLAUDE_PLUGIN_ROOT}/templates/NO-VIBE.global.md" ~/.no-vibe/NO-VIBE.md
+  [ -f ~/.no-vibe/NO-VIBE.md ] || cp "${CLAUDE_PLUGIN_ROOT:-}/templates/NO-VIBE.global.md" ~/.no-vibe/NO-VIBE.md 2>/dev/null || true
   ```
 - If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first (which includes conditional NO-VIBE.md updates per the cadence rule). Then `rm -f .no-vibe/active`
 
