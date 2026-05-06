@@ -1,3 +1,8 @@
+---
+name: no-vibe-forget
+description: Reset both NO-VIBE.md files to defaults while archiving prior versions.
+---
+
 # no-vibe-forget
 
 Reset both no-vibe memory profiles to defaults while archiving prior versions.

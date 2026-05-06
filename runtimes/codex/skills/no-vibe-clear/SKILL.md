@@ -1,3 +1,8 @@
+---
+name: no-vibe-clear
+description: Permanently delete project and global no-vibe state after explicit strong confirmation.
+---
+
 # no-vibe-clear
 
 Permanently remove all no-vibe state for current project and current user.
