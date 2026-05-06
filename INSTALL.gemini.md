@@ -57,6 +57,23 @@ hook. If you need a hard block, use the Claude Code or OpenCode surface.
 /no-vibe off                               # exit
 ```
 
+## Customizing teaching style
+
+no-vibe adapts via two plain-Markdown files: `~/.no-vibe/NO-VIBE.md` (global teaching style — applies in any project) and `.no-vibe/NO-VIBE.md` (per-project canvas — teaching format, conventions, notes for *this* codebase).
+
+Gemini has no SessionStart hook, so the AI is instructed (per `GEMINI.md` and `skills/no-vibe/SKILL.md`) to seed both from `templates/` on first activation. For more reliable behavior, seed them yourself with a one-time copy:
+
+```bash
+# Global (once per machine)
+mkdir -p ~/.no-vibe
+[ -f ~/.no-vibe/NO-VIBE.md ] || cp ~/.gemini/no-vibe/templates/NO-VIBE.global.md ~/.no-vibe/NO-VIBE.md
+
+# Per-project (once per project, after `/no-vibe on`)
+[ -f .no-vibe/NO-VIBE.md ] || cp ~/.gemini/no-vibe/templates/NO-VIBE.project.md .no-vibe/NO-VIBE.md
+```
+
+Edit either file at any time to override the defaults — the AI re-reads them every turn. The defaults are starting points, not gospel; replace clauses cleanly when something better serves you.
+
 ## Troubleshooting
 
 - Commands not found: verify `~/.gemini/extensions/no-vibe/.gemini/commands/` contains the `.toml` files.
