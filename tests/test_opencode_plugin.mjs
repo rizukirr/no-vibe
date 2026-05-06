@@ -56,8 +56,8 @@ const run = async () => {
   assert.ok(first.text.includes("no-vibe"), "bootstrap should mention no-vibe")
   assert.ok(first.text.includes("OpenCode"), "bootstrap should mention OpenCode")
   assert.ok(
-    first.text.includes("Data Schema") || first.text.includes("DATA-SCHEMA") || first.text.includes("profile.md"),
-    "bootstrap should include data schema content",
+    first.text.includes("Iron Law") && first.text.includes("NO-VIBE.md"),
+    "bootstrap should include skill body (Iron Law) and reference NO-VIBE.md",
   )
   assert.ok(
     !first.text.startsWith("no-vibe: ON") && !first.text.startsWith("no-vibe: OFF"),

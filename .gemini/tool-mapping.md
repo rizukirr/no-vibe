@@ -36,7 +36,8 @@ Show code in chat; user types it.
 
 ## Data persistence
 
-Use `save_memory` sparingly — no-vibe's learner state lives in
-`.no-vibe/data/` (project) and `~/.no-vibe/` (global), both governed by
-`skills/no-vibe/DATA-SCHEMA.md`. Do not duplicate that state into Gemini
-memory.
+Use `save_memory` sparingly — no-vibe's adaptation state lives in two
+plain-Markdown files: `~/.no-vibe/NO-VIBE.md` (global teaching style) and
+`.no-vibe/NO-VIBE.md` (project canvas). Per-session cycle state lives in
+`.no-vibe/data/sessions/<slug>.json`. Do not duplicate any of those into
+Gemini memory — write directly to the Markdown / JSON files.

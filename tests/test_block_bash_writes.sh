@@ -229,12 +229,12 @@ test_relative_project_denied
 test_non_bash_allowed
 test_amp_redirect_denied
 
-# --- Test 20: redirect into $HOME/.no-vibe/ (global learner state) → allow ---
+# --- Test 20: redirect into $HOME/.no-vibe/ (global teaching prefs) → allow ---
 test_redirect_into_home_scratch_allowed() {
     local cwd; cwd=$(make_sandbox)
     local fake_home; fake_home=$(mktemp -d -p "$SANDBOX_ROOT")
     mkdir -p "$fake_home/.no-vibe"
-    run_hook_with_home "$cwd" "$fake_home" "echo hi > $fake_home/.no-vibe/profile.md" >/dev/null
+    run_hook_with_home "$cwd" "$fake_home" "echo hi > $fake_home/.no-vibe/NO-VIBE.md" >/dev/null
     local rc=$?
     rm -rf "$cwd" "$fake_home"
     assert_eq "0" "$rc" "redirect into \$HOME/.no-vibe/ → allow"

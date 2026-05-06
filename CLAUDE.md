@@ -54,16 +54,16 @@ If one changes, update the others.
 - `.gemini/commands/no-vibe*.toml` (Gemini)
 - Codex reuses Claude's `commands/` via `INSTALL.codex.md`
 
-**Teaching logic** lives in `skills/no-vibe/SKILL.md` (six-phase cycle) and is shared across all surfaces. Data contracts for learner tracking are in `skills/no-vibe/DATA-SCHEMA.md` — session/mistake/ai-note JSON plus global `profile.md` + synth-state contracts must match.
+**Teaching logic** lives in `skills/no-vibe/SKILL.md` (six-phase cycle) and is shared across all surfaces.
 
 **Entrypoints:** `index.js` re-exports `.opencode/plugins/no-vibe.js` for OpenCode's plugin loader. Claude discovers via `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`. Gemini via `gemini-extension.json` + `GEMINI.md`. Pi via `.pi-plugin/plugin.json` and the `pi` key in `package.json` (`skills`, `prompts`, `extensions`).
 
-## Two data-file semantics that are easy to misread
+## Two data layers (easy to confuse)
 
-- `mistakes.json` records **teaching failures** (AI gap + corrective action), not learner flaws. Every entry needs `pck_gap`, `load_mismatch`, `gap_action`, `applied`.
-- `ai-notes.json` records **user-driven AI adjustments** (corrections, preferences, requests).
+- **Adaptation memory — two NO-VIBE.md files.** `~/.no-vibe/NO-VIBE.md` is global teaching style (Feynman defaults + user additions). `.no-vibe/NO-VIBE.md` is the project canvas (teaching format, conventions, notes). Defaults are seeded from `templates/NO-VIBE.global.md` and `templates/NO-VIBE.project.md` on first activation. The four runtime hooks (`hooks/status.sh`, `.opencode/plugins/no-vibe.js`, `.pi-plugin/extensions/no-vibe/index.ts`, plus the Codex/Gemini context files) inject both contents into the system prompt at session start so the AI cannot skip the user's stated preferences (the "Adaptation Iron Law" in `skills/no-vibe/SKILL.md`).
+- **Cycle state — per-session JSON.** `.no-vibe/data/sessions/<slug>.json` tracks `current_phase`, `current_layer`, `revision_id`, `status`, `layers_total`, `layers_completed`. This is the state machine for the six-phase cycle, not adaptation memory.
 
-Both are project-level logs in `.no-vibe/data/`; the cross-project learner model is synthesized into `~/.no-vibe/profile.md` (with `.synth-state.json` bookkeeping). See `skills/no-vibe/DATA-SCHEMA.md` for field semantics and legacy-entry tolerance.
+The two layers do not overlap. Adaptation belongs in NO-VIBE.md; cycle progress belongs in session JSON. Putting one in the other is the v1 anti-pattern this design replaces.
 
 ## Versioning
 

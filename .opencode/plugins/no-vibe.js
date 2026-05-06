@@ -16,18 +16,58 @@ const PLUGIN_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 
 const getSkillsDir = () => path.resolve(PLUGIN_ROOT, "skills")
 
-const buildBootstrap = (skillsDir) => {
+const seedIfMissing = (target, template) => {
+  if (fs.existsSync(target)) return
+  if (!fs.existsSync(template)) return
+  try {
+    fs.mkdirSync(path.dirname(target), { recursive: true })
+    fs.copyFileSync(template, target)
+  } catch {
+    // Permission errors etc. — silent; the placeholder branch below covers it.
+  }
+}
+
+const readNoVibeMd = (label, p, placeholder) => {
+  if (fs.existsSync(p)) {
+    const body = fs.readFileSync(p, "utf8")
+    return `\n\n=== ${label} (${p}) ===\n${body}\n=== END ${label} ===`
+  }
+  return `\n\n=== ${label} (not yet customized — ${p} missing) ===\n${placeholder}\n=== END ${label} ===`
+}
+
+const buildBootstrap = (skillsDir, cwd) => {
   const skillPath = path.join(skillsDir, "no-vibe", "SKILL.md")
-  const schemaPath = path.join(skillsDir, "no-vibe", "DATA-SCHEMA.md")
   let skillBody = "You are in no-vibe mode. Teach in chat and never write project files directly."
-  let schemaBody = ""
 
   if (fs.existsSync(skillPath)) {
     skillBody = stripFrontmatter(fs.readFileSync(skillPath, "utf8")).trim()
   }
 
-  if (fs.existsSync(schemaPath)) {
-    schemaBody = "\n\n## Data Schema Reference\n\n" + stripFrontmatter(fs.readFileSync(schemaPath, "utf8")).trim()
+  // Adaptation Iron Law: seed both NO-VIBE.md files from templates/ if
+  // missing, then inject contents so the AI literally cannot start a
+  // teaching reply without seeing the user's stated preferences. Gated
+  // on `.no-vibe/active` existing — projects that have not opted into
+  // no-vibe mode should not have a `.no-vibe/` directory created as a
+  // side effect of plugin loading.
+  const noVibeActive = fs.existsSync(path.join(cwd, ".no-vibe", "active"))
+  let globalNoVibe = ""
+  let projectNoVibe = ""
+  if (noVibeActive) {
+    const templatesDir = path.resolve(PLUGIN_ROOT, "templates")
+    const globalPath = path.join(os.homedir(), ".no-vibe", "NO-VIBE.md")
+    const projectPath = path.join(cwd, ".no-vibe", "NO-VIBE.md")
+    seedIfMissing(globalPath, path.join(templatesDir, "NO-VIBE.global.md"))
+    seedIfMissing(projectPath, path.join(templatesDir, "NO-VIBE.project.md"))
+    globalNoVibe = readNoVibeMd(
+      "USER TEACHING PREFERENCES",
+      globalPath,
+      "User has not yet customized teaching style. Apply the Feynman default style from skills/no-vibe/SKILL.md.",
+    )
+    projectNoVibe = readNoVibeMd(
+      "PROJECT TEACHING CANVAS",
+      projectPath,
+      "Project has no canvas yet. Apply the default Where -> code -> why -> run+verify format from skills/no-vibe/SKILL.md.",
+    )
   }
 
   return [
@@ -36,7 +76,8 @@ const buildBootstrap = (skillsDir) => {
     "no-vibe mode is available in this repository.",
     "",
     skillBody,
-    schemaBody,
+    globalNoVibe,
+    projectNoVibe,
     "",
     "**Tool Mapping for OpenCode:**",
     "When skill content references tools you do not have, use OpenCode equivalents:",
@@ -189,7 +230,7 @@ const isWithinNoVibeDir = (cwd, absoluteTargetPath) => {
 export const NoVibePlugin = async ({ directory } = {}) => {
   const projectRoot = path.resolve(directory || process.cwd())
   const skillsDir = getSkillsDir()
-  const bootstrap = buildBootstrap(skillsDir)
+  const bootstrap = buildBootstrap(skillsDir, projectRoot)
   const resumeHint = () => {
     const sessionsDir = path.join(projectRoot, ".no-vibe", "data", "sessions")
     if (!fs.existsSync(sessionsDir)) return null

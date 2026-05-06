@@ -45,12 +45,12 @@ grep -rl '"status": "in_progress"' .no-vibe/data/sessions/ 2>/dev/null
 - Use the focus area to narrow the challenge topic
 - Combine with session/project context for relevance
 
-### 3. Read learner profile
+### 3. Read teaching preferences
 
-Read `~/.no-vibe/profile.md` and `.no-vibe/data/mistakes.json` if they exist. Calibrate challenge difficulty:
-- `struggling`/`new` → smaller scope, more specific acceptance criteria
-- `comfortable`/`strong` → broader scope, less hand-holding
-- Recurring mistake categories → design challenge to practice that area
+Read `~/.no-vibe/NO-VIBE.md` and `.no-vibe/NO-VIBE.md` if they exist. Calibrate challenge difficulty:
+- Global `## User additions` mentions topic competence ("solid on Go", "new to async") → tune scope accordingly.
+- Project `## Conventions` names patterns the user has committed to → align challenge to those patterns.
+- Project `## Notes` may flag deferred items worth reinforcing in the challenge.
 
 ### 4. Present the challenge
 

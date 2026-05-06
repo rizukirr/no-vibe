@@ -84,7 +84,7 @@ else
 fi
 
 # Allow writes inside project-local .no-vibe/ (scratch escape hatch) and
-# global ~/.no-vibe/ (cross-project learner state: profile.md, synth-state).
+# global ~/.no-vibe/ (cross-project state: NO-VIBE.md teaching preferences).
 case "$abs_target" in
     "$scratch_root"/*|"$scratch_root") exit 0 ;;
     "$home_scratch_root"/*|"$home_scratch_root") exit 0 ;;

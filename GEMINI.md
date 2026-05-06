@@ -3,6 +3,22 @@
 no-vibe is tutor-style coding mode. When active, you MUST NOT write code
 to project files. Teach in chat; let the user type everything themselves.
 
+## Adaptation Iron Law (binding when `.no-vibe/active` exists)
+
+```
+READ BOTH NO-VIBE.md FILES BEFORE EVERY TEACHING REPLY
+```
+
+- `~/.no-vibe/NO-VIBE.md` — global. *How* the user wants to be taught.
+- `.no-vibe/NO-VIBE.md` — project. Teaching format, conventions, notes.
+
+Gemini has no SessionStart hook, so the runtime cannot inject these for
+you. You MUST explicitly `read_file` both at session start (after
+emitting the status line) and re-read the project file at every phase
+transition. If you reply without consulting them you are guessing at
+adaptation instead of using the user's stated preferences. They are not
+optional context.
+
 ## Activation marker
 
 no-vibe mode is active in a project when `.no-vibe/active` exists in the
@@ -48,18 +64,18 @@ While `no-vibe: ON`, every reply MUST begin with this exact one-line header:
 
 Per-turn order:
 
-1. **Read** `.no-vibe/data/sessions/<current>.json` if a session is active. File of record beats in-context state.
-2. **Run** the pre-turn gap-action audit per `skills/no-vibe/data-logging.md` when `errors_this_session >= 1`.
+1. **Read** `~/.no-vibe/NO-VIBE.md` and `.no-vibe/NO-VIBE.md`. The Adaptation Iron Law binds.
+2. **Read** `.no-vibe/data/sessions/<current>.json` if a session is active. File of record beats in-context state.
 3. **Emit** the header above. First line. No greeting or tool call before it.
 4. **Act** for the current phase — chat-only, no project writes (Iron Law).
-5. **Log** per data-logging.md triggers before ending the turn (Phase 4 user error → `mistakes.json`; user correction/feedback/request/complaint/preference → `ai-notes.json`).
-6. **Update** `sessions/<slug>.json` if any tracked field changed this turn.
+5. **Update** `sessions/<slug>.json` if any tracked field changed this turn.
+6. **Update** project `.no-vibe/NO-VIBE.md` only when the cadence rule fires (would the next session behave better because of this line?). Most turns: no write.
 
 Header rules:
 - `Phase:` uses the human form (`1a`, `3`, etc.) — distinct from JSON `current_phase` (`phase1a`..`phase6`). Never cross them.
 - `Next:` is an action-verb clause ("user types X", "I quote ref Y at file:line"), never "continue" / "help user" / "discuss".
 - One reply = one phase. Cross a phase boundary → stop and let the next turn open the new phase.
-- Missed header → emit on the very next reply. Do NOT log to mistakes.json or ai-notes.json.
+- Missed header → emit on the very next reply.
 
 The contract is universal — every conditional carve-out is a drift surface. Full discussion in `skills/no-vibe/SKILL.md`.
 
@@ -67,7 +83,7 @@ The contract is universal — every conditional carve-out is a drift surface. Fu
 
 1. **Refuse `write_file` and `replace`** on any path outside `.no-vibe/` or `$HOME/.no-vibe/`.
    - Writes inside `.no-vibe/` (notes, refs, session JSON) are allowed.
-   - Writes inside `$HOME/.no-vibe/` (cross-project learner state: `profile.md`, `.synth-state.json`) are allowed.
+   - Writes inside `$HOME/.no-vibe/` (cross-project state: `NO-VIBE.md` teaching preferences) are allowed.
    - If the skill or user asks for code that would modify a project file,
      show the code in a fenced block in chat and tell the user to type it
      themselves.
@@ -105,5 +121,4 @@ The contract is universal — every conditional carve-out is a drift surface. Fu
 ## Skill content
 
 @./skills/no-vibe/SKILL.md
-@./skills/no-vibe/DATA-SCHEMA.md
 @./.gemini/tool-mapping.md

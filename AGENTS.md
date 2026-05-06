@@ -32,9 +32,9 @@
 
 ## Conventions that are easy to miss
 - Keep behavior aligned across the three hard-block surfaces — Claude shell hooks (`hooks/block-writes.sh`, `hooks/block-bash-writes.sh`), OpenCode plugin guard (`.opencode/plugins/no-vibe.js`), and Pi extension (`.pi-plugin/extensions/no-vibe/index.ts`). If one path-handling, allowlist, or Bash-pattern rule changes, update the others.
-- Keep command docs aligned across `commands/`, `.opencode/commands/`, `.pi-plugin/prompts/`, and `.gemini/commands/` when changing no-vibe flow or data-tracking requirements.
-- Data contracts for learner tracking live in `skills/no-vibe/DATA-SCHEMA.md`; session/mistake/ai-note JSON plus global `profile.md`/synth-state structures should match that schema.
-- `mistakes.json` records *teaching failures*, not learner flaws: every entry captures the AI teaching gap that caused a user error, plus the corrective action. `ai-notes.json` captures user-driven AI adjustments (corrections, preferences, requests). See DATA-SCHEMA.md for field semantics and legacy-entry tolerance.
+- Keep command docs aligned across `commands/`, `.opencode/commands/`, `.pi-plugin/prompts/`, and `.gemini/commands/` when changing no-vibe flow or memory requirements.
+- Adaptation memory is two plain-Markdown files: `~/.no-vibe/NO-VIBE.md` (global teaching style) and `.no-vibe/NO-VIBE.md` (project canvas). Defaults are seeded from `templates/NO-VIBE.global.md` and `templates/NO-VIBE.project.md`. The four runtime hooks (`hooks/status.sh`, `.opencode/plugins/no-vibe.js`, `.pi-plugin/extensions/no-vibe/index.ts`, plus the Codex/Gemini context files) inject both NO-VIBE.md contents into the system prompt at session start so the AI cannot skip the user's stated preferences.
+- Per-session JSON state (`.no-vibe/data/sessions/<slug>.json`) still tracks `current_phase`, `current_layer`, `revision_id`, `status`, etc. — that is the cycle state machine, separate from adaptation memory.
 - `.no-vibe/` is intentionally writable during active mode; project paths outside it are intentionally blocked.
 
 ## Release/versioning notes

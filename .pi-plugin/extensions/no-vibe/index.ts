@@ -16,17 +16,58 @@ const stripFrontmatter = (content: string): string => {
   return match ? match[1] : content;
 };
 
-const buildBootstrap = (): string => {
+const seedIfMissing = (target: string, template: string): void => {
+  if (fs.existsSync(target)) return;
+  if (!fs.existsSync(template)) return;
+  try {
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(template, target);
+  } catch {
+    // Permission errors etc. — silent; the placeholder branch below covers it.
+  }
+};
+
+const readNoVibeMd = (label: string, p: string, placeholder: string): string => {
+  if (fs.existsSync(p)) {
+    const body = fs.readFileSync(p, "utf8");
+    return `\n\n=== ${label} (${p}) ===\n${body}\n=== END ${label} ===`;
+  }
+  return `\n\n=== ${label} (not yet customized — ${p} missing) ===\n${placeholder}\n=== END ${label} ===`;
+};
+
+const buildBootstrap = (cwd: string): string => {
   const skillPath = path.join(SKILLS_DIR, "no-vibe", "SKILL.md");
-  const schemaPath = path.join(SKILLS_DIR, "no-vibe", "DATA-SCHEMA.md");
   let skillBody = "You are in no-vibe mode. Teach in chat and never write project files directly.";
-  let schemaBody = "";
 
   if (fs.existsSync(skillPath)) {
     skillBody = stripFrontmatter(fs.readFileSync(skillPath, "utf8")).trim();
   }
-  if (fs.existsSync(schemaPath)) {
-    schemaBody = "\n\n## Data Schema Reference\n\n" + stripFrontmatter(fs.readFileSync(schemaPath, "utf8")).trim();
+
+  // Adaptation Iron Law: seed both NO-VIBE.md files from templates/ if
+  // missing, then inject contents so the AI literally cannot start a
+  // teaching reply without seeing the user's stated preferences. Gated
+  // on `.no-vibe/active` existing — projects that have not opted into
+  // no-vibe mode should not have a `.no-vibe/` directory created as a
+  // side effect of plugin loading.
+  const noVibeActive = fs.existsSync(path.join(cwd, ".no-vibe", "active"));
+  let globalNoVibe = "";
+  let projectNoVibe = "";
+  if (noVibeActive) {
+    const templatesDir = path.join(PLUGIN_ROOT, "templates");
+    const globalPath = path.join(os.homedir(), ".no-vibe", "NO-VIBE.md");
+    const projectPath = path.join(cwd, ".no-vibe", "NO-VIBE.md");
+    seedIfMissing(globalPath, path.join(templatesDir, "NO-VIBE.global.md"));
+    seedIfMissing(projectPath, path.join(templatesDir, "NO-VIBE.project.md"));
+    globalNoVibe = readNoVibeMd(
+      "USER TEACHING PREFERENCES",
+      globalPath,
+      "User has not yet customized teaching style. Apply the Feynman default style from skills/no-vibe/SKILL.md.",
+    );
+    projectNoVibe = readNoVibeMd(
+      "PROJECT TEACHING CANVAS",
+      projectPath,
+      "Project has no canvas yet. Apply the default Where -> code -> why -> run+verify format from skills/no-vibe/SKILL.md.",
+    );
   }
 
   return [
@@ -34,7 +75,8 @@ const buildBootstrap = (): string => {
     "no-vibe mode is available in this repository.",
     "",
     skillBody,
-    schemaBody,
+    globalNoVibe,
+    projectNoVibe,
     "",
     "**Tool Mapping for Pi:**",
     "Pi's built-in tools are `read`, `write`, `edit`, `bash`. The write guard refuses `write`/`edit` outside `.no-vibe/` and rejects destructive `bash` patterns when `.no-vibe/active` exists. Show code in chat — do not call write tools on project files.",
@@ -201,10 +243,11 @@ const statusLine = (projectRoot: string): string | null => {
 };
 
 export default async function (pi: ExtensionAPI) {
-  const bootstrap = buildBootstrap();
-
   pi.on("before_agent_start", async (event: any) => {
     const cwd = path.resolve(event?.cwd || process.cwd());
+    // Build per-session so NO-VIBE.md content reflects the current cwd
+    // and any user edits since the last session start.
+    const bootstrap = buildBootstrap(cwd);
     const status = statusLine(cwd);
     const framed = status ? `${status}\n\n${bootstrap}` : bootstrap;
     return { systemPrompt: `${event.systemPrompt}\n\n${framed}` };
