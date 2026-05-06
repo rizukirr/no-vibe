@@ -6,6 +6,7 @@ Gemini CLI uses extensions. Install copies the extension tree into Gemini's exte
 
 ```bash
 git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
+rm -rf "$HOME/.gemini/extensions/no-vibe"
 bash ~/tools/no-vibe/install/install-gemini.sh
 ```
 
@@ -27,27 +28,30 @@ git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
 REPO=~/tools/no-vibe
 DEST="$HOME/.gemini/extensions/no-vibe"
 
-# 2. Regenerate runtimes/gemini/ from /shared/ (GEMINI.md + .toml commands)
+# 2. Remove old Gemini no-vibe extension first (fresh install/update)
+rm -rf "$DEST"
+
+# 3. Regenerate runtimes/gemini/ from /shared/ (GEMINI.md + .toml commands)
 bash "$REPO/scripts/sync.sh"
 
-# 3. Create destination tree
+# 4. Create destination tree
 mkdir -p "$DEST/.gemini/commands" "$DEST/skills/no-vibe"
 
-# 4. Copy runtime adapter
+# 5. Copy runtime adapter
 cp "$REPO/runtimes/gemini/gemini-extension.json" "$DEST/"
 cp "$REPO/runtimes/gemini/GEMINI.md" "$DEST/"
 cp "$REPO/runtimes/gemini/.gemini/tool-mapping.md" "$DEST/.gemini/"
 cp "$REPO"/runtimes/gemini/.gemini/commands/*.toml "$DEST/.gemini/commands/"
 
-# 5. Copy skill prose
+# 6. Copy skill prose
 cp "$REPO"/shared/skill/*.md "$DEST/skills/no-vibe/"
 
-# 6. Seed global ~/.no-vibe/ if first install
+# 7. Seed global ~/.no-vibe/ if first install
 mkdir -p "$HOME/.no-vibe/memory"
 [ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp "$REPO/shared/templates/NO-VIBE.global.md" "$HOME/.no-vibe/NO-VIBE.md"
 [ -f "$HOME/.no-vibe/memory/README.md" ] || cp "$REPO/shared/templates/memory-readme.md" "$HOME/.no-vibe/memory/README.md"
 
-# 7. Clean up — the clone is no longer needed
+# 8. Clean up — the clone is no longer needed
 rm -rf ~/tools/no-vibe
 ```
 

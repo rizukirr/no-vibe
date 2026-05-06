@@ -6,6 +6,7 @@ OpenCode has no marketplace. Install copies the plugin tree into OpenCode's plug
 
 ```bash
 git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
+rm -rf "$HOME/.config/opencode/plugins/no-vibe"
 bash ~/tools/no-vibe/install/install-opencode.sh
 ```
 
@@ -27,26 +28,29 @@ git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
 REPO=~/tools/no-vibe
 DEST="$HOME/.config/opencode/plugins/no-vibe"
 
-# 2. Create destination tree
+# 2. Remove old OpenCode no-vibe plugin first (fresh install/update)
+rm -rf "$DEST"
+
+# 3. Create destination tree
 mkdir -p "$DEST/plugins" "$DEST/commands" "$DEST/skills/no-vibe" \
          "$DEST/shared/guard" "$DEST/shared/templates"
 
-# 3. Copy runtime adapter
+# 4. Copy runtime adapter
 cp "$REPO/runtimes/opencode/plugins/no-vibe.js" "$DEST/plugins/"
 cp "$REPO/runtimes/opencode/index.js" "$DEST/"
 
-# 4. Copy shared content
+# 5. Copy shared content
 cp "$REPO"/shared/skill/*.md "$DEST/skills/no-vibe/"
 cp "$REPO"/shared/commands/*.md "$DEST/commands/"
 cp "$REPO"/shared/guard/*.json "$DEST/shared/guard/"
 cp "$REPO"/shared/templates/*.md "$DEST/shared/templates/"
 
-# 5. Seed global ~/.no-vibe/ if first install
+# 6. Seed global ~/.no-vibe/ if first install
 mkdir -p "$HOME/.no-vibe/memory"
 [ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp "$REPO/shared/templates/NO-VIBE.global.md" "$HOME/.no-vibe/NO-VIBE.md"
 [ -f "$HOME/.no-vibe/memory/README.md" ] || cp "$REPO/shared/templates/memory-readme.md" "$HOME/.no-vibe/memory/README.md"
 
-# 6. Clean up — the clone is no longer needed
+# 7. Clean up — the clone is no longer needed
 rm -rf ~/tools/no-vibe
 ```
 

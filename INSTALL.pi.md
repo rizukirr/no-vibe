@@ -12,6 +12,7 @@ Pi has no marketplace. Install copies the plugin tree into Pi's plugins director
 
 ```bash
 git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
+rm -rf "$HOME/.agents/skills/no-vibe" "$HOME/.pi/plugins/no-vibe" "$HOME/.pi/extensions/no-vibe"
 bash ~/tools/no-vibe/install/install-pi.sh
 ```
 
@@ -28,10 +29,8 @@ For when the script can't be run. These commands replicate `install/install-pi.s
 **Environment:** the commands below are bash. **If the user is on Windows**, translate to whichever shell they have — PowerShell, Git Bash, or WSL. Use `$env:USERPROFILE` (PowerShell) or `%USERPROFILE%` (cmd) instead of `$HOME`. On PowerShell, use `Copy-Item` for `cp` and `New-Item -ItemType Directory -Force` for `mkdir -p`. Same logical steps on every OS.
 
 ```bash
-# 0. Skip if already installed at any known Pi location
-for p in "$HOME/.agents/skills/no-vibe" "$HOME/.pi/plugins/no-vibe" "$HOME/.pi/extensions/no-vibe"; do
-    [ -d "$p" ] && { echo "Already installed at $p — abort"; return 0 2>/dev/null || exit 0; }
-done
+# 0. Remove old Pi no-vibe installs first (fresh install/update)
+rm -rf "$HOME/.agents/skills/no-vibe" "$HOME/.pi/plugins/no-vibe" "$HOME/.pi/extensions/no-vibe"
 
 # 1. Clone
 git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
@@ -65,12 +64,30 @@ Then restart Pi.
 
 ## Updating an existing install
 
-The Pi script **skips** if any existing install is detected — it won't auto-update. To upgrade, **remove the existing install first**, then re-run the install:
+The Pi script **skips** if any existing install is detected — it won't auto-update.
+
+Before removing anything, compare **installed** vs **latest** version so you can decide whether skipping is correct:
 
 ```bash
-# Check version in the existing install
-jq -r '.version' "$HOME/.pi/plugins/no-vibe/plugin.json" 2>/dev/null
+# Installed version (current Pi install)
+installed=$(jq -r '.version // empty' "$HOME/.pi/plugins/no-vibe/plugin.json" 2>/dev/null)
 
+# Latest version (from a freshly cloned no-vibe repo)
+latest=$(jq -r '.version // empty' "$HOME/tools/no-vibe/runtimes/pi/.pi-plugin/plugin.json" 2>/dev/null)
+
+printf 'installed=%s\nlatest=%s\n' "$installed" "$latest"
+
+# Decision
+if [ -n "$installed" ] && [ -n "$latest" ] && [ "$installed" = "$latest" ]; then
+  echo "Up-to-date: skip reinstall is expected."
+else
+  echo "Version differs (or unknown): remove existing install and reinstall."
+fi
+```
+
+If versions differ, remove the existing install first, then re-run install:
+
+```bash
 # Remove ALL known Pi install locations (they're mutually exclusive in practice but be thorough)
 rm -rf "$HOME/.agents/skills/no-vibe"
 rm -rf "$HOME/.pi/plugins/no-vibe"
