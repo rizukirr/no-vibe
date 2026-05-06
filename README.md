@@ -12,25 +12,27 @@ Pair with [vibekit](https://github.com/rizukirr/vibekit): vibekit when you want 
 - **Adapts to you.** You and the AI co-edit two `NO-VIBE.md` files that capture *how* you want to be taught.
 - **Your files stay yours.** Hard write-guards on Claude Code, OpenCode, and Pi block writes (file *and* Bash) outside `.no-vibe/**`. Codex/Gemini enforce the same rule via instruction.
 
-## Customizing how the AI teaches you
+## How NO-VIBE.md works
 
-no-vibe adapts via two plain-Markdown files. **You can edit either at any time** — the AI re-reads them every turn, so changes take effect immediately. They're seeded with sensible defaults on your first `/no-vibe on`; the defaults are starting points, not gospel.
+NO-VIBE.md is the AI's living memory of how to teach *you*. Two plain-Markdown files, seeded with sensible defaults on your first `/no-vibe on`:
 
-| File | Scope | What goes in it |
+| File | Scope | What lives in it |
 |---|---|---|
-| `~/.no-vibe/NO-VIBE.md` | Global — applies in any project | Teaching style: pacing, jargon tolerance, analogies you like, topics you're already solid on |
+| `~/.no-vibe/NO-VIBE.md` | Global — applies in any project | Teaching style: pacing, jargon tolerance, analogies that work for you, topics you're already solid on |
 | `.no-vibe/NO-VIBE.md` | This project only | Format for code blocks, project-specific conventions, notes the next session should pick up |
 
-**Why this matters for learning faster:** the AI's teaching is only as good as the model it has of you. Editing these files directly — instead of waiting for the AI to figure you out — closes the loop in one turn instead of ten. A few examples:
+**The AI maintains these files automatically.** It reads both at every turn (the *Adaptation Iron Law*), and writes back when it learns something durable about how you learn — *"the next session would behave better because of this line."* Most turns produce no write. The AI is meant to be conservative with edits so the file stays small and load-bearing.
+
+**You can edit either file directly at any time.** The AI re-reads them every turn, so your edit takes effect immediately. This is the fast path: instead of waiting for the AI to notice a pattern over five sessions, write it down once.
+
+Practical examples — anything in this style works:
 
 - *"Use Rust analogies when you explain memory or ownership."* → global, applies everywhere
 - *"I'm already solid on async/await — skip the basics."* → global, AI stops explaining what you know
 - *"This project uses tabs not spaces; don't comment on it."* → project, kills repeated nudges
 - *"Always show the failing run before the fix."* → global, changes how reviews happen
 
-If a default clause doesn't fit you, replace it. If something durable comes up mid-session, jot it under `## User additions` (global) or `## Notes` (project). The cadence rule for the AI: write only when *the next session would behave better because of this line*. You can be more liberal — it's your file.
-
-Per-session cycle state (current phase, layer, resume hints) lives separately in `.no-vibe/data/sessions/<slug>.json` — you generally don't touch that.
+The defaults are starting points, not gospel — replace any clause when something better fits you. Per-session cycle state (current phase, layer, resume hints) lives separately in `.no-vibe/data/sessions/<slug>.json` — you generally don't touch that.
 
 ## Quick start
 
