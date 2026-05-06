@@ -2,12 +2,12 @@
 
 Codex has no marketplace. It reads `AGENTS.md` from the project root, so install is **per-project**.
 
-## Steps
+## Steps (script)
 
 1. Clone the repo somewhere (one-time):
 
    ```bash
-   git clone https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
+   git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
    ```
 
 2. From inside the project the user wants tutor-mode in:
@@ -17,6 +17,38 @@ Codex has no marketplace. It reads `AGENTS.md` from the project root, so install
    ```
 
    The script refuses to overwrite if the project already has an `AGENTS.md`. In that case, merge by hand: copy the relevant sections from `~/tools/no-vibe/runtimes/codex/AGENTS.md` into the existing file.
+
+## Manual installation (no script)
+
+For when the script can't be run. These commands replicate `install/install-codex.sh`. Run from inside the target project:
+
+```bash
+# 1. Clone (one-time, anywhere)
+git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
+REPO=~/tools/no-vibe
+
+# 2. Regenerate runtimes/codex/AGENTS.md from /shared/
+bash "$REPO/scripts/sync.sh"
+
+# 3. Copy AGENTS.md to project root — REFUSE if one already exists
+if [ -f AGENTS.md ]; then
+    echo "AGENTS.md exists — merge manually from $REPO/runtimes/codex/AGENTS.md"
+else
+    cp "$REPO/runtimes/codex/AGENTS.md" AGENTS.md
+fi
+
+# 4. Copy skill prose + commands to .no-vibe/codex/ for reference
+mkdir -p .no-vibe/codex/skill .no-vibe/codex/commands
+cp "$REPO"/shared/skill/*.md .no-vibe/codex/skill/
+cp "$REPO"/shared/commands/*.md .no-vibe/codex/commands/
+
+# 5. Seed global ~/.no-vibe/ if first install
+mkdir -p "$HOME/.no-vibe/memory"
+[ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp "$REPO/shared/templates/NO-VIBE.global.md" "$HOME/.no-vibe/NO-VIBE.md"
+[ -f "$HOME/.no-vibe/memory/README.md" ] || cp "$REPO/shared/templates/memory-readme.md" "$HOME/.no-vibe/memory/README.md"
+```
+
+If `AGENTS.md` already existed, open both files and copy the no-vibe sections from `$REPO/runtimes/codex/AGENTS.md` into the project's `AGENTS.md`.
 
 ## Verify
 
