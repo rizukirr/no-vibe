@@ -40,6 +40,17 @@ opencode run --print-logs "check no-vibe plugin"
 
 CLI note: when using `opencode run`, invoke commands with `--command` (for example `opencode run --command no-vibe on`). Do not pass `/no-vibe on` as a plain message if you expect command execution.
 
+## Customizing teaching style
+
+no-vibe adapts via two plain-Markdown files seeded automatically on first activation:
+
+- `~/.no-vibe/NO-VIBE.md` — global teaching style. *How* you want to be taught. Applies in any project.
+- `.no-vibe/NO-VIBE.md` — per-project canvas. Teaching format, conventions, notes for *this* codebase.
+
+Both files are seeded from the plugin's `templates/` directory by the `before_agent_start` hook the first time you run `/no-vibe on` in a project. The hook is gated on `.no-vibe/active`, so projects without no-vibe never get a stray `.no-vibe/` directory.
+
+Edit either file at any time to override the defaults — the AI re-reads them every turn. The defaults are starting points, not gospel; replace clauses cleanly when something better serves you.
+
 ## Troubleshooting
 
 - Check logs: `opencode run --print-logs "hello" 2>&1 | rg -i "no-vibe|plugin|error"`

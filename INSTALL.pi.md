@@ -89,6 +89,17 @@ ln -s ~/Projects/no-vibe/.pi-plugin/extensions/no-vibe           ~/.pi/agent/ext
 6. Confirm `/tmp/scratch.txt` writes still succeed (allowlist).
 7. Run `/no-vibe off` — should remove the marker.
 
+## Customizing teaching style
+
+no-vibe adapts via two plain-Markdown files seeded automatically on first activation:
+
+- `~/.no-vibe/NO-VIBE.md` — global teaching style. *How* you want to be taught. Applies in any project.
+- `.no-vibe/NO-VIBE.md` — per-project canvas. Teaching format, conventions, notes for *this* codebase.
+
+Both files are seeded from the plugin's `templates/` directory by the `before_agent_start` extension hook the first time you run `/no-vibe on` in a project. The hook is gated on `.no-vibe/active`, so projects without no-vibe never get a stray `.no-vibe/` directory.
+
+Edit either file at any time to override the defaults — the AI re-reads them every turn. The defaults are starting points, not gospel; replace clauses cleanly when something better serves you.
+
 ## Notes
 
 - This is a **hard block** (extension uses `pi.on("tool_call", ...)` returning `{ block: true, reason }`). It is at parity with the Claude Code and OpenCode surfaces, not the soft-block-only Codex/Gemini surfaces.
