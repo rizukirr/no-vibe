@@ -8,7 +8,7 @@ Invoke the `no-vibe-challenge` skill.
 **User arguments:** $ARGUMENTS
 
 Procedure:
-1. Read the current `.no-vibe/active` session (if any) and learner profile (`~/.no-vibe/profile.md`) to calibrate difficulty.
+1. Read the current `.no-vibe/active` session (if any) plus `~/.no-vibe/NO-VIBE.md` and `.no-vibe/NO-VIBE.md` to calibrate difficulty.
 2. If no session exists, infer a topic from the current project context (`README.md`, top-level source files, `package.json`/`Cargo.toml`/etc.).
 3. Produce a single, scoped challenge: constraint statement, success criteria, and 2-3 hint ladders.
 4. Do **not** write the solution. Do **not** write any project files. The user writes the code; you give constraints, hints, and review afterward.

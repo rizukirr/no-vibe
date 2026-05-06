@@ -40,15 +40,12 @@ Determine which form was invoked:
   ```bash
   # Project level
   mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/active
-  [ -f .no-vibe/data/mistakes.json ] || echo '[]' > .no-vibe/data/mistakes.json
-  [ -f .no-vibe/data/ai-notes.json ] || echo '[]' > .no-vibe/data/ai-notes.json
+  [ -f .no-vibe/NO-VIBE.md ] || cp "${CLAUDE_PLUGIN_ROOT}/templates/NO-VIBE.project.md" .no-vibe/NO-VIBE.md
   # Global level
   mkdir -p ~/.no-vibe
-  [ -f ~/.no-vibe/profile.md ] || touch ~/.no-vibe/profile.md
-  [ -f ~/.no-vibe/profile.archive.md ] || touch ~/.no-vibe/profile.archive.md
-  [ -f ~/.no-vibe/.synth-state.json ] || echo '{"last_successful_synth":null,"consecutive_failures":0,"no_change_streak":0,"missing_consumed_marker_streak":0,"strict_audit_active":false,"migration_pending":false,"last_project_synced":null,"pruning_cursor":{}}' > ~/.no-vibe/.synth-state.json
+  [ -f ~/.no-vibe/NO-VIBE.md ] || cp "${CLAUDE_PLUGIN_ROOT}/templates/NO-VIBE.global.md" ~/.no-vibe/NO-VIBE.md
   ```
-- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first. **Even if skipping Phase 6**, you MUST rewrite global `~/.no-vibe/profile.md`, update `~/.no-vibe/.synth-state.json` as needed, and update the session JSON with what you observed during the session. Then `rm -f .no-vibe/active`
+- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first (which includes conditional NO-VIBE.md updates per the cadence rule). Then `rm -f .no-vibe/active`
 
 ### 3. Clone any `--ref` URLs
 
@@ -86,18 +83,18 @@ While `no-vibe: ON`, every reply MUST begin with this exact one-line header:
 
 Per-turn order:
 
-1. **Read** `.no-vibe/data/sessions/<current>.json` if a session is active. File of record beats in-context state.
-2. **Run** the pre-turn gap-action audit per `skills/no-vibe/data-logging.md` when `errors_this_session >= 1`.
+1. **Read** `~/.no-vibe/NO-VIBE.md` and `.no-vibe/NO-VIBE.md`. The Adaptation Iron Law binds.
+2. **Read** `.no-vibe/data/sessions/<current>.json` if a session is active. File of record beats in-context state.
 3. **Emit** the header above. First line. No greeting or tool call before it.
 4. **Act** for the current phase — chat-only, no project writes (Iron Law).
-5. **Log** per data-logging.md triggers before ending the turn (Phase 4 user error → `mistakes.json`; user correction/feedback/request/complaint/preference → `ai-notes.json`).
-6. **Update** `sessions/<slug>.json` if any tracked field changed this turn.
+5. **Update** `sessions/<slug>.json` if any tracked field changed this turn.
+6. **Update** project `.no-vibe/NO-VIBE.md` only when the cadence rule fires (would the next session behave better because of this line?). Most turns: no write.
 
 Header rules:
 - `Phase:` uses the human form (`1a`, `3`, etc.) — distinct from JSON `current_phase` (`phase1a`..`phase6`). Never cross them.
 - `Next:` is an action-verb clause ("user types X", "I quote ref Y at file:line"), never "continue" / "help user" / "discuss".
 - One reply = one phase. Cross a phase boundary → stop and let the next turn open the new phase.
-- Missed header → emit on the very next reply. Do NOT log to mistakes.json or ai-notes.json.
+- Missed header → emit on the very next reply.
 
 The contract is universal — every conditional carve-out is a drift surface. Full discussion in `skills/no-vibe/SKILL.md`.
 
