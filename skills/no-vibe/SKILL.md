@@ -47,7 +47,7 @@ The Iron Law blocks the AI from writing the user's code. The Adaptation Iron Law
 
 If you reply without consulting them, your reply is wrong by definition — you are guessing at adaptation instead of using the user's stated preferences. Re-read both at session start; re-read project NO-VIBE.md at any phase transition. They are not optional context.
 
-On Claude / OpenCode / Pi the SessionStart / bootstrap injection puts both file contents directly into the system prompt — you cannot miss them. On Codex / Gemini the runtime cannot inject; you must explicitly read both files at session start before your first reply.
+On Claude / OpenCode / Pi the SessionStart / bootstrap injection puts both file contents directly into the system prompt — you cannot miss them. The same hook also auto-seeds both files from `templates/NO-VIBE.{global,project}.md` if they don't exist yet. On Codex / Gemini the runtime cannot inject or seed; you must explicitly read both files at session start before your first reply, and on first activation `read_file` the templates and `write_file` them to `~/.no-vibe/NO-VIBE.md` and `.no-vibe/NO-VIBE.md` respectively if missing.
 
 ## Red Flags — STOP and Return to Chat-Only
 

@@ -54,21 +54,42 @@ fi
 
 echo "$line"
 
-# --- Adaptation Iron Law: inject both NO-VIBE.md files into the system
-# prompt so the AI literally cannot start a teaching reply without seeing
-# the user's stated preferences. SKILL.md says "MUST read before any
-# teaching reply" — this hook makes the read free. ---
+# --- Adaptation Iron Law: seed both NO-VIBE.md files from templates/ if
+# missing, then inject contents into the system prompt so the AI cannot
+# start a teaching reply without seeing the user's stated preferences.
+# SKILL.md says "MUST read before any teaching reply" — this hook makes
+# the read free. ---
 
-emit_no_vibe_md() {
-    local label="$1" path="$2"
-    [ -f "$path" ] || return 0
-    echo
-    echo "=== $label ($path) ==="
-    cat "$path"
-    echo "=== END $label ==="
+TEMPLATES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/templates"
+
+seed_if_missing() {
+    local target="$1" template="$2"
+    [ -f "$target" ] && return 0
+    [ -f "$template" ] || return 0
+    mkdir -p "$(dirname "$target")" 2>/dev/null || return 0
+    cp "$template" "$target" 2>/dev/null || true
 }
 
-emit_no_vibe_md "USER TEACHING PREFERENCES" "$HOME/.no-vibe/NO-VIBE.md"
-emit_no_vibe_md "PROJECT TEACHING CANVAS"   "$cwd/.no-vibe/NO-VIBE.md"
+seed_if_missing "$HOME/.no-vibe/NO-VIBE.md" "$TEMPLATES_DIR/NO-VIBE.global.md"
+seed_if_missing "$cwd/.no-vibe/NO-VIBE.md"  "$TEMPLATES_DIR/NO-VIBE.project.md"
+
+emit_no_vibe_md() {
+    local label="$1" path="$2" placeholder="$3"
+    echo
+    if [ -f "$path" ]; then
+        echo "=== $label ($path) ==="
+        cat "$path"
+        echo "=== END $label ==="
+    else
+        echo "=== $label (not yet customized — $path missing) ==="
+        echo "$placeholder"
+        echo "=== END $label ==="
+    fi
+}
+
+emit_no_vibe_md "USER TEACHING PREFERENCES" "$HOME/.no-vibe/NO-VIBE.md" \
+    "User has not yet customized teaching style. Apply the Feynman default style from skills/no-vibe/SKILL.md."
+emit_no_vibe_md "PROJECT TEACHING CANVAS" "$cwd/.no-vibe/NO-VIBE.md" \
+    "Project has no canvas yet. Apply the default Where -> code -> why -> run+verify format from skills/no-vibe/SKILL.md."
 
 exit 0

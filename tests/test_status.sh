@@ -35,14 +35,17 @@ test_off_when_dir_no_marker() {
     assert_eq "no-vibe: OFF" "$out" "dir + no marker → OFF"
 }
 
-# --- Test 3: marker present → "no-vibe: ON" ---
+# --- Test 3: marker present → "no-vibe: ON" line first ---
 test_on_when_marker_present() {
     local cwd; cwd=$(make_sandbox)
     mkdir -p "$cwd/.no-vibe"
     touch "$cwd/.no-vibe/active"
     local out; out=$(echo "{\"cwd\":\"$cwd\"}" | "$HOOK")
     rm -rf "$cwd"
-    assert_eq "no-vibe: ON" "$out" "marker present → ON"
+    # Hook now also seeds + injects NO-VIBE.md after the status line, so we
+    # check the status line is emitted as the first line rather than exact-match.
+    local first_line; first_line=$(printf '%s\n' "$out" | head -n 1)
+    assert_eq "no-vibe: ON" "$first_line" "marker present → ON line first"
 }
 
 # --- Test 4: no stdin → falls back to PWD, still safe ---
@@ -80,7 +83,8 @@ test_completed_session_ignored() {
 EOF
     local out; out=$(echo "{\"cwd\":\"$cwd\"}" | "$HOOK")
     rm -rf "$cwd"
-    assert_eq "no-vibe: ON" "$out" "completed session → no resume hint"
+    local first_line; first_line=$(printf '%s\n' "$out" | head -n 1)
+    assert_eq "no-vibe: ON" "$first_line" "completed session → no resume hint"
 }
 
 # --- Test 7: most recent in-progress session wins ---

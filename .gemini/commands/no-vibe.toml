@@ -11,11 +11,10 @@ Parse the arguments:
 Marker management (turning ON or starting a lesson):
 ```
 mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/active
-# Seed NO-VIBE.md from templates/ shipped with the plugin if not already present.
-[ -f .no-vibe/NO-VIBE.md ] || cp "$(dirname "$(realpath "$0")")/../templates/NO-VIBE.project.md" .no-vibe/NO-VIBE.md 2>/dev/null || true
 mkdir -p ~/.no-vibe
-[ -f ~/.no-vibe/NO-VIBE.md ] || cp "$(dirname "$(realpath "$0")")/../templates/NO-VIBE.global.md" ~/.no-vibe/NO-VIBE.md 2>/dev/null || true
 ```
+
+Gemini has no SessionStart hook, so seeding NO-VIBE.md is your job on first activation. After creating the marker, if `~/.no-vibe/NO-VIBE.md` does not exist, `read_file` `templates/NO-VIBE.global.md` from the plugin install dir and `write_file` it to `~/.no-vibe/NO-VIBE.md`. Same for `templates/NO-VIBE.project.md` -> `.no-vibe/NO-VIBE.md`. The plugin install dir is whichever path you cloned the repo to (typically `~/.gemini/extensions/no-vibe/`).
 
 Turning OFF: synthesize current lesson if unchecked items exist in `.no-vibe/session.md` (Phase 6 includes conditional NO-VIBE.md updates per the cadence rule); then `rm -f .no-vibe/active`.
 

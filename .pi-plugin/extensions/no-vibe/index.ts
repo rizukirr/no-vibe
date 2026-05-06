@@ -16,10 +16,23 @@ const stripFrontmatter = (content: string): string => {
   return match ? match[1] : content;
 };
 
-const readNoVibeMd = (label: string, p: string): string => {
-  if (!fs.existsSync(p)) return "";
-  const body = fs.readFileSync(p, "utf8");
-  return `\n\n=== ${label} (${p}) ===\n${body}\n=== END ${label} ===`;
+const seedIfMissing = (target: string, template: string): void => {
+  if (fs.existsSync(target)) return;
+  if (!fs.existsSync(template)) return;
+  try {
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(template, target);
+  } catch {
+    // Permission errors etc. — silent; the placeholder branch below covers it.
+  }
+};
+
+const readNoVibeMd = (label: string, p: string, placeholder: string): string => {
+  if (fs.existsSync(p)) {
+    const body = fs.readFileSync(p, "utf8");
+    return `\n\n=== ${label} (${p}) ===\n${body}\n=== END ${label} ===`;
+  }
+  return `\n\n=== ${label} (not yet customized — ${p} missing) ===\n${placeholder}\n=== END ${label} ===`;
 };
 
 const buildBootstrap = (cwd: string): string => {
@@ -30,11 +43,32 @@ const buildBootstrap = (cwd: string): string => {
     skillBody = stripFrontmatter(fs.readFileSync(skillPath, "utf8")).trim();
   }
 
-  // Adaptation Iron Law: inject both NO-VIBE.md files into the system
-  // prompt so the AI literally cannot start a teaching reply without
-  // seeing the user's stated preferences.
-  const globalNoVibe = readNoVibeMd("USER TEACHING PREFERENCES", path.join(os.homedir(), ".no-vibe", "NO-VIBE.md"));
-  const projectNoVibe = readNoVibeMd("PROJECT TEACHING CANVAS", path.join(cwd, ".no-vibe", "NO-VIBE.md"));
+  // Adaptation Iron Law: seed both NO-VIBE.md files from templates/ if
+  // missing, then inject contents so the AI literally cannot start a
+  // teaching reply without seeing the user's stated preferences. Gated
+  // on `.no-vibe/active` existing — projects that have not opted into
+  // no-vibe mode should not have a `.no-vibe/` directory created as a
+  // side effect of plugin loading.
+  const noVibeActive = fs.existsSync(path.join(cwd, ".no-vibe", "active"));
+  let globalNoVibe = "";
+  let projectNoVibe = "";
+  if (noVibeActive) {
+    const templatesDir = path.join(PLUGIN_ROOT, "templates");
+    const globalPath = path.join(os.homedir(), ".no-vibe", "NO-VIBE.md");
+    const projectPath = path.join(cwd, ".no-vibe", "NO-VIBE.md");
+    seedIfMissing(globalPath, path.join(templatesDir, "NO-VIBE.global.md"));
+    seedIfMissing(projectPath, path.join(templatesDir, "NO-VIBE.project.md"));
+    globalNoVibe = readNoVibeMd(
+      "USER TEACHING PREFERENCES",
+      globalPath,
+      "User has not yet customized teaching style. Apply the Feynman default style from skills/no-vibe/SKILL.md.",
+    );
+    projectNoVibe = readNoVibeMd(
+      "PROJECT TEACHING CANVAS",
+      projectPath,
+      "Project has no canvas yet. Apply the default Where -> code -> why -> run+verify format from skills/no-vibe/SKILL.md.",
+    );
+  }
 
   return [
     "<EXTREMELY_IMPORTANT>",

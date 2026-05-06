@@ -41,12 +41,15 @@ Determine which form was invoked:
 ```bash
 # Project level
 mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/active
-# NO-VIBE.md seeded from the plugin's templates/ — adjust path if your install differs.
-[ -f .no-vibe/NO-VIBE.md ] || cp "$(dirname "$0")/../templates/NO-VIBE.project.md" .no-vibe/NO-VIBE.md 2>/dev/null || true
 # Global level
 mkdir -p ~/.no-vibe
-[ -f ~/.no-vibe/NO-VIBE.md ] || cp "$(dirname "$0")/../templates/NO-VIBE.global.md" ~/.no-vibe/NO-VIBE.md 2>/dev/null || true
 ```
+
+NO-VIBE.md files are auto-seeded from the plugin's `templates/` by the
+OpenCode `before_agent_start` hook on the next session start, so there is
+no `cp` step here. The first session after activation may run with the
+"not yet customized" placeholder injected by the hook; subsequent
+sessions read the seeded files directly.
 
 Then verify with:
 
