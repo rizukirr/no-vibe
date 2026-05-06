@@ -45,14 +45,16 @@ DEST="$HOME/.pi/plugins/no-vibe"
 
 # 2. Create destination tree
 mkdir -p "$DEST/extensions/no-vibe" "$DEST/prompts" "$DEST/skills/no-vibe" \
-         "$DEST/shared/guard" "$DEST/shared/templates"
+         "$DEST/shared/guard" "$DEST/shared/skill" "$DEST/shared/templates"
 
 # 3. Copy runtime adapter
 cp "$REPO/runtimes/pi/.pi-plugin/plugin.json" "$DEST/"
 cp "$REPO/runtimes/pi/.pi-plugin/extensions/no-vibe/index.ts" "$DEST/extensions/no-vibe/"
 
-# 4. Copy shared content
+# 4. Copy shared content (skill files go to two paths: skills/ for native
+#    discovery, shared/skill/ for the runtime extension's bootstrap loader)
 cp "$REPO"/shared/skill/*.md "$DEST/skills/no-vibe/"
+cp "$REPO"/shared/skill/*.md "$DEST/shared/skill/"
 cp "$REPO"/shared/commands/*.md "$DEST/prompts/"
 cp "$REPO"/shared/guard/*.json "$DEST/shared/guard/"
 cp "$REPO"/shared/templates/*.md "$DEST/shared/templates/"
@@ -81,14 +83,16 @@ $DEST = "$HOME\.pi\plugins\no-vibe"
 
 # 2. Create destination tree
 New-Item -ItemType Directory -Force -Path "$DEST\extensions\no-vibe", "$DEST\prompts", "$DEST\skills\no-vibe", `
-         "$DEST\shared\guard", "$DEST\shared\templates", "$HOME\.no-vibe\memory"
+         "$DEST\shared\guard", "$DEST\shared\skill", "$DEST\shared\templates", "$HOME\.no-vibe\memory"
 
 # 3. Copy runtime adapter
 Copy-Item "$REPO\runtimes\pi\.pi-plugin\plugin.json" "$DEST\"
 Copy-Item "$REPO\runtimes\pi\.pi-plugin\extensions\no-vibe\index.ts" "$DEST\extensions\no-vibe\"
 
-# 4. Copy shared content
+# 4. Copy shared content (skill files go to two paths: skills/ for native
+#    discovery, shared/skill/ for the runtime extension's bootstrap loader)
 Copy-Item "$REPO\shared\skill\*.md" "$DEST\skills\no-vibe\"
+Copy-Item "$REPO\shared\skill\*.md" "$DEST\shared\skill\"
 Copy-Item "$REPO\shared\commands\*.md" "$DEST\prompts\"
 Copy-Item "$REPO\shared\guard\*.json" "$DEST\shared\guard\"
 Copy-Item "$REPO\shared\templates\*.md" "$DEST\shared\templates\"

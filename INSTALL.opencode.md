@@ -39,14 +39,16 @@ rm -rf "$DEST"
 
 # 3. Create destination tree
 mkdir -p "$DEST/plugins" "$DEST/commands" "$DEST/skills/no-vibe" \
-         "$DEST/shared/guard" "$DEST/shared/templates"
+         "$DEST/shared/guard" "$DEST/shared/skill" "$DEST/shared/templates"
 
 # 4. Copy runtime adapter
 cp "$REPO/runtimes/opencode/plugins/no-vibe.js" "$DEST/plugins/"
 cp "$REPO/runtimes/opencode/index.js" "$DEST/"
 
-# 5. Copy shared content
+# 5. Copy shared content (skill files go to two paths: skills/ for native
+#    discovery, shared/skill/ for the plugin's bootstrap loader)
 cp "$REPO"/shared/skill/*.md "$DEST/skills/no-vibe/"
+cp "$REPO"/shared/skill/*.md "$DEST/shared/skill/"
 cp "$REPO"/shared/commands/*.md "$DEST/commands/"
 cp "$REPO"/shared/guard/*.json "$DEST/shared/guard/"
 cp "$REPO"/shared/templates/*.md "$DEST/shared/templates/"
@@ -75,14 +77,16 @@ if (Test-Path $DEST) { Remove-Item -Recurse -Force $DEST }
 
 # 3. Create destination tree
 New-Item -ItemType Directory -Force -Path "$DEST\plugins", "$DEST\commands", "$DEST\skills\no-vibe", `
-         "$DEST\shared\guard", "$DEST\shared\templates", "$HOME\.no-vibe\memory"
+         "$DEST\shared\guard", "$DEST\shared\skill", "$DEST\shared\templates", "$HOME\.no-vibe\memory"
 
 # 4. Copy runtime adapter
 Copy-Item "$REPO\runtimes\opencode\plugins\no-vibe.js" "$DEST\plugins\"
 Copy-Item "$REPO\runtimes\opencode\index.js" "$DEST\"
 
-# 5. Copy shared content
+# 5. Copy shared content (skill files go to two paths: skills/ for native
+#    discovery, shared/skill/ for the plugin's bootstrap loader)
 Copy-Item "$REPO\shared\skill\*.md" "$DEST\skills\no-vibe\"
+Copy-Item "$REPO\shared\skill\*.md" "$DEST\shared\skill\"
 Copy-Item "$REPO\shared\commands\*.md" "$DEST\commands\"
 Copy-Item "$REPO\shared\guard\*.json" "$DEST\shared\guard\"
 Copy-Item "$REPO\shared\templates\*.md" "$DEST\shared\templates\"

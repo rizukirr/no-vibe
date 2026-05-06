@@ -27,12 +27,16 @@ fi
 
 echo "Installing no-vibe (Pi) to: $DEST"
 
-mkdir -p "$DEST/extensions/no-vibe" "$DEST/prompts" "$DEST/skills/no-vibe" "$DEST/shared/guard" "$DEST/shared/templates"
+mkdir -p "$DEST/extensions/no-vibe" "$DEST/prompts" "$DEST/skills/no-vibe" "$DEST/shared/guard" "$DEST/shared/skill" "$DEST/shared/templates"
 
 cp "$REPO_ROOT/runtimes/pi/.pi-plugin/plugin.json" "$DEST/"
 cp "$REPO_ROOT/runtimes/pi/.pi-plugin/extensions/no-vibe/index.ts" "$DEST/extensions/no-vibe/"
 
+# Skill files go to two places: $DEST/skills/no-vibe/ for any native skill loader,
+# and $DEST/shared/skill/ for the runtime extension's buildBootstrap() which
+# resolves SHARED_DIR to $DEST/shared/ at runtime.
 cp "$REPO_ROOT/shared/skill"/*.md "$DEST/skills/no-vibe/"
+cp "$REPO_ROOT/shared/skill"/*.md "$DEST/shared/skill/"
 cp "$REPO_ROOT/shared/commands"/*.md "$DEST/prompts/"
 cp "$REPO_ROOT/shared/guard"/*.json "$DEST/shared/guard/"
 cp "$REPO_ROOT/shared/templates"/*.md "$DEST/shared/templates/"
