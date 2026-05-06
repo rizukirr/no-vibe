@@ -1,83 +1,110 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code working in this repository.
 
 ## Repo purpose
 
-This repo **is** the `no-vibe` plugin itself — not a consumer of it. It ships tutor-style coding mode across five AI CLIs (Claude Code, OpenCode, Codex, Gemini CLI, Pi). When users install it, AI stops writing their project files and walks them through writing code themselves.
+This repo **is** the `no-vibe` plugin — not a consumer of it. It ships tutor-style coding mode across five AI CLIs (Claude Code, OpenCode, Codex, Gemini CLI, Pi). When users install it, AI stops writing their project files and walks them through writing code themselves.
 
-Do **not** confuse "developing this plugin" with "being in no-vibe mode". Editing files inside this repo is normal plugin development — the no-vibe write guard does not apply here unless `.no-vibe/active` exists at the repo root.
+Editing files inside this repo is normal plugin development — the no-vibe write guard does not apply here unless `.no-vibe/active` exists at the repo root.
+
+## v2 architecture — single source, thin runtime adapters
+
+Authoring lives in `/shared/`. Every runtime reads or copies from it. Runtime-specific code is small.
+
+```
+/.claude-plugin/marketplace.json  # Claude marketplace entry — points source to ./runtimes/claude
+/shared/                          # Single source of truth (authoring)
+  skill/        SKILL.md, phases.md, teaching-style.md, reference-grounding.md, curriculum.md
+  commands/     no-vibe*.md (canonical command prose)
+  guard/        patterns.json (Bash dangerous patterns + safe-target allowlist), write-tools.json
+  status/       format.txt (status-line format)
+  templates/    NO-VIBE.global.md, NO-VIBE.project.md, memory-readme.md
+
+/runtimes/<name>/                 # Manifests + enforcement code (+ generated copies for Claude)
+  claude/       .claude-plugin/, hooks/*.sh, skills/no-vibe/* [GENERATED], commands/* [GENERATED], shared/guard/* [GENERATED]
+  opencode/     plugins/no-vibe.js, index.js
+  pi/           .pi-plugin/{plugin.json, extensions/no-vibe/index.ts}
+  codex/        AGENTS.md.template (+ generated AGENTS.md)
+  gemini/       gemini-extension.json, GEMINI.md.template (+ generated GEMINI.md), .gemini/{commands/*.toml, tool-mapping.md}
+
+/install/                         # Per-runtime installers (copy shared+runtime → user CLI dir)
+/scripts/                         # sync.sh + bump-version.sh
+VERSION                           # Single version source
+index.js                          # OpenCode npm entrypoint (re-exports runtimes/opencode)
+```
+
+### Claude marketplace flow
+
+Claude Code's `/plugin marketplace add rizukirr/no-vibe` clones the repo and reads `/.claude-plugin/marketplace.json` at the root. That manifest points `source: "./runtimes/claude"`, so Claude treats `runtimes/claude/` as the plugin tree. For Claude to find the skill and commands, sync.sh populates `runtimes/claude/skills/no-vibe/`, `runtimes/claude/commands/`, and `runtimes/claude/shared/guard/` from `/shared/`. These generated files carry an `<!-- AUTO-GENERATED FROM /shared -->` header (placed after the YAML frontmatter so Claude's parser still sees `---` on line 1) and are committed to git.
+
+**Critical:** if you change anything under `/shared/`, run `bash scripts/sync.sh` before committing — otherwise Claude marketplace users will get stale files. `tests/test_sync.sh` and `scripts/sync.sh --check` enforce this.
+
+## How sharing works
+
+Three patterns:
+
+**A — runtime reads `/shared/` at execution time** (Claude, OpenCode, Pi):
+- Claude bash hooks `jq` `shared/guard/*.json` for tool names + path fields. Patterns are parsed in shell (logic) but the safe-target allowlist + tool list come from JSON.
+- OpenCode JS plugin `import`s `shared/guard/*.json`.
+- Pi TS extension does the same.
+
+**B — instruction-only runtimes get text injection at sync time** (Codex, Gemini):
+- `scripts/sync.sh` reads `shared/skill/SKILL.md` and `shared/guard/patterns.json`, injects them into `runtimes/codex/AGENTS.md.template` and `runtimes/gemini/GEMINI.md.template`, writes generated `.md` files with `AUTO-GENERATED FROM /shared` headers.
+- Same script converts `shared/commands/*.md` to Gemini's `.toml` format.
+- `tests/test_sync.sh` enforces no drift (CI-runnable as `scripts/sync.sh --check`).
+
+**C — skill prose** (`shared/skill/*.md`): every runtime's discovery mechanism points at the shared path; no copying needed in-repo.
+
+If you change `shared/guard/patterns.json` or `shared/skill/SKILL.md`, run `bash scripts/sync.sh` to regenerate Codex/Gemini outputs.
+
+## Memory model
+
+v2 has **no JSON logging.** Two NO-VIBE.md files, plain Markdown:
+
+- **`~/.no-vibe/NO-VIBE.md`** — global, teaching style. Deviations from the eight-clause Feynman default. ~0–10 lines.
+- **`.no-vibe/NO-VIBE.md`** — project canvas. Where we are, mental-model state, conventions, pickup hint. ~20–60 lines.
+
+Write rule: only when contents contradict reality, miss load-bearing context, are stale, or the file doesn't exist. Surgical edits (line > section > whole-file). Whole-file rewrites archive the prior version to `memory/`. Surgical edits do not archive. Cross-project test (`would this still apply in a different project?`) decides which file. Every line lives in exactly one file.
+
+Archives:
+- `~/.no-vibe/memory/NO-VIBE-<ISO-timestamp>.md`
+- `.no-vibe/memory/NO-VIBE-<ISO-timestamp>.md`
+
+Archives are write-once and consulted on demand only — never loaded automatically.
 
 ## Verification
 
-No root npm script runner. Run all test suites before finishing plugin changes:
+Run all tests before finishing plugin changes:
 
 ```bash
 bash tests/test_block_writes.sh
 bash tests/test_block_bash_writes.sh
 bash tests/test_status.sh
-node tests/test_opencode_plugin.mjs
 bash tests/test_escape_hatch.sh
 bash tests/test_gemini_guard.sh
+bash tests/test_sync.sh
+node tests/test_opencode_plugin.mjs
 node tests/test_pi_plugin.mjs
 ```
 
-## Architecture — parallel surfaces, one behavior
-
-The same no-vibe behavior is implemented five times, once per host CLI. A change to one surface almost always needs mirrored changes on the others.
-
-**Write-guard enforcement** (hard stop when `.no-vibe/active` exists, allow writes inside `.no-vibe/` and `$HOME/.no-vibe/`):
-- Claude Code: `hooks/block-writes.sh` — PreToolUse hook for Edit/Write/NotebookEdit/MultiEdit/ApplyPatch; `hooks/block-bash-writes.sh` — PreToolUse hook for Bash that rejects `>`, `>>`, `&>`, `&>>`, `tee`, `sed -i` / `--in-place`, `cp`, `mv`, `install`, `dd of=`, and `cat <<EOF >` targeting paths outside the safe-target allowlist below. Variable / command-substitution destinations (`$VAR`, `$(…)`, backticks) fail closed.
-- OpenCode: `.opencode/plugins/no-vibe.js` — in-process guard for both write tools and Bash commands (mirror of the two Claude hooks).
-- Pi: `.pi-plugin/extensions/no-vibe/index.ts` — TS extension using `pi.on("tool_call", ...)` for `write`/`edit` and dangerous `bash`; mirror of the OpenCode plugin (hard block).
-- Codex: **instruction-based** soft block via `skills/no-vibe/SKILL.md` (Iron Law enumerates the Bash patterns); no native PreToolUse hook wiring.
-- Gemini CLI: **instruction-based** soft block via `GEMINI.md` (write_file/replace + run_shell_command rules) and `.gemini/tool-mapping.md`; no hook surface available.
-
-Path-handling, Bash-parsing rules, and the safe-target allowlist (`.no-vibe/**`, `$HOME/.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/{null,stdout,stderr,tty,fd/*}`) must stay in lockstep across all five surfaces:
-- `hooks/block-writes.sh` + `hooks/block-bash-writes.sh` (Claude)
-- `.opencode/plugins/no-vibe.js` (OpenCode)
-- `.pi-plugin/extensions/no-vibe/index.ts` (Pi)
-- `GEMINI.md` + `.gemini/tool-mapping.md` (Gemini)
-- `skills/no-vibe/SKILL.md` Iron Law (Codex + shared)
-
-If one changes, update the others.
-
-**Status line** (`no-vibe: ON|OFF`, silent when no `.no-vibe/` dir exists to avoid noise in unrelated projects):
-- Claude: `hooks/status.sh` (SessionStart)
-- OpenCode: bootstrap inject in `.opencode/plugins/no-vibe.js`
-- Pi: `before_agent_start` injection in `.pi-plugin/extensions/no-vibe/index.ts`
-
-**Command specs** — one logical command, five physical copies:
-- `commands/no-vibe*.md` (Claude)
-- `.opencode/commands/no-vibe*.md` (OpenCode)
-- `.pi-plugin/prompts/no-vibe*.md` (Pi)
-- `.gemini/commands/no-vibe*.toml` (Gemini)
-- Codex reuses Claude's `commands/` via `INSTALL.codex.md`
-
-**Teaching logic** lives in `skills/no-vibe/SKILL.md` (six-phase cycle) and is shared across all surfaces. Data contracts for learner tracking are in `skills/no-vibe/DATA-SCHEMA.md` — session/mistake/ai-note JSON plus global `profile.md` + synth-state contracts must match.
-
-**Entrypoints:** `index.js` re-exports `.opencode/plugins/no-vibe.js` for OpenCode's plugin loader. Claude discovers via `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`. Gemini via `gemini-extension.json` + `GEMINI.md`. Pi via `.pi-plugin/plugin.json` and the `pi` key in `package.json` (`skills`, `prompts`, `extensions`).
-
-## Two data-file semantics that are easy to misread
-
-- `mistakes.json` records **teaching failures** (AI gap + corrective action), not learner flaws. Every entry needs `pck_gap`, `load_mismatch`, `gap_action`, `applied`.
-- `ai-notes.json` records **user-driven AI adjustments** (corrections, preferences, requests).
-
-Both are project-level logs in `.no-vibe/data/`; the cross-project learner model is synthesized into `~/.no-vibe/profile.md` (with `.synth-state.json` bookkeeping). See `skills/no-vibe/DATA-SCHEMA.md` for field semantics and legacy-entry tolerance.
+`test_sync.sh` covers drift between `/shared/` and generated Codex / Gemini outputs, plus version parity across the five manifest files.
 
 ## Versioning
 
-Version numbers are duplicated in:
+Single source: `/VERSION`. Use `scripts/bump-version.sh <version>` to update all five manifests:
+
 - `package.json`
-- `.claude-plugin/plugin.json`
-- `.claude-plugin/marketplace.json`
-- `gemini-extension.json`
-- `.pi-plugin/plugin.json`
+- `.claude-plugin/marketplace.json` (root — Claude marketplace entry)
+- `runtimes/claude/.claude-plugin/plugin.json`
+- `runtimes/gemini/gemini-extension.json`
+- `runtimes/pi/.pi-plugin/plugin.json`
 
-Bump all five by hand and confirm parity with:
+`scripts/bump-version.sh --check` verifies parity. `tests/test_sync.sh` runs it.
 
-```bash
-grep -E '"version"' package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json gemini-extension.json .pi-plugin/plugin.json
-```
+## Common gotchas
 
-(A `scripts/bump-version.sh` helper used to live in this repo; it was removed in commit `7f8afda`. If a release ever drifts the five files apart, restore the helper rather than papering over with hand-edits.) The pi parity test (`tests/test_pi_plugin.mjs`) also asserts that `package.json` and `.pi-plugin/plugin.json` versions match.
+- **Don't edit `runtimes/codex/AGENTS.md` or `runtimes/gemini/GEMINI.md` directly** — they're generated. Edit the corresponding `.template` files or `/shared/` content, then `bash scripts/sync.sh`.
+- **Don't edit `runtimes/gemini/.gemini/commands/*.toml` directly** — generated from `shared/commands/`.
+- **Path mirror:** the Bash-pattern parsing logic still lives in three runtime files (Claude bash hook, OpenCode plugin, Pi extension). Only the *data* (safe-target allowlist, tool names) is shared via JSON. If you change parsing, update all three files; if you change the allowlist, just edit `shared/guard/patterns.json`.
+- **Windows line endings:** `jq` on Git Bash sometimes emits CRLF; the hook strips `\r` from JSON-derived tool names. If parity tests fail with weird match issues, check for stray `\r`.

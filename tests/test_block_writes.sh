@@ -3,7 +3,7 @@
 
 set -u
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HOOK="$SCRIPT_DIR/../hooks/block-writes.sh"
+HOOK="$SCRIPT_DIR/../runtimes/claude/hooks/block-writes.sh"
 . "$SCRIPT_DIR/helpers.sh"
 
 # Each test runs in a fresh temp dir to isolate the .no-vibe/ marker.
@@ -190,24 +190,24 @@ test_marker_blocks_notebook_edit
 test_marker_blocks_multi_edit
 test_marker_allows_bash
 
-# --- Test 10: marker exists, Write inside .no-vibe/data/ → allow ---
-test_marker_allows_write_data() {
+# --- Test 10: marker exists, Write inside .no-vibe/memory/ → allow ---
+test_marker_allows_write_memory() {
     local cwd
     cwd=$(make_sandbox)
-    mkdir -p "$cwd/.no-vibe/data"
+    mkdir -p "$cwd/.no-vibe/memory"
     touch "$cwd/.no-vibe/active"
     local input
 input=$(cat <<EOF
-{"tool_name":"Write","tool_input":{"file_path":"$cwd/.no-vibe/data/mistakes.json","content":"[]"},"cwd":"$cwd"}
+{"tool_name":"Write","tool_input":{"file_path":"$cwd/.no-vibe/memory/NO-VIBE-2026-05-06.md","content":"x"},"cwd":"$cwd"}
 EOF
 )
     echo "$input" | "$HOOK" >/dev/null 2>&1
     local exit_code=$?
     rm -rf "$cwd"
-    assert_eq "0" "$exit_code" "marker + Write to .no-vibe/data/*.json → allow"
+    assert_eq "0" "$exit_code" "marker + Write to .no-vibe/memory/ → allow"
 }
 
-test_marker_allows_write_data
+test_marker_allows_write_memory
 
 # --- Test 11: ApplyPatch also blocked ---
 test_marker_blocks_apply_patch() {

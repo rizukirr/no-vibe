@@ -1,12 +1,21 @@
 {
   "name": "no-vibe",
-  "version": "1.2.4",
+  "version": "2.0.0",
+  "description": "Tutor mode for AI coding assistants. AI shows code in chat, never writes to your files. Adapts via two NO-VIBE.md files (global style + project canvas).",
   "type": "module",
   "exports": "./index.js",
-  "keywords": ["pi-package"],
+  "keywords": [
+    "pi-package"
+  ],
   "pi": {
-    "skills": ["./skills"],
-    "prompts": ["./.pi-plugin/prompts"],
-    "extensions": ["./.pi-plugin/extensions"]
+    "skills": [
+      "./shared/skill"
+    ],
+    "prompts": [
+      "./shared/commands"
+    ],
+    "extensions": [
+      "./runtimes/pi/.pi-plugin/extensions"
+    ]
   }
 }

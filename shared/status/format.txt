@@ -1,0 +1,15 @@
+{{!--
+Status line format — emitted on session start by Claude / OpenCode / Pi runtimes.
+Codex / Gemini AI must emit it manually as the first line of the first turn.
+
+Three cases:
+  1. .no-vibe/active exists                      → see ON_LINE / ON_LINE_RESUME
+  2. .no-vibe/ exists but no marker              → see OFF_LINE
+  3. no .no-vibe/ directory                      → silent (no output)
+--}}
+
+ON_LINE: no-vibe: ON
+
+ON_LINE_RESUME: no-vibe: ON — resuming "<topic>" (<n>/<total> layers complete)
+
+OFF_LINE: no-vibe: OFF

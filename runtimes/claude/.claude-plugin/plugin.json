@@ -1,0 +1,41 @@
+{
+  "name": "no-vibe",
+  "version": "2.0.0",
+  "description": "Tutor mode for AI coding assistants. AI shows code in chat, never writes to your files. Adapts via two NO-VIBE.md files (global style + project canvas).",
+  "author": {
+    "name": "rizukirr",
+    "github": "https://github.com/rizkirr"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit|MultiEdit|ApplyPatch|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-writes.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-bash-writes.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/status.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

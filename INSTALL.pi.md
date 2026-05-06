@@ -1,96 +1,158 @@
-# no-vibe — Pi Installation
+# Install no-vibe — Pi
 
-Pi is the [pi-mono](https://github.com/badlogic/pi-mono) coding agent (`@mariozechner/pi-coding-agent`). no-vibe ships as a pi package: the bundled extension provides a **hard** write-guard (mirrors the OpenCode in-process guard), the bundled prompts expose `/no-vibe`, `/no-vibe-btw`, `/no-vibe-challenge`, and the canonical `skills/` directory is shared with the other runtimes.
+Pi has no marketplace. Install copies the plugin tree into Pi's plugins directory.
 
-## Before you install — check for an existing install
+## Prerequisites
 
-Pi reads skills from several locations, including `~/.agents/skills/` (a runtime-shared location used by the no-vibe Codex install). If you have already installed no-vibe via another runtime — most commonly via [`INSTALL.codex.md`](./INSTALL.codex.md), which symlinks `~/.codex/no-vibe/skills` → `~/.agents/skills/no-vibe/` — pi will already discover the no-vibe skill from that path. **Running `pi install git:github.com/rizukirr/no-vibe` on top of it is redundant** for the skill itself and will produce skill-collision warnings on every pi startup (functionally harmless: pi keeps the user-level copy and skips the package copy, but the noise is avoidable).
+- **Git**
+- **Bash**, **Awk**, and **jq** (required for the `sync.sh` step to regenerate runtime files).
+  - *Windows:* These are included with **Git Bash**. Ensure they are in your PATH if using PowerShell.
 
-Quick check:
+**Important:** the installer **skips** if no-vibe is already installed at any of these paths. Remove the existing install first if you want to reinstall.
 
-```bash
-ls ~/.agents/skills/no-vibe/ 2>/dev/null
-```
+- `~/.agents/skills/no-vibe`
+- `~/.pi/plugins/no-vibe`
+- `~/.pi/extensions/no-vibe`
 
-If that lists `SKILL.md` (and the supporting docs), the no-vibe skill is already reachable on pi. You only need:
-
-1. **Skip `pi install`** for the skill — it's already discovered. The teaching cycle works out of the box.
-2. **Add the pi-only pieces.** The shared `~/.agents/skills/` path delivers the skill but **not** the pi-specific artifacts that make no-vibe enforce its Iron Law on pi:
-   - the `no-vibe-guard` extension (the hard write-guard hooking `pi.on("tool_call", …)`)
-   - the three pi prompt templates (`/no-vibe`, `/no-vibe-btw`, `/no-vibe-challenge`)
-
-   Without these, pi sees the skill but **does not block writes at the tool level** — it falls back to soft (instruction-only) enforcement. To get the hard block, install the extension + prompts manually:
-
-   ```bash
-   git clone https://github.com/rizukirr/no-vibe.git ~/Projects/no-vibe   # if not already cloned
-
-   mkdir -p ~/.pi/agent/extensions ~/.pi/agent/prompts
-   ln -s ~/Projects/no-vibe/.pi-plugin/extensions/no-vibe           ~/.pi/agent/extensions/no-vibe
-   ln -s ~/Projects/no-vibe/.pi-plugin/prompts/no-vibe.md           ~/.pi/agent/prompts/no-vibe.md
-   ln -s ~/Projects/no-vibe/.pi-plugin/prompts/no-vibe-btw.md       ~/.pi/agent/prompts/no-vibe-btw.md
-   ln -s ~/Projects/no-vibe/.pi-plugin/prompts/no-vibe-challenge.md ~/.pi/agent/prompts/no-vibe-challenge.md
-   ```
-
-   This adds the pi-only adapter without re-shipping the skill, so no collision warnings.
-
-If `~/.agents/skills/no-vibe/` does not exist, proceed with the standard install below.
-
-### Avoiding collisions
-
-If you want both the Codex and pi adapters cleanly without warnings, pick one source of truth:
-
-- **Codex-shared (shared across runtimes):** install via [`INSTALL.codex.md`](./INSTALL.codex.md) once, then add the pi-only extension + prompts manually as shown above. Skills propagate via `~/.agents/skills/`; the hard write-guard comes from the extension.
-- **Pi-only:** if you don't use Codex, ensure `~/.agents/skills/no-vibe/` does not exist (delete the symlink if you previously ran the Codex install) and use the standard `pi install` below.
-
-## Install
-
-### Option A — global, from git
+## Steps (script)
 
 ```bash
-pi install git:github.com/rizukirr/no-vibe
+git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
+rm -rf "$HOME/.agents/skills/no-vibe" "$HOME/.pi/plugins/no-vibe" "$HOME/.pi/extensions/no-vibe"
+bash ~/tools/no-vibe/install/install-pi.sh
 ```
 
-This installs to `~/.pi/agent/git/no-vibe/` and pi auto-discovers:
-- skills from `./skills` (declared in `package.json` → `pi.skills`)
-- prompts from `./.pi-plugin/prompts` (declared in `package.json` → `pi.prompts`)
-- the write-guard extension from `./.pi-plugin/extensions` (declared in `package.json` → `pi.extensions`)
+Default destination: `~/.pi/plugins/no-vibe/`.
 
-### Option B — project-local
+To install elsewhere: `NO_VIBE_DEST=/custom/path bash ~/tools/no-vibe/install/install-pi.sh`
+
+Restart Pi after install.
+
+## Manual installation (no script)
+
+For when the script can't be run.
+
+### Option A: Bash / Zsh (Linux, macOS, Git Bash)
 
 ```bash
-cd /path/to/your/project
-pi install -l git:github.com/rizukirr/no-vibe
+# 0. Remove old Pi no-vibe installs first
+rm -rf "$HOME/.agents/skills/no-vibe" "$HOME/.pi/plugins/no-vibe" "$HOME/.pi/extensions/no-vibe"
+
+# 1. Clone
+git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
+REPO=~/tools/no-vibe
+DEST="$HOME/.pi/plugins/no-vibe"
+
+# 2. Create destination tree
+mkdir -p "$DEST/extensions/no-vibe" "$DEST/prompts" "$DEST/skills/no-vibe" \
+         "$DEST/shared/guard" "$DEST/shared/templates"
+
+# 3. Copy runtime adapter
+cp "$REPO/runtimes/pi/.pi-plugin/plugin.json" "$DEST/"
+cp "$REPO/runtimes/pi/.pi-plugin/extensions/no-vibe/index.ts" "$DEST/extensions/no-vibe/"
+
+# 4. Copy shared content
+cp "$REPO"/shared/skill/*.md "$DEST/skills/no-vibe/"
+cp "$REPO"/shared/commands/*.md "$DEST/prompts/"
+cp "$REPO"/shared/guard/*.json "$DEST/shared/guard/"
+cp "$REPO"/shared/templates/*.md "$DEST/shared/templates/"
+
+# 5. Seed global ~/.no-vibe/ if first install
+mkdir -p "$HOME/.no-vibe/memory"
+[ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp "$REPO/shared/templates/NO-VIBE.global.md" "$HOME/.no-vibe/NO-VIBE.md"
+[ -f "$HOME/.no-vibe/memory/README.md" ] || cp "$REPO/shared/templates/memory-readme.md" "$HOME/.no-vibe/memory/README.md"
+
+# 6. Clean up
+rm -rf ~/tools/no-vibe
 ```
 
-Installs under `.pi/` for the current project only.
+### Option B: Windows (PowerShell)
 
-### Option C — manual symlink
+Run these in a PowerShell terminal.
 
-If you cloned the repo elsewhere:
+```powershell
+# 0. Remove old Pi no-vibe installs first
+Remove-Item -Recurse -Force "$HOME\.agents\skills\no-vibe", "$HOME\.pi\plugins\no-vibe", "$HOME\.pi\extensions\no-vibe" -ErrorAction SilentlyContinue
+
+# 1. Clone
+git clone -b v2 https://github.com/rizukirr/no-vibe.git "$HOME\tools\no-vibe"
+$REPO = "$HOME\tools\no-vibe"
+$DEST = "$HOME\.pi\plugins\no-vibe"
+
+# 2. Create destination tree
+New-Item -ItemType Directory -Force -Path "$DEST\extensions\no-vibe", "$DEST\prompts", "$DEST\skills\no-vibe", `
+         "$DEST\shared\guard", "$DEST\shared\templates", "$HOME\.no-vibe\memory"
+
+# 3. Copy runtime adapter
+Copy-Item "$REPO\runtimes\pi\.pi-plugin\plugin.json" "$DEST\"
+Copy-Item "$REPO\runtimes\pi\.pi-plugin\extensions\no-vibe\index.ts" "$DEST\extensions\no-vibe\"
+
+# 4. Copy shared content
+Copy-Item "$REPO\shared\skill\*.md" "$DEST\skills\no-vibe\"
+Copy-Item "$REPO\shared\commands\*.md" "$DEST\prompts\"
+Copy-Item "$REPO\shared\guard\*.json" "$DEST\shared\guard\"
+Copy-Item "$REPO\shared\templates\*.md" "$DEST\shared\templates\"
+
+# 5. Seed global ~/.no-vibe/ if first install
+if (-not (Test-Path "$HOME\.no-vibe\NO-VIBE.md")) { Copy-Item "$REPO\shared\templates\NO-VIBE.global.md" "$HOME\.no-vibe\NO-VIBE.md" }
+if (-not (Test-Path "$HOME\.no-vibe\memory\README.md")) { Copy-Item "$REPO\shared\templates\memory-readme.md" "$HOME\.no-vibe\memory\README.md" }
+
+# 6. Clean up
+Remove-Item -Recurse -Force $REPO
+```
+
+Then restart Pi.
+
+## Updating an existing install
+
+The Pi script **skips** if any existing install is detected — it won't auto-update.
+
+Before removing anything, compare **installed** vs **latest** version so you can decide whether skipping is correct:
 
 ```bash
-git clone https://github.com/rizukirr/no-vibe.git ~/Projects/no-vibe
+# Installed version (current Pi install)
+installed=$(jq -r '.version // empty' "$HOME/.pi/plugins/no-vibe/plugin.json" 2>/dev/null)
 
-mkdir -p ~/.pi/agent/skills ~/.pi/agent/prompts ~/.pi/agent/extensions
-ln -s ~/Projects/no-vibe/skills/no-vibe                          ~/.pi/agent/skills/no-vibe
-ln -s ~/Projects/no-vibe/.pi-plugin/prompts/no-vibe.md           ~/.pi/agent/prompts/no-vibe.md
-ln -s ~/Projects/no-vibe/.pi-plugin/prompts/no-vibe-btw.md       ~/.pi/agent/prompts/no-vibe-btw.md
-ln -s ~/Projects/no-vibe/.pi-plugin/prompts/no-vibe-challenge.md ~/.pi/agent/prompts/no-vibe-challenge.md
-ln -s ~/Projects/no-vibe/.pi-plugin/extensions/no-vibe           ~/.pi/agent/extensions/no-vibe
+# Latest version (from a freshly cloned no-vibe repo)
+latest=$(jq -r '.version // empty' "$HOME/tools/no-vibe/runtimes/pi/.pi-plugin/plugin.json" 2>/dev/null)
+
+printf 'installed=%s\nlatest=%s\n' "$installed" "$latest"
+
+# Decision
+if [ -n "$installed" ] && [ -n "$latest" ] && [ "$installed" = "$latest" ]; then
+  echo "Up-to-date: skip reinstall is expected."
+else
+  echo "Version differs (or unknown): remove existing install and reinstall."
+fi
 ```
 
-## Verify Installation
+If versions differ, remove the existing install first, then re-run install:
 
-1. Start `pi` in any project.
-2. Run `/no-vibe on` — should create `.no-vibe/active` and switch the status injection to `no-vibe: ON`.
-3. Ask the assistant to write a project file (e.g. `src/foo.py`) — it should be **blocked at the tool level** by the extension with `no-vibe mode is active. Refusing write to '...'`.
-4. Ask the assistant to `echo bad > someproj.py` or `sed -i …` on a project file — it should also be blocked with the corresponding `Refusing Bash command — …` message.
-5. Confirm `.no-vibe/notes.md` writes still succeed (allowlist).
-6. Confirm `/tmp/scratch.txt` writes still succeed (allowlist).
-7. Run `/no-vibe off` — should remove the marker.
+```bash
+# Remove ALL known Pi install locations (they're mutually exclusive in practice but be thorough)
+rm -rf "$HOME/.agents/skills/no-vibe"
+rm -rf "$HOME/.pi/plugins/no-vibe"
+rm -rf "$HOME/.pi/extensions/no-vibe"
+```
 
-## Notes
+Then run the script or manual install steps above. Don't touch `~/.no-vibe/` — user data, survives upgrades.
 
-- This is a **hard block** (extension uses `pi.on("tool_call", ...)` returning `{ block: true, reason }`). It is at parity with the Claude Code and OpenCode surfaces, not the soft-block-only Codex/Gemini surfaces.
-- Path-handling, Bash-parsing rules, and the safe-target allowlist (`.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/{null,stdout,stderr,tty,fd/*}`) are kept in lockstep with `.opencode/plugins/no-vibe.js` and the Claude `hooks/`. Variable / command-substitution destinations (`$VAR`, `$(…)`, backticks) fail closed.
-- Skills are loaded from the canonical `skills/` directory — there is no per-runtime copy, so a SKILL.md edit propagates to pi automatically.
+## Verify
+
+- `~/.pi/plugins/no-vibe/plugin.json` exists.
+- `~/.pi/plugins/no-vibe/extensions/no-vibe/index.ts` exists.
+- `~/.pi/plugins/no-vibe/skills/no-vibe/SKILL.md` exists.
+- `~/.pi/plugins/no-vibe/prompts/` contains five command files.
+- `~/.no-vibe/NO-VIBE.md` exists (seeded if missing).
+- After Pi restart, the slash commands `/no-vibe`, `/no-vibe-btw`, `/no-vibe-challenge`, `/no-vibe-forget`, `/no-vibe-clear` are available.
+
+## What gets installed
+
+- TypeScript extension (`extensions/no-vibe/index.ts`) — provides the write guard.
+- Plugin manifest (`plugin.json`).
+- Skill prose, command prompts, guard data (`shared/guard/*.json`), templates.
+- Global `~/.no-vibe/NO-VIBE.md` seeded if missing.
+
+## Enforcement
+
+**Hard.** The TS extension reads `shared/guard/write-tools.json` and blocks writes to project paths. Same allowlist as Claude / OpenCode.

@@ -1,49 +1,139 @@
-# no-vibe — OpenCode Installation
+# Install no-vibe — OpenCode
 
-## Install
+OpenCode has no marketplace. Install copies the plugin tree into OpenCode's plugins directory.
 
-1) Add the plugin to your OpenCode config (`~/.config/opencode/opencode.json`):
+## Prerequisites
 
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "plugin": [
-    "superpowers@git+https://github.com/obra/superpowers.git",
-    "no-vibe@git+https://github.com/rizukirr/no-vibe.git"
-  ]
-}
-```
+- **Git**
+- **Bash**, **Awk**, and **jq** (required for the `sync.sh` step to regenerate runtime files).
+  - *Windows:* These are included with **Git Bash**. Ensure they are in your PATH if using PowerShell.
 
-2) Install global commands:
+## Steps (script)
 
 ```bash
-mkdir -p ~/.config/opencode/commands
-curl -fsSL https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/.opencode/commands/no-vibe.md -o ~/.config/opencode/commands/no-vibe.md
-curl -fsSL https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/.opencode/commands/no-vibe-challenge.md -o ~/.config/opencode/commands/no-vibe-challenge.md
-curl -fsSL https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/.opencode/commands/no-vibe-btw.md -o ~/.config/opencode/commands/no-vibe-btw.md
+git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
+rm -rf "$HOME/.config/opencode/plugins/no-vibe"
+bash ~/tools/no-vibe/install/install-opencode.sh
 ```
 
-3) Refresh plugin cache (recommended on install/update):
+Default destination: `~/.config/opencode/plugins/no-vibe/`.
+
+To install elsewhere: `NO_VIBE_DEST=/custom/path bash ~/tools/no-vibe/install/install-opencode.sh`
+
+Restart OpenCode after install.
+
+## Manual installation (no script)
+
+For when the script can't be run.
+
+### Option A: Bash / Zsh (Linux, macOS, Git Bash)
 
 ```bash
-rm -rf ~/.cache/opencode/packages/no-vibe@git+https:/github.com/rizukirr/no-vibe.git
-opencode run --print-logs "check no-vibe plugin"
+# 1. Clone
+git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
+REPO=~/tools/no-vibe
+DEST="$HOME/.config/opencode/plugins/no-vibe"
+
+# 2. Remove old OpenCode no-vibe plugin first
+rm -rf "$DEST"
+
+# 3. Create destination tree
+mkdir -p "$DEST/plugins" "$DEST/commands" "$DEST/skills/no-vibe" \
+         "$DEST/shared/guard" "$DEST/shared/templates"
+
+# 4. Copy runtime adapter
+cp "$REPO/runtimes/opencode/plugins/no-vibe.js" "$DEST/plugins/"
+cp "$REPO/runtimes/opencode/index.js" "$DEST/"
+
+# 5. Copy shared content
+cp "$REPO"/shared/skill/*.md "$DEST/skills/no-vibe/"
+cp "$REPO"/shared/commands/*.md "$DEST/commands/"
+cp "$REPO"/shared/guard/*.json "$DEST/shared/guard/"
+cp "$REPO"/shared/templates/*.md "$DEST/shared/templates/"
+
+# 6. Seed global ~/.no-vibe/ if first install
+mkdir -p "$HOME/.no-vibe/memory"
+[ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp "$REPO/shared/templates/NO-VIBE.global.md" "$HOME/.no-vibe/NO-VIBE.md"
+[ -f "$HOME/.no-vibe/memory/README.md" ] || cp "$REPO/shared/templates/memory-readme.md" "$HOME/.no-vibe/memory/README.md"
+
+# 7. Clean up
+rm -rf ~/tools/no-vibe
 ```
 
-4) Restart OpenCode.
+### Option B: Windows (PowerShell)
+
+Run these in a PowerShell terminal.
+
+```powershell
+# 1. Clone
+git clone -b v2 https://github.com/rizukirr/no-vibe.git "$HOME\tools\no-vibe"
+$REPO = "$HOME\tools\no-vibe"
+$DEST = "$HOME\.config\opencode\plugins\no-vibe"
+
+# 2. Remove old OpenCode no-vibe plugin first
+if (Test-Path $DEST) { Remove-Item -Recurse -Force $DEST }
+
+# 3. Create destination tree
+New-Item -ItemType Directory -Force -Path "$DEST\plugins", "$DEST\commands", "$DEST\skills\no-vibe", `
+         "$DEST\shared\guard", "$DEST\shared\templates", "$HOME\.no-vibe\memory"
+
+# 4. Copy runtime adapter
+Copy-Item "$REPO\runtimes\opencode\plugins\no-vibe.js" "$DEST\plugins\"
+Copy-Item "$REPO\runtimes\opencode\index.js" "$DEST\"
+
+# 5. Copy shared content
+Copy-Item "$REPO\shared\skill\*.md" "$DEST\skills\no-vibe\"
+Copy-Item "$REPO\shared\commands\*.md" "$DEST\commands\"
+Copy-Item "$REPO\shared\guard\*.json" "$DEST\shared\guard\"
+Copy-Item "$REPO\shared\templates\*.md" "$DEST\shared\templates\"
+
+# 6. Seed global ~/.no-vibe/ if first install
+if (-not (Test-Path "$HOME\.no-vibe\NO-VIBE.md")) { Copy-Item "$REPO\shared\templates\NO-VIBE.global.md" "$HOME\.no-vibe\NO-VIBE.md" }
+if (-not (Test-Path "$HOME\.no-vibe\memory\README.md")) { Copy-Item "$REPO\shared\templates\memory-readme.md" "$HOME\.no-vibe\memory\README.md" }
+
+# 7. Clean up
+Remove-Item -Recurse -Force $REPO
+```
+
+Then restart OpenCode.
+
+## Updating an existing install
+
+If the user already has no-vibe installed at `~/.config/opencode/plugins/no-vibe/`, compare installed vs latest first (OpenCode runtime has no standalone manifest version):
+
+```bash
+installed="$HOME/.config/opencode/plugins/no-vibe/plugins/no-vibe.js"
+latest="$HOME/tools/no-vibe/runtimes/opencode/plugins/no-vibe.js"
+
+if [ -f "$installed" ] && [ -f "$latest" ] && cmp -s "$installed" "$latest"; then
+  echo "Up-to-date: skip reinstall."
+else
+  echo "Different (or unknown): reinstall."
+fi
+```
+
+If different, remove then reinstall:
+
+```bash
+rm -rf "$HOME/.config/opencode/plugins/no-vibe"
+```
+
+Then run the script or manual install steps above. Don't touch `~/.no-vibe/` — user data, survives upgrades.
 
 ## Verify
 
-1. Run `/no-vibe on`
-2. Start a lesson topic (for example `/no-vibe build a linear layer`)
-3. Confirm the assistant teaches in chat and does not write project files directly
+- `~/.config/opencode/plugins/no-vibe/plugins/no-vibe.js` exists.
+- `~/.config/opencode/plugins/no-vibe/skills/no-vibe/SKILL.md` exists.
+- `~/.config/opencode/plugins/no-vibe/commands/` contains five command files.
+- `~/.no-vibe/NO-VIBE.md` exists (seeded if missing).
+- After OpenCode restart, the slash commands `/no-vibe`, `/no-vibe-btw`, `/no-vibe-challenge`, `/no-vibe-forget`, `/no-vibe-clear` are available.
 
-CLI note: when using `opencode run`, invoke commands with `--command` (for example `opencode run --command no-vibe on`). Do not pass `/no-vibe on` as a plain message if you expect command execution.
+## What gets installed
 
-## Troubleshooting
+- JS plugin (`plugins/no-vibe.js`) — provides the write guard.
+- Skill prose, command prose, guard data (`shared/guard/*.json`), templates.
+- Global `~/.no-vibe/NO-VIBE.md` seeded if missing.
 
-- Check logs: `opencode run --print-logs "hello" 2>&1 | rg -i "no-vibe|plugin|error"`
-- Requires `rg` (ripgrep) for the troubleshooting command above
-- If install fails, look for `ENOENT ... package.json` on `no-vibe@git+...`
-- If `/no-vibe` is unknown, command files were not installed in `~/.config/opencode/commands/`
-- If installed version looks stale, clear only the no-vibe cache path above, run `opencode run --print-logs "check no-vibe plugin"`, then restart OpenCode
+## Enforcement
+
+**Hard.** The JS plugin reads `shared/guard/write-tools.json` and blocks writes to project paths. Same allowlist as Claude: `.no-vibe/`, `~/.no-vibe/`, `/tmp`, `/dev/null` family.

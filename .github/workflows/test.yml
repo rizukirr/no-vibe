@@ -1,0 +1,51 @@
+name: tests
+
+on:
+  push:
+    branches: [main, v2]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Verify shared → generated drift
+        run: bash scripts/sync.sh --check
+
+      - name: Verify version parity
+        run: bash scripts/bump-version.sh --check
+
+      - name: Block-writes hook
+        run: bash tests/test_block_writes.sh
+
+      - name: Block-bash-writes hook
+        run: bash tests/test_block_bash_writes.sh
+
+      - name: Status line
+        run: bash tests/test_status.sh
+
+      - name: Escape hatch
+        run: bash tests/test_escape_hatch.sh
+
+      - name: Gemini guard
+        run: bash tests/test_gemini_guard.sh
+
+      - name: Sync drift
+        run: bash tests/test_sync.sh
+
+      - name: OpenCode plugin
+        run: node tests/test_opencode_plugin.mjs
+
+      - name: Pi plugin
+        run: node tests/test_pi_plugin.mjs

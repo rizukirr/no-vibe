@@ -3,7 +3,7 @@
 
 set -u
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HOOK="$SCRIPT_DIR/../hooks/block-bash-writes.sh"
+HOOK="$SCRIPT_DIR/../runtimes/claude/hooks/block-bash-writes.sh"
 . "$SCRIPT_DIR/helpers.sh"
 
 # Sandbox must live OUTSIDE /tmp because /tmp is on the allowlist —

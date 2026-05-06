@@ -1,0 +1,45 @@
+# AUTO-GENERATED FROM shared/commands/no-vibe-clear.md — DO NOT EDIT
+
+description = "Wipe everything — both NO-VIBE.md files, both memory/ folders, project .no-vibe/, marker, global ~/.no-vibe/. Irreversible."
+
+prompt = """
+
+# /no-vibe-clear
+
+Annihilates all no-vibe state on this machine for the current user. Stronger than `/no-vibe-forget`. Irreversible.
+
+## What gets removed
+
+- `.no-vibe/` (entire project directory: marker, session.md, NO-VIBE.md, refs, memory/).
+- `~/.no-vibe/` (entire global directory: NO-VIBE.md, memory/).
+
+## Instructions
+
+### 1. Strong confirmation
+
+Prompt:
+
+> *"This will permanently delete:*
+>
+> *  - This project's `.no-vibe/` directory (marker, current session, project NO-VIBE.md, refs, memory archives)*
+> *  - The global `~/.no-vibe/` directory (tutor profile, memory archives)*
+>
+> *This cannot be undone. To confirm, type `yes, clear all` exactly:"*
+
+If the user's response is not literally `yes, clear all`: cancel, no changes.
+
+### 2. Wipe
+
+```bash
+rm -rf .no-vibe ~/.no-vibe
+```
+
+### 3. Acknowledge
+
+One line: *"Cleared. Project `.no-vibe/` and global `~/.no-vibe/` removed."*
+
+## Notes
+
+- After clear, the next `/no-vibe on` invocation starts fresh — no profile, no memory, eight-clause default applies cleanly.
+- If you wanted to reset NO-VIBE.md but keep archives, use `/no-vibe-forget` instead.
+"""
