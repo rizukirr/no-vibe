@@ -2,6 +2,12 @@
 
 Codex has no marketplace. It reads `AGENTS.md` from the project root, so install is **per-project**.
 
+## Prerequisites
+
+- **Git**
+- **Bash**, **Awk**, and **jq** (required for the `sync.sh` step to regenerate runtime files).
+  - *Windows:* These are included with **Git Bash**. Ensure they are in your PATH if using PowerShell.
+
 ## Steps (script)
 
 1. Clone the repo somewhere (one-time):
@@ -26,16 +32,16 @@ Codex has no marketplace. It reads `AGENTS.md` from the project root, so install
 
 ## Manual installation (no script)
 
-For when the script can't be run. These commands replicate `install/install-codex.sh`. Run from inside the target project.
+For when the script can't be run. Run from inside the target project.
 
-**Environment:** the commands below are bash. **If the user is on Windows**, translate to whichever shell they have — PowerShell, Git Bash, or WSL. Use `$env:USERPROFILE` (PowerShell) or `%USERPROFILE%` (cmd) instead of `$HOME`. On PowerShell, use `Copy-Item` for `cp` and `New-Item -ItemType Directory -Force` for `mkdir -p`. Same logical steps on every OS.
+### Option A: Bash / Zsh (Linux, macOS, Git Bash)
 
 ```bash
 # 1. Clone (one-time, anywhere)
 git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
 REPO=~/tools/no-vibe
 
-# 2. Remove old Codex no-vibe skills first (fresh install/update)
+# 2. Remove old Codex no-vibe skills first
 rm -rf ~/.codex/no-vibe
 
 # 3. Regenerate runtimes/codex/AGENTS.md from /shared/
@@ -66,8 +72,51 @@ mkdir -p "$HOME/.no-vibe/memory"
 [ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp "$REPO/shared/templates/NO-VIBE.global.md" "$HOME/.no-vibe/NO-VIBE.md"
 [ -f "$HOME/.no-vibe/memory/README.md" ] || cp "$REPO/shared/templates/memory-readme.md" "$HOME/.no-vibe/memory/README.md"
 
-# 8. Clean up — the clone is no longer needed
+# 8. Clean up
 rm -rf ~/tools/no-vibe
+```
+
+### Option B: Windows (PowerShell)
+
+Run these in a PowerShell terminal inside your project directory. Note: Step 3 still requires `bash` (e.g., from Git Bash) to be in your PATH.
+
+```powershell
+# 1. Clone (one-time, anywhere)
+git clone -b v2 https://github.com/rizukirr/no-vibe.git "$HOME\tools\no-vibe"
+$REPO = "$HOME\tools\no-vibe"
+
+# 2. Remove old Codex no-vibe skills first
+if (Test-Path "$HOME\.codex\no-vibe") { Remove-Item -Recurse -Force "$HOME\.codex\no-vibe" }
+
+# 3. Regenerate runtimes (requires bash/awk/jq in PATH)
+bash "$REPO\scripts\sync.sh"
+
+# 4. Copy AGENTS.md to project root — REFUSE if one already exists
+if (Test-Path "AGENTS.md") {
+    Write-Host "AGENTS.md exists — merge manually from $REPO\runtimes\codex\AGENTS.md" -ForegroundColor Yellow
+} else {
+    Copy-Item "$REPO\runtimes\codex\AGENTS.md" "AGENTS.md"
+}
+
+# 5. Copy skill prose + commands to .no-vibe/codex/ for reference
+New-Item -ItemType Directory -Force -Path ".no-vibe\codex\skill", ".no-vibe\codex\commands"
+Copy-Item "$REPO\shared\skill\*.md" ".no-vibe\codex\skill\"
+Copy-Item "$REPO\shared\commands\*.md" ".no-vibe\codex\commands\"
+
+# 6. Install Codex-visible skills
+$SKILLS = "no-vibe", "no-vibe-btw", "no-vibe-challenge", "no-vibe-forget", "no-vibe-clear"
+foreach ($s in $SKILLS) {
+    New-Item -ItemType Directory -Force -Path "$HOME\.codex\no-vibe\skills\$s"
+    Copy-Item "$REPO\runtimes\codex\skills\$s\SKILL.md" "$HOME\.codex\no-vibe\skills\$s\SKILL.md"
+}
+
+# 7. Seed global ~/.no-vibe/ if first install
+New-Item -ItemType Directory -Force -Path "$HOME\.no-vibe\memory"
+if (-not (Test-Path "$HOME\.no-vibe\NO-VIBE.md")) { Copy-Item "$REPO\shared\templates\NO-VIBE.global.md" "$HOME\.no-vibe\NO-VIBE.md" }
+if (-not (Test-Path "$HOME\.no-vibe\memory\README.md")) { Copy-Item "$REPO\shared\templates\memory-readme.md" "$HOME\.no-vibe\memory\README.md" }
+
+# 8. Clean up
+Remove-Item -Recurse -Force $REPO
 ```
 
 If `AGENTS.md` already existed, **don't delete the clone yet** — open both files and copy the no-vibe sections from `$REPO/runtimes/codex/AGENTS.md` into the project's `AGENTS.md`. Delete the clone after the merge.

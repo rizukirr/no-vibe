@@ -2,6 +2,12 @@
 
 OpenCode has no marketplace. Install copies the plugin tree into OpenCode's plugins directory.
 
+## Prerequisites
+
+- **Git**
+- **Bash**, **Awk**, and **jq** (required for the `sync.sh` step to regenerate runtime files).
+  - *Windows:* These are included with **Git Bash**. Ensure they are in your PATH if using PowerShell.
+
 ## Steps (script)
 
 ```bash
@@ -18,9 +24,9 @@ Restart OpenCode after install.
 
 ## Manual installation (no script)
 
-For when the script can't be run. These commands replicate `install/install-opencode.sh`.
+For when the script can't be run.
 
-**Environment:** the commands below are bash. **If the user is on Windows**, translate to whichever shell they have — PowerShell, Git Bash, or WSL. Use `$env:USERPROFILE` (PowerShell) or `%USERPROFILE%` (cmd) instead of `$HOME`. On PowerShell, use `Copy-Item` for `cp` and `New-Item -ItemType Directory -Force` for `mkdir -p`. Same logical steps on every OS.
+### Option A: Bash / Zsh (Linux, macOS, Git Bash)
 
 ```bash
 # 1. Clone
@@ -28,7 +34,7 @@ git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
 REPO=~/tools/no-vibe
 DEST="$HOME/.config/opencode/plugins/no-vibe"
 
-# 2. Remove old OpenCode no-vibe plugin first (fresh install/update)
+# 2. Remove old OpenCode no-vibe plugin first
 rm -rf "$DEST"
 
 # 3. Create destination tree
@@ -50,8 +56,43 @@ mkdir -p "$HOME/.no-vibe/memory"
 [ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp "$REPO/shared/templates/NO-VIBE.global.md" "$HOME/.no-vibe/NO-VIBE.md"
 [ -f "$HOME/.no-vibe/memory/README.md" ] || cp "$REPO/shared/templates/memory-readme.md" "$HOME/.no-vibe/memory/README.md"
 
-# 7. Clean up — the clone is no longer needed
+# 7. Clean up
 rm -rf ~/tools/no-vibe
+```
+
+### Option B: Windows (PowerShell)
+
+Run these in a PowerShell terminal.
+
+```powershell
+# 1. Clone
+git clone -b v2 https://github.com/rizukirr/no-vibe.git "$HOME\tools\no-vibe"
+$REPO = "$HOME\tools\no-vibe"
+$DEST = "$HOME\.config\opencode\plugins\no-vibe"
+
+# 2. Remove old OpenCode no-vibe plugin first
+if (Test-Path $DEST) { Remove-Item -Recurse -Force $DEST }
+
+# 3. Create destination tree
+New-Item -ItemType Directory -Force -Path "$DEST\plugins", "$DEST\commands", "$DEST\skills\no-vibe", `
+         "$DEST\shared\guard", "$DEST\shared\templates", "$HOME\.no-vibe\memory"
+
+# 4. Copy runtime adapter
+Copy-Item "$REPO\runtimes\opencode\plugins\no-vibe.js" "$DEST\plugins\"
+Copy-Item "$REPO\runtimes\opencode\index.js" "$DEST\"
+
+# 5. Copy shared content
+Copy-Item "$REPO\shared\skill\*.md" "$DEST\skills\no-vibe\"
+Copy-Item "$REPO\shared\commands\*.md" "$DEST\commands\"
+Copy-Item "$REPO\shared\guard\*.json" "$DEST\shared\guard\"
+Copy-Item "$REPO\shared\templates\*.md" "$DEST\shared\templates\"
+
+# 6. Seed global ~/.no-vibe/ if first install
+if (-not (Test-Path "$HOME\.no-vibe\NO-VIBE.md")) { Copy-Item "$REPO\shared\templates\NO-VIBE.global.md" "$HOME\.no-vibe\NO-VIBE.md" }
+if (-not (Test-Path "$HOME\.no-vibe\memory\README.md")) { Copy-Item "$REPO\shared\templates\memory-readme.md" "$HOME\.no-vibe\memory\README.md" }
+
+# 7. Clean up
+Remove-Item -Recurse -Force $REPO
 ```
 
 Then restart OpenCode.

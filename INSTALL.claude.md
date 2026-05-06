@@ -2,6 +2,12 @@
 
 The recommended path is the marketplace (no clone required). Use the offline path only if the user can't reach the marketplace or wants a pinned local version.
 
+## Prerequisites
+
+- **Git**
+- **Bash**, **Awk**, and **jq** (required for the `sync.sh` step to populate the runtime directory).
+  - *Windows:* These are included with **Git Bash**. Ensure they are in your PATH if using PowerShell.
+
 ## Recommended: marketplace install
 
 Tell the user to run these two slash commands in Claude Code:
@@ -55,7 +61,7 @@ And `/plugin` should list `no-vibe` at version `2.0.0`.
 
 ## Offline / local fallback (script)
 
-If the marketplace install fails, clone and run the local installer:
+If the marketplace install fails, clone and run the local installer (requires a Bash environment):
 
 ```bash
 git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
@@ -67,16 +73,16 @@ This copies `runtimes/claude/` into `~/.claude/plugins/no-vibe/`. Restart Claude
 
 ## Manual installation (no script)
 
-For when the script can't be run. These commands replicate `install/install-claude.sh`.
+For when the script can't be run.
 
-**Environment:** the commands below are bash. **If the user is on Windows**, translate to whichever shell they have — PowerShell, Git Bash, or WSL. Use `$env:USERPROFILE` (PowerShell) or `%USERPROFILE%` (cmd) instead of `$HOME`. On PowerShell, use `Copy-Item -Recurse` for `cp -R`, `New-Item -ItemType Directory -Force` for `mkdir -p`. The clone, sync, and copy steps are the same logical operations on every OS.
+### Option A: Bash / Zsh (Linux, macOS, Git Bash)
 
 ```bash
 # 1. Clone
 git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
 cd ~/tools/no-vibe
 
-# 2. Remove old Claude no-vibe plugin first (fresh install/update)
+# 2. Remove old Claude no-vibe plugin first
 rm -rf "$HOME/.claude/plugins/no-vibe"
 
 # 3. Regenerate runtimes/claude/ from /shared/ (populates skills/, commands/, shared/guard/)
@@ -93,8 +99,38 @@ mkdir -p "$HOME/.no-vibe/memory"
 [ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp shared/templates/NO-VIBE.global.md "$HOME/.no-vibe/NO-VIBE.md"
 [ -f "$HOME/.no-vibe/memory/README.md" ] || cp shared/templates/memory-readme.md "$HOME/.no-vibe/memory/README.md"
 
-# 6. Clean up — the clone is no longer needed
+# 6. Clean up
 cd ~ && rm -rf ~/tools/no-vibe
+```
+
+### Option B: Windows (PowerShell)
+
+Run these in a PowerShell terminal. Note: Step 3 still requires `bash` (e.g., from Git Bash) to be in your PATH.
+
+```powershell
+# 1. Clone
+git clone -b v2 https://github.com/rizukirr/no-vibe.git "$HOME\tools\no-vibe"
+cd "$HOME\tools\no-vibe"
+
+# 2. Remove old Claude no-vibe plugin first
+if (Test-Path "$HOME\.claude\plugins\no-vibe") { Remove-Item -Recurse -Force "$HOME\.claude\plugins\no-vibe" }
+
+# 3. Regenerate runtimes (requires bash/awk/jq in PATH)
+bash scripts\sync.sh
+
+# 4. Copy the self-contained Claude plugin tree
+$DEST = "$HOME\.claude\plugins\no-vibe"
+New-Item -ItemType Directory -Force -Path $DEST
+Copy-Item "runtimes\claude\*" $DEST -Recurse
+
+# 5. Seed global ~/.no-vibe/ if first install
+New-Item -ItemType Directory -Force -Path "$HOME\.no-vibe\memory"
+if (-not (Test-Path "$HOME\.no-vibe\NO-VIBE.md")) { Copy-Item "shared\templates\NO-VIBE.global.md" "$HOME\.no-vibe\NO-VIBE.md" }
+if (-not (Test-Path "$HOME\.no-vibe\memory\README.md")) { Copy-Item "shared\templates\memory-readme.md" "$HOME\.no-vibe\memory\README.md" }
+
+# 6. Clean up
+cd $HOME
+Remove-Item -Recurse -Force "$HOME\tools\no-vibe"
 ```
 
 Then restart Claude Code.

@@ -2,7 +2,15 @@
 
 Gemini CLI uses extensions. Install copies the extension tree into Gemini's extensions directory.
 
+## Prerequisites
+
+- **Git**
+- **Bash**, **Awk**, and **jq** (required for the `sync.sh` step to regenerate runtime files).
+  - *Windows:* These are included with **Git Bash**. Ensure they are in your PATH if using PowerShell.
+
 ## Steps (script)
+
+If you have a Bash environment (Linux, macOS, or Git Bash on Windows):
 
 ```bash
 git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
@@ -18,9 +26,9 @@ Restart Gemini CLI after install.
 
 ## Manual installation (no script)
 
-For when the script can't be run. These commands replicate `install/install-gemini.sh`.
+For when the script can't be run.
 
-**Environment:** the commands below are bash. **If the user is on Windows**, translate to whichever shell they have — PowerShell, Git Bash, or WSL. Use `$env:USERPROFILE` (PowerShell) or `%USERPROFILE%` (cmd) instead of `$HOME`. On PowerShell, use `Copy-Item` for `cp` and `New-Item -ItemType Directory -Force` for `mkdir -p`. Same logical steps on every OS.
+### Option A: Bash / Zsh (Linux, macOS, Git Bash)
 
 ```bash
 # 1. Clone
@@ -28,7 +36,7 @@ git clone -b v2 https://github.com/rizukirr/no-vibe.git ~/tools/no-vibe
 REPO=~/tools/no-vibe
 DEST="$HOME/.gemini/extensions/no-vibe"
 
-# 2. Remove old Gemini no-vibe extension first (fresh install/update)
+# 2. Remove old Gemini no-vibe extension first
 rm -rf "$DEST"
 
 # 3. Regenerate runtimes/gemini/ from /shared/ (GEMINI.md + .toml commands)
@@ -41,18 +49,54 @@ mkdir -p "$DEST/.gemini/commands" "$DEST/skills/no-vibe"
 cp "$REPO/runtimes/gemini/gemini-extension.json" "$DEST/"
 cp "$REPO/runtimes/gemini/GEMINI.md" "$DEST/"
 cp "$REPO/runtimes/gemini/.gemini/tool-mapping.md" "$DEST/.gemini/"
-cp "$REPO"/runtimes/gemini/.gemini/commands/*.toml "$DEST/.gemini/commands/"
+cp "$REPO/runtimes/gemini/.gemini/commands/"*.toml "$DEST/.gemini/commands/"
 
 # 6. Copy skill prose
-cp "$REPO"/shared/skill/*.md "$DEST/skills/no-vibe/"
+cp "$REPO/shared/skill/"*.md "$DEST/skills/no-vibe/"
 
 # 7. Seed global ~/.no-vibe/ if first install
 mkdir -p "$HOME/.no-vibe/memory"
 [ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp "$REPO/shared/templates/NO-VIBE.global.md" "$HOME/.no-vibe/NO-VIBE.md"
 [ -f "$HOME/.no-vibe/memory/README.md" ] || cp "$REPO/shared/templates/memory-readme.md" "$HOME/.no-vibe/memory/README.md"
 
-# 8. Clean up — the clone is no longer needed
+# 8. Clean up
 rm -rf ~/tools/no-vibe
+```
+
+### Option B: Windows (PowerShell)
+
+Run these in a PowerShell terminal. Note: Step 3 still requires `bash` (e.g., from Git Bash) to be in your PATH.
+
+```powershell
+# 1. Clone
+git clone -b v2 https://github.com/rizukirr/no-vibe.git "$HOME\tools\no-vibe"
+$REPO = "$HOME\tools\no-vibe"
+$DEST = "$HOME\.gemini\extensions\no-vibe"
+
+# 2. Remove old Gemini no-vibe extension first
+if (Test-Path $DEST) { Remove-Item -Recurse -Force $DEST }
+
+# 3. Regenerate runtimes (requires bash/awk/jq in PATH)
+bash "$REPO\scripts\sync.sh"
+
+# 4. Create destination tree
+New-Item -ItemType Directory -Force -Path "$DEST\.gemini\commands", "$DEST\skills\no-vibe", "$HOME\.no-vibe\memory"
+
+# 5. Copy runtime adapter
+Copy-Item "$REPO\runtimes\gemini\gemini-extension.json" "$DEST\"
+Copy-Item "$REPO\runtimes\gemini\GEMINI.md" "$DEST\"
+Copy-Item "$REPO\runtimes\gemini\.gemini\tool-mapping.md" "$DEST\.gemini\"
+Copy-Item "$REPO\runtimes\gemini\.gemini\commands\*.toml" "$DEST\.gemini\commands\"
+
+# 6. Copy skill prose
+Copy-Item "$REPO\shared\skill\*.md" "$DEST\skills\no-vibe\"
+
+# 7. Seed global ~/.no-vibe/ if first install
+if (-not (Test-Path "$HOME\.no-vibe\NO-VIBE.md")) { Copy-Item "$REPO\shared\templates\NO-VIBE.global.md" "$HOME\.no-vibe\NO-VIBE.md" }
+if (-not (Test-Path "$HOME\.no-vibe\memory\README.md")) { Copy-Item "$REPO\shared\templates\memory-readme.md" "$HOME\.no-vibe\memory\README.md" }
+
+# 8. Clean up
+Remove-Item -Recurse -Force $REPO
 ```
 
 Then restart Gemini CLI.
