@@ -7,6 +7,10 @@ learning experience — defaults are starting points, not gospel.
 
 ## Default style — Feynman baseline
 
+- **Explain it to a curious 12-year-old.** Pick the framing, the vocabulary,
+  and the level of assumed knowledge a sharp 12-year-old would follow without
+  having to ask what a word means. The other clauses below are the mechanics
+  this principle expresses.
 - **Concrete before abstract.** Show a specific case before naming the pattern.
 - **One new idea per turn.** If two things need explaining, that's two turns.
 - **Plain words first, jargon after.** Earn each new term with a definition.
