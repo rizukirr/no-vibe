@@ -1,0 +1,51 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Verify jq is available
+        run: jq --version
+
+      - name: Make hooks and tests executable
+        run: chmod +x hooks/*.sh tests/*.sh
+
+      # Each test runs as its own step so a failure is attributed cleanly
+      # in the GitHub Actions UI. continue-on-error is intentionally OFF
+      # — first failure halts the job.
+
+      - name: test_block_writes
+        run: bash tests/test_block_writes.sh
+
+      - name: test_block_bash_writes
+        run: bash tests/test_block_bash_writes.sh
+
+      - name: test_status
+        run: bash tests/test_status.sh
+
+      - name: test_escape_hatch
+        run: bash tests/test_escape_hatch.sh
+
+      - name: test_gemini_guard
+        run: bash tests/test_gemini_guard.sh
+
+      - name: test_contract_injection
+        run: bash tests/test_contract_injection.sh
+
+      - name: test_opencode_plugin
+        run: node tests/test_opencode_plugin.mjs
+
+      - name: test_pi_plugin
+        run: node tests/test_pi_plugin.mjs
