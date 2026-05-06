@@ -31,17 +31,19 @@ Restart Claude Code.
 
 ### Other runtimes
 
-Each CLI has a per-runtime install guide written for an AI agent to follow. Point your assistant at the relevant file:
+Each CLI has a per-runtime install guide written for an AI agent to follow. Tell your assistant:
 
-> *"Fetch `INSTALL.codex.md` from rizukirr/no-vibe and install it."*
+> *"fetch and follow this installation guide https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/v2/INSTALL.codex.md"*
 
-| Runtime | Guide |
+Replace `INSTALL.codex.md` with the file for your runtime:
+
+| Runtime | URL |
 |---|---|
-| Claude Code | [INSTALL.claude.md](INSTALL.claude.md) (offline fallback — marketplace is preferred) |
-| OpenCode | [INSTALL.opencode.md](INSTALL.opencode.md) |
-| Pi | [INSTALL.pi.md](INSTALL.pi.md) |
-| Codex | [INSTALL.codex.md](INSTALL.codex.md) (per-project) |
-| Gemini CLI | [INSTALL.gemini.md](INSTALL.gemini.md) |
+| Claude Code | `https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/v2/INSTALL.claude.md` (offline fallback — marketplace is preferred) |
+| OpenCode | `https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/v2/INSTALL.opencode.md` |
+| Pi | `https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/v2/INSTALL.pi.md` |
+| Codex | `https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/v2/INSTALL.codex.md` (per-project) |
+| Gemini CLI | `https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/v2/INSTALL.gemini.md` |
 
 Or run the scripts directly:
 
