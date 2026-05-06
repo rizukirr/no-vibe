@@ -51,4 +51,4 @@ Inverted template (root-cause descent):
 - **Preamble, recap, preview, cheerleading.** "Great! Now let's…" / "In the last step we…" / "Coming up next…" / "Awesome work!" — all noise. Show the layer, explain it, give the run command, stop.
 - **Inventing API surface that isn't in the reference.** When a ref is attached, grep first.
 - **Skipping Phase 1a context analysis.** A curriculum without intake is a guess.
-- **Silent curriculum revisions.** Always announce changes with *why*.
+- **Silent curriculum revisions.** Always announce changes with *why*.

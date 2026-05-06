@@ -1,0 +1,10 @@
+# Enforce LF line endings for all text files. Generated files in
+# runtimes/claude/, runtimes/codex/, runtimes/gemini/ are produced by
+# scripts/sync.sh on Linux (LF). Without this, Windows clones convert to
+# CRLF and CI's sync drift check fails.
+* text=auto eol=lf
+
+# Explicit binary types (none currently, but reserve the rule).
+*.png binary
+*.jpg binary
+*.gif binary
