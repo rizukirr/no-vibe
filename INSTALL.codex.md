@@ -44,12 +44,17 @@ mkdir -p .no-vibe/codex/skill .no-vibe/codex/commands
 cp "$REPO"/shared/skill/*.md .no-vibe/codex/skill/
 cp "$REPO"/shared/commands/*.md .no-vibe/codex/commands/
 
-# 5. Seed global ~/.no-vibe/ if first install
+# 5. Install Codex-visible skills
+mkdir -p "$HOME/.codex/no-vibe/skills/no-vibe-forget" "$HOME/.codex/no-vibe/skills/no-vibe-clear"
+cp "$REPO/runtimes/codex/skills/no-vibe-forget/SKILL.md" "$HOME/.codex/no-vibe/skills/no-vibe-forget/SKILL.md"
+cp "$REPO/runtimes/codex/skills/no-vibe-clear/SKILL.md" "$HOME/.codex/no-vibe/skills/no-vibe-clear/SKILL.md"
+
+# 6. Seed global ~/.no-vibe/ if first install
 mkdir -p "$HOME/.no-vibe/memory"
 [ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp "$REPO/shared/templates/NO-VIBE.global.md" "$HOME/.no-vibe/NO-VIBE.md"
 [ -f "$HOME/.no-vibe/memory/README.md" ] || cp "$REPO/shared/templates/memory-readme.md" "$HOME/.no-vibe/memory/README.md"
 
-# 6. Clean up — the clone is no longer needed
+# 7. Clean up — the clone is no longer needed
 rm -rf ~/tools/no-vibe
 ```
 
@@ -76,13 +81,14 @@ Don't touch `~/.no-vibe/` — user data, survives upgrades. `.no-vibe/codex/skil
 
 - `<project>/AGENTS.md` exists and starts with the no-vibe header.
 - `<project>/.no-vibe/codex/skill/` and `.no-vibe/codex/commands/` contain the skill prose and command files.
+- `~/.codex/no-vibe/skills/no-vibe-forget/SKILL.md` and `~/.codex/no-vibe/skills/no-vibe-clear/SKILL.md` exist.
 - `~/.no-vibe/NO-VIBE.md` exists (seeded from template if it didn't already).
-- In Codex, `$` autocomplete may not list no-vibe commands. Invoke by typing command names directly in chat (for example `/no-vibe`, `/no-vibe-forget`, `/no-vibe-clear`).
 
 ## What gets installed
 
 - `AGENTS.md` at the project root (Codex auto-loads this on session start).
 - Skill prose + command files copied to `.no-vibe/codex/` for reference.
+- Codex skills installed under `~/.codex/no-vibe/skills/` for command visibility.
 - Global `~/.no-vibe/NO-VIBE.md` seeded if missing.
 
 ## Enforcement
