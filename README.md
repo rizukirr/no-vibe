@@ -45,7 +45,7 @@ Replace `INSTALL.codex.md` with the file for your runtime:
 | Codex | `https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/v2/INSTALL.codex.md` (per-project) |
 | Gemini CLI | `https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/v2/INSTALL.gemini.md` |
 
-Or run the scripts directly:
+Or run the scripts directly (Linux):
 
 ```bash
 git clone https://github.com/rizukirr/no-vibe.git
