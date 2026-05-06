@@ -20,7 +20,9 @@ Codex has no marketplace. It reads `AGENTS.md` from the project root, so install
 
 ## Manual installation (no script)
 
-For when the script can't be run. These commands replicate `install/install-codex.sh`. Run from inside the target project:
+For when the script can't be run. These commands replicate `install/install-codex.sh`. Run from inside the target project.
+
+**Environment:** the commands below are bash. **If the user is on Windows**, translate to whichever shell they have — PowerShell, Git Bash, or WSL. Use `$env:USERPROFILE` (PowerShell) or `%USERPROFILE%` (cmd) instead of `$HOME`. On PowerShell, use `Copy-Item` for `cp` and `New-Item -ItemType Directory -Force` for `mkdir -p`. Same logical steps on every OS.
 
 ```bash
 # 1. Clone (one-time, anywhere)
@@ -46,9 +48,12 @@ cp "$REPO"/shared/commands/*.md .no-vibe/codex/commands/
 mkdir -p "$HOME/.no-vibe/memory"
 [ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp "$REPO/shared/templates/NO-VIBE.global.md" "$HOME/.no-vibe/NO-VIBE.md"
 [ -f "$HOME/.no-vibe/memory/README.md" ] || cp "$REPO/shared/templates/memory-readme.md" "$HOME/.no-vibe/memory/README.md"
+
+# 6. Clean up — the clone is no longer needed
+rm -rf ~/tools/no-vibe
 ```
 
-If `AGENTS.md` already existed, open both files and copy the no-vibe sections from `$REPO/runtimes/codex/AGENTS.md` into the project's `AGENTS.md`.
+If `AGENTS.md` already existed, **don't delete the clone yet** — open both files and copy the no-vibe sections from `$REPO/runtimes/codex/AGENTS.md` into the project's `AGENTS.md`. Delete the clone after the merge.
 
 ## Verify
 

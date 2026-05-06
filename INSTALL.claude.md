@@ -38,7 +38,9 @@ This copies `runtimes/claude/` into `~/.claude/plugins/no-vibe/`. Restart Claude
 
 ## Manual installation (no script)
 
-For when the script can't be run. These commands replicate `install/install-claude.sh`:
+For when the script can't be run. These commands replicate `install/install-claude.sh`.
+
+**Environment:** the commands below are bash. **If the user is on Windows**, translate to whichever shell they have — PowerShell, Git Bash, or WSL. Use `$env:USERPROFILE` (PowerShell) or `%USERPROFILE%` (cmd) instead of `$HOME`. On PowerShell, use `Copy-Item -Recurse` for `cp -R`, `New-Item -ItemType Directory -Force` for `mkdir -p`. The clone, sync, and copy steps are the same logical operations on every OS.
 
 ```bash
 # 1. Clone
@@ -58,6 +60,9 @@ chmod +x "$DEST/hooks"/*.sh
 mkdir -p "$HOME/.no-vibe/memory"
 [ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp shared/templates/NO-VIBE.global.md "$HOME/.no-vibe/NO-VIBE.md"
 [ -f "$HOME/.no-vibe/memory/README.md" ] || cp shared/templates/memory-readme.md "$HOME/.no-vibe/memory/README.md"
+
+# 5. Clean up — the clone is no longer needed
+cd ~ && rm -rf ~/tools/no-vibe
 ```
 
 Then restart Claude Code.

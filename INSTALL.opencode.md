@@ -17,7 +17,9 @@ Restart OpenCode after install.
 
 ## Manual installation (no script)
 
-For when the script can't be run. These commands replicate `install/install-opencode.sh`:
+For when the script can't be run. These commands replicate `install/install-opencode.sh`.
+
+**Environment:** the commands below are bash. **If the user is on Windows**, translate to whichever shell they have — PowerShell, Git Bash, or WSL. Use `$env:USERPROFILE` (PowerShell) or `%USERPROFILE%` (cmd) instead of `$HOME`. On PowerShell, use `Copy-Item` for `cp` and `New-Item -ItemType Directory -Force` for `mkdir -p`. Same logical steps on every OS.
 
 ```bash
 # 1. Clone
@@ -43,6 +45,9 @@ cp "$REPO"/shared/templates/*.md "$DEST/shared/templates/"
 mkdir -p "$HOME/.no-vibe/memory"
 [ -f "$HOME/.no-vibe/NO-VIBE.md" ] || cp "$REPO/shared/templates/NO-VIBE.global.md" "$HOME/.no-vibe/NO-VIBE.md"
 [ -f "$HOME/.no-vibe/memory/README.md" ] || cp "$REPO/shared/templates/memory-readme.md" "$HOME/.no-vibe/memory/README.md"
+
+# 6. Clean up — the clone is no longer needed
+rm -rf ~/tools/no-vibe
 ```
 
 Then restart OpenCode.
