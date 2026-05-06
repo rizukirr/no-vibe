@@ -29,9 +29,21 @@ State is local: project-level `.no-vibe/`, global `~/.no-vibe/`.
 
 Restart Claude Code.
 
-### Other runtimes — install scripts
+### Other runtimes
 
-Clone the repo and run the installer for your CLI:
+Each CLI has a per-runtime install guide written for an AI agent to follow. Point your assistant at the relevant file:
+
+> *"Fetch `INSTALL.codex.md` from rizukirr/no-vibe and install it."*
+
+| Runtime | Guide |
+|---|---|
+| Claude Code | [INSTALL.claude.md](INSTALL.claude.md) (offline fallback — marketplace is preferred) |
+| OpenCode | [INSTALL.opencode.md](INSTALL.opencode.md) |
+| Pi | [INSTALL.pi.md](INSTALL.pi.md) |
+| Codex | [INSTALL.codex.md](INSTALL.codex.md) (per-project) |
+| Gemini CLI | [INSTALL.gemini.md](INSTALL.gemini.md) |
+
+Or run the scripts directly:
 
 ```bash
 git clone https://github.com/rizukirr/no-vibe.git
