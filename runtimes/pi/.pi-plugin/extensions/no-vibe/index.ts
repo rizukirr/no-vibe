@@ -36,12 +36,35 @@ const stripFrontmatter = (content: string): string => {
   return match ? match[1] : content;
 };
 
+// Bundle every shared/skill/*.md into the bootstrap. Pi has no lazy
+// file-load path for the model, so SKILL.md's references to phases.md /
+// curriculum.md / teaching-style.md / reference-grounding.md would
+// otherwise be dangling pointers. Order matches scripts/sync.sh.
+const SKILL_FILES = [
+  "SKILL.md",
+  "phases.md",
+  "teaching-style.md",
+  "reference-grounding.md",
+  "curriculum.md",
+];
+
 const buildBootstrap = (): string => {
-  const skillPath = path.join(SHARED_DIR, "skill", "SKILL.md");
-  let skillBody = "You are in no-vibe tutor mode. Teach in chat; never write project files.";
-  if (fs.existsSync(skillPath)) {
-    skillBody = stripFrontmatter(fs.readFileSync(skillPath, "utf8")).trim();
+  const parts: string[] = [];
+  for (const name of SKILL_FILES) {
+    const p = path.join(SHARED_DIR, "skill", name);
+    if (!fs.existsSync(p)) continue;
+    const body = stripFrontmatter(fs.readFileSync(p, "utf8")).trim();
+    if (!body) continue;
+    if (parts.length === 0) {
+      parts.push(body);
+    } else {
+      parts.push(`<!-- ===== shared/skill/${name} ===== -->\n\n${body}`);
+    }
   }
+  const skillBody =
+    parts.length > 0
+      ? parts.join("\n\n")
+      : "You are in no-vibe tutor mode. Teach in chat; never write project files.";
   return [
     "<EXTREMELY_IMPORTANT>",
     "no-vibe tutor mode is available in this repository.",

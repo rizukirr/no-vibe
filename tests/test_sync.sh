@@ -62,6 +62,44 @@ else
     fail "missing root .claude-plugin/marketplace.json"
 fi
 
+# Instruction-only runtimes (Codex, Gemini, Pi) must inline ALL shared/skill/*.md
+# files, not just SKILL.md. They have no lazy file-load path for the model,
+# so SKILL.md's references to phases.md / curriculum.md / etc. would be
+# dangling pointers without bundling.
+SKILL_DOCS=(phases.md teaching-style.md reference-grounding.md curriculum.md)
+for runtime_file in \
+    "$REPO_ROOT/runtimes/codex/AGENTS.md" \
+    "$REPO_ROOT/runtimes/gemini/GEMINI.md" \
+    "$REPO_ROOT/runtimes/codex/skills/no-vibe/SKILL.md"
+do
+    [ -f "$runtime_file" ] || continue
+    name=$(basename "$(dirname "$runtime_file")")/$(basename "$runtime_file")
+    for doc in "${SKILL_DOCS[@]}"; do
+        if grep -q "shared/skill/$doc" "$runtime_file"; then
+            pass "$name bundles $doc"
+        else
+            fail "$name missing $doc — instruction-only runtime needs full skill bundle"
+        fi
+    done
+done
+
+# Pi and OpenCode extensions must list all skill filenames in their bootstrap loaders.
+declare -A JS_EXTS=(
+    [pi]="$REPO_ROOT/runtimes/pi/.pi-plugin/extensions/no-vibe/index.ts"
+    [opencode]="$REPO_ROOT/runtimes/opencode/plugins/no-vibe.js"
+)
+for label in "${!JS_EXTS[@]}"; do
+    ext="${JS_EXTS[$label]}"
+    [ -f "$ext" ] || continue
+    for doc in SKILL.md "${SKILL_DOCS[@]}"; do
+        if grep -q "\"$doc\"" "$ext"; then
+            pass "$label loads $doc"
+        else
+            fail "$label does not reference $doc — will only inline SKILL.md"
+        fi
+    done
+done
+
 # Run sync --check; should exit 0 (no drift).
 if bash "$REPO_ROOT/scripts/sync.sh" --check >/dev/null 2>&1; then
     pass "sync --check passes (no drift)"
