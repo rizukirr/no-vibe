@@ -59,13 +59,27 @@ Then restart Gemini CLI.
 
 ## Updating an existing install
 
-If the user already has no-vibe installed at `~/.gemini/extensions/no-vibe/`, check the version and remove before reinstalling:
+If the user already has no-vibe installed at `~/.gemini/extensions/no-vibe/`, compare **installed** vs **latest** first:
 
 ```bash
-# Check existing version
-jq -r '.version' "$HOME/.gemini/extensions/no-vibe/gemini-extension.json" 2>/dev/null
+# Installed version
+installed=$(jq -r '.version // empty' "$HOME/.gemini/extensions/no-vibe/gemini-extension.json" 2>/dev/null)
 
-# Remove the existing extension
+# Latest version (from a freshly cloned no-vibe repo)
+latest=$(jq -r '.version // empty' "$HOME/tools/no-vibe/runtimes/gemini/gemini-extension.json" 2>/dev/null)
+
+printf 'installed=%s\nlatest=%s\n' "$installed" "$latest"
+
+if [ -n "$installed" ] && [ -n "$latest" ] && [ "$installed" = "$latest" ]; then
+  echo "Up-to-date: skip reinstall."
+else
+  echo "Version differs (or unknown): reinstall."
+fi
+```
+
+If versions differ, remove then reinstall:
+
+```bash
 rm -rf "$HOME/.gemini/extensions/no-vibe"
 ```
 

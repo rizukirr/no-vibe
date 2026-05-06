@@ -58,7 +58,20 @@ Then restart OpenCode.
 
 ## Updating an existing install
 
-If the user already has no-vibe installed at `~/.config/opencode/plugins/no-vibe/`, remove it before reinstalling:
+If the user already has no-vibe installed at `~/.config/opencode/plugins/no-vibe/`, compare installed vs latest first (OpenCode runtime has no standalone manifest version):
+
+```bash
+installed="$HOME/.config/opencode/plugins/no-vibe/plugins/no-vibe.js"
+latest="$HOME/tools/no-vibe/runtimes/opencode/plugins/no-vibe.js"
+
+if [ -f "$installed" ] && [ -f "$latest" ] && cmp -s "$installed" "$latest"; then
+  echo "Up-to-date: skip reinstall."
+else
+  echo "Different (or unknown): reinstall."
+fi
+```
+
+If different, remove then reinstall:
 
 ```bash
 rm -rf "$HOME/.config/opencode/plugins/no-vibe"

@@ -18,7 +18,22 @@ Then restart Claude Code.
 If the user already has no-vibe installed and you're upgrading to a newer version:
 
 - **Marketplace path:** run `/plugin update no-vibe@no-vibe` in Claude Code. No clone needed.
-- **Manual / offline path:** check the version in `~/.claude/plugins/no-vibe/.claude-plugin/plugin.json` (`.version`) and compare to `VERSION` in this repo. If an existing install is present, remove it first, then reinstall:
+- **Manual / offline path:** compare installed vs latest first, then decide whether reinstall is needed:
+
+  ```bash
+  installed=$(jq -r '.version // empty' "$HOME/.claude/plugins/no-vibe/.claude-plugin/plugin.json" 2>/dev/null)
+  latest=$(jq -r '.version // empty' "$HOME/tools/no-vibe/runtimes/claude/.claude-plugin/plugin.json" 2>/dev/null)
+
+  printf 'installed=%s\nlatest=%s\n' "$installed" "$latest"
+
+  if [ -n "$installed" ] && [ -n "$latest" ] && [ "$installed" = "$latest" ]; then
+    echo "Up-to-date: skip reinstall."
+  else
+    echo "Version differs (or unknown): reinstall."
+  fi
+  ```
+
+  If reinstalling, remove first:
 
   ```bash
   rm -rf "$HOME/.claude/plugins/no-vibe"
