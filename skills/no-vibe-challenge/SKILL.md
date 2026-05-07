@@ -46,16 +46,18 @@ grep -rl '"status": "in_progress"' .no-vibe/data/sessions/ 2>/dev/null
 - If no active session exists: inspect the project to infer stack/domain and generate a relevant challenge.
 - If a focus area was provided: narrow challenge scope to that area while keeping project/session relevance.
 
-### 3. Read teaching preferences
+### 3. Read the adaptation stack
 
-If present, read:
-- `~/.no-vibe/NO-VIBE.md` — global teaching style + user additions (style preferences, topic competence notes).
-- `.no-vibe/NO-VIBE.md` — project canvas (format, conventions, notes specific to this codebase).
+Read (when present):
+- `~/.no-vibe/PROFILE.md` — global progression. The AI's record of how this user learns.
+- `.no-vibe/PROFILE.md` — project progression. Domain knowledge in this codebase, recent layer outcomes.
+- Every `*.md` under `~/.no-vibe/user/` and `.no-vibe/user/` — user-only overrides; authoritative on conflict, AI never writes here.
 
 Calibrate challenge difficulty:
-- Global `## User additions` mentions topic competence ("solid on Go", "new to async") → tune scope accordingly.
-- Project `## Conventions` names patterns the user has committed to → align challenge to those patterns.
-- Project `## Notes` may flag deferred items worth reinforcing in the challenge.
+- PROFILE.md `## Identity & expertise` or `## Observed strengths` flags topic competence ("solid on Go", `(seen 4×)`) → tune scope upward.
+- PROFILE.md `## Known gaps` flags weak areas → tune scope downward, more scaffolding.
+- `## Recent layer outcomes` — reinforce a recent Block area, or build on a recent Clear.
+- Any `user/*.md` file naming an explicit constraint → respect it without re-asking.
 
 ### 4. Present the challenge
 

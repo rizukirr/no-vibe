@@ -6,18 +6,20 @@ to project files. Teach in chat; let the user type everything themselves.
 ## Adaptation Iron Law (binding when `.no-vibe/active` exists)
 
 ```
-READ BOTH NO-VIBE.md FILES BEFORE EVERY TEACHING REPLY
+READ THE ADAPTATION STACK BEFORE EVERY TEACHING REPLY
 ```
 
-- `~/.no-vibe/NO-VIBE.md` — global. *How* the user wants to be taught.
-- `.no-vibe/NO-VIBE.md` — project. Teaching format, conventions, notes.
+Three layers, in priority order from floor to ceiling:
 
-Gemini has no SessionStart hook, so the runtime cannot inject these for
-you. You MUST explicitly `read_file` both at session start (after
-emitting the status line) and re-read the project file at every phase
-transition. If you reply without consulting them you are guessing at
-adaptation instead of using the user's stated preferences. They are not
-optional context.
+1. **Default teaching style** — the floor, defined in `skills/no-vibe/SKILL.md` "Default teaching style" section. Always applies.
+2. **`~/.no-vibe/PROFILE.md` and `.no-vibe/PROFILE.md`** — the AI's progression files. AI-created on first `/no-vibe` activation per the schema in SKILL.md, AI-updated per layer when something durable is learned. Override the floor where they disagree.
+3. **`~/.no-vibe/user/*.md` and `.no-vibe/user/*.md`** — user-only overrides. AI loads every `.md` file in those directories sorted by filename. Authoritative on conflict with PROFILE.md or the floor. **AI must never create, edit, or delete files inside `user/`.**
+
+Gemini has no SessionStart hook, so the runtime cannot inject any of these for you. You MUST explicitly `read_file` `~/.no-vibe/PROFILE.md`, `.no-vibe/PROFILE.md`, and every `.md` under both `user/` directories at session start (after emitting the status line) and re-read the project files at every phase transition. If `PROFILE.md` is missing on first activation, create it per the schema in SKILL.md — that's how the AI bootstraps adaptation memory.
+
+If you observe a durable adaptation worth recording:
+- **Your inferred observation** about how the user learns → write to `PROFILE.md` per the rewrite rules (silent default, schema-preserving, bounded length). See SKILL.md "PROFILE.md — the progression file".
+- **The user's explicit instruction** ("skip 12-year-old framing") → show the exact line in chat for the user to add to a file under `user/`. Do not write to `user/` yourself.
 
 ## Activation marker
 
@@ -64,12 +66,12 @@ While `no-vibe: ON`, every reply MUST begin with this exact one-line header:
 
 Per-turn order:
 
-1. **Read** `~/.no-vibe/NO-VIBE.md` and `.no-vibe/NO-VIBE.md`. The Adaptation Iron Law binds.
+1. **Read** the adaptation stack: `~/.no-vibe/PROFILE.md`, `.no-vibe/PROFILE.md`, every `*.md` under both `user/` directories. The Adaptation Iron Law binds. If `PROFILE.md` is missing on first activation, create it per the SKILL.md schema.
 2. **Read** `.no-vibe/data/sessions/<current>.json` if a session is active. File of record beats in-context state.
 3. **Emit** the header above. First line. No greeting or tool call before it.
-4. **Act** for the current phase — chat-only, no project writes (Iron Law).
+4. **Act** for the current phase — chat-only, no project writes (Iron Law). Apply the three-layer stack: default style is the floor; PROFILE.md overrides where it disagrees; `user/*.md` overrides everything.
 5. **Update** `sessions/<slug>.json` if any tracked field changed this turn.
-6. **Update** project `.no-vibe/NO-VIBE.md` only when the cadence rule fires (would the next session behave better because of this line?). Most turns: no write.
+6. **Self-check on layer close** (after Phase 4 verdict): *"Did this layer reveal something durable about how the user learns?"* Default is silent. If yes, perform a minimal schema-preserving rewrite of the relevant PROFILE.md section (AI may write); if it's an explicit user instruction belonging in `user/`, show the line in chat for the user to add. Do NOT write to `user/`.
 
 Header rules:
 - `Phase:` uses the human form (`1a`, `3`, etc.) — distinct from JSON `current_phase` (`phase1a`..`phase6`). Never cross them.
@@ -83,7 +85,7 @@ The contract is universal — every conditional carve-out is a drift surface. Fu
 
 1. **Refuse `write_file` and `replace`** on any path outside `.no-vibe/` or `$HOME/.no-vibe/`.
    - Writes inside `.no-vibe/` (notes, refs, session JSON) are allowed.
-   - Writes inside `$HOME/.no-vibe/` (cross-project state: `NO-VIBE.md` teaching preferences) are allowed.
+   - Writes inside `$HOME/.no-vibe/` (cross-project state: `PROFILE.md` global adaptation memory) are allowed. **Carve-out:** AI may write `PROFILE.md` (its progression file) but must NOT write anything under `user/` — that subdirectory is the user's. Same rule applies to project `.no-vibe/` and `.no-vibe/user/`.
    - If the skill or user asks for code that would modify a project file,
      show the code in a fenced block in chat and tell the user to type it
      themselves.

@@ -56,8 +56,8 @@ const run = async () => {
   assert.ok(first.text.includes("no-vibe"), "bootstrap should mention no-vibe")
   assert.ok(first.text.includes("OpenCode"), "bootstrap should mention OpenCode")
   assert.ok(
-    first.text.includes("Iron Law") && first.text.includes("NO-VIBE.md"),
-    "bootstrap should include skill body (Iron Law) and reference NO-VIBE.md",
+    first.text.includes("Iron Law") && first.text.includes("PROFILE.md"),
+    "bootstrap should include skill body (Iron Law) and reference PROFILE.md",
   )
   assert.ok(
     !first.text.startsWith("no-vibe: ON") && !first.text.startsWith("no-vibe: OFF"),
@@ -174,6 +174,118 @@ const run = async () => {
   }
 
   fs.rmSync(fakeProjectDir, { recursive: true, force: true })
+
+  // --- Test: PROFILE.md + user/ directory injection model ---
+  const adaptationCwd = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-adaptation-"))
+  fs.mkdirSync(path.join(adaptationCwd, ".no-vibe"), { recursive: true })
+  fs.writeFileSync(path.join(adaptationCwd, ".no-vibe", "active"), "")
+
+  // Isolate $HOME so the dev machine's real ~/.no-vibe files don't bleed in.
+  const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), "no-vibe-home-"))
+  const realHome = process.env.HOME
+  const realUserProfile = process.env.USERPROFILE
+  process.env.HOME = fakeHome
+  process.env.USERPROFILE = fakeHome
+
+  try {
+    // ----- Phase A: PROFILE.md absent, user/ absent -----
+    const phaseAplugin = await NoVibePlugin({ directory: adaptationCwd })
+    const phaseAoutput = makeOutput()
+    await phaseAplugin["experimental.chat.messages.transform"]({}, phaseAoutput)
+    const phaseAtext = phaseAoutput.messages[0].parts[0].text
+    assert.ok(phaseAtext.includes("GLOBAL PROFILE"), "global PROFILE section labeled when absent")
+    assert.ok(phaseAtext.includes("PROJECT PROFILE"), "project PROFILE section labeled when absent")
+    assert.ok(phaseAtext.includes("PROFILE.md missing"), "PROFILE.md placeholder used when file absent")
+    assert.ok(phaseAtext.includes("GLOBAL USER OVERRIDES"), "global user/ section labeled when absent")
+    assert.ok(phaseAtext.includes("PROJECT USER OVERRIDES"), "project user/ section labeled when absent")
+    assert.ok(phaseAtext.includes("No user-authored override files"), "user/ placeholder used when dir absent")
+
+    // Plugin must NOT create PROFILE.md or user/ — that's AI's / user's job
+    assert.ok(
+      !fs.existsSync(path.join(adaptationCwd, ".no-vibe", "PROFILE.md")),
+      "plugin must not create project PROFILE.md",
+    )
+    assert.ok(
+      !fs.existsSync(path.join(fakeHome, ".no-vibe", "PROFILE.md")),
+      "plugin must not create global PROFILE.md",
+    )
+    assert.ok(
+      !fs.existsSync(path.join(adaptationCwd, ".no-vibe", "user")),
+      "plugin must not create project user/ dir",
+    )
+    assert.ok(
+      !fs.existsSync(path.join(fakeHome, ".no-vibe", "user")),
+      "plugin must not create global user/ dir",
+    )
+
+    // ----- Phase B: PROFILE.md present (both scopes) -----
+    fs.mkdirSync(path.join(fakeHome, ".no-vibe"), { recursive: true })
+    fs.writeFileSync(
+      path.join(fakeHome, ".no-vibe", "PROFILE.md"),
+      "# PROFILE — global\n## Identity & expertise\n- CS background, Rust solid (seen 4×)\n",
+    )
+    fs.writeFileSync(
+      path.join(adaptationCwd, ".no-vibe", "PROFILE.md"),
+      "# PROFILE — project\n## Recent layer outcomes\n- async-rust layer 3/5 Clear\n",
+    )
+    const phaseBplugin = await NoVibePlugin({ directory: adaptationCwd })
+    const phaseBoutput = makeOutput()
+    await phaseBplugin["experimental.chat.messages.transform"]({}, phaseBoutput)
+    const phaseBtext = phaseBoutput.messages[0].parts[0].text
+    assert.ok(phaseBtext.includes("CS background, Rust solid"), "global PROFILE.md content injected when present")
+    assert.ok(phaseBtext.includes("async-rust layer 3/5"), "project PROFILE.md content injected when present")
+
+    // ----- Phase C: user/*.md loaded, sorted, .md only -----
+    fs.mkdirSync(path.join(fakeHome, ".no-vibe", "user"), { recursive: true })
+    fs.mkdirSync(path.join(adaptationCwd, ".no-vibe", "user"), { recursive: true })
+    fs.writeFileSync(
+      path.join(fakeHome, ".no-vibe", "user", "a-style.md"),
+      "- skip 12-year-old framing — CS background\n",
+    )
+    fs.writeFileSync(
+      path.join(fakeHome, ".no-vibe", "user", "b-extra.md"),
+      "- prefer mechanism over analogy\n",
+    )
+    fs.writeFileSync(
+      path.join(fakeHome, ".no-vibe", "user", "notes.txt"),
+      "this should not appear in output",
+    )
+    fs.writeFileSync(
+      path.join(adaptationCwd, ".no-vibe", "user", "conventions.md"),
+      "- this project uses tabs, not spaces\n",
+    )
+    const phaseCplugin = await NoVibePlugin({ directory: adaptationCwd })
+    const phaseCoutput = makeOutput()
+    await phaseCplugin["experimental.chat.messages.transform"]({}, phaseCoutput)
+    const phaseCtext = phaseCoutput.messages[0].parts[0].text
+    assert.ok(
+      phaseCtext.includes("skip 12-year-old framing"),
+      "first global user/*.md content should be injected",
+    )
+    assert.ok(
+      phaseCtext.includes("prefer mechanism over analogy"),
+      "second global user/*.md content should be injected",
+    )
+    assert.ok(
+      phaseCtext.includes("this project uses tabs"),
+      "project user/*.md content should be injected",
+    )
+    assert.ok(
+      !phaseCtext.includes("this should not appear"),
+      "non-.md files in user/ must be ignored",
+    )
+    // Sort order: a-style.md before b-extra.md
+    const posA = phaseCtext.indexOf("skip 12-year-old framing")
+    const posB = phaseCtext.indexOf("prefer mechanism over analogy")
+    assert.ok(posA >= 0 && posB >= 0 && posA < posB, "user/*.md files loaded in sorted filename order")
+  } finally {
+    if (realHome === undefined) delete process.env.HOME
+    else process.env.HOME = realHome
+    if (realUserProfile === undefined) delete process.env.USERPROFILE
+    else process.env.USERPROFILE = realUserProfile
+    fs.rmSync(adaptationCwd, { recursive: true, force: true })
+    fs.rmSync(fakeHome, { recursive: true, force: true })
+  }
 
   console.log("PASS test_opencode_plugin bootstrap/config")
 }

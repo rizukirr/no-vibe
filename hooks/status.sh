@@ -54,26 +54,14 @@ fi
 
 echo "$line"
 
-# --- Adaptation Iron Law: seed both NO-VIBE.md files from templates/ if
-# missing, then inject contents into the system prompt so the AI cannot
-# start a teaching reply without seeing the user's stated preferences.
-# SKILL.md says "MUST read before any teaching reply" — this hook makes
-# the read free. ---
+# --- Adaptation Iron Law: inject the AI's progression files (PROFILE.md,
+# both scopes) and the user's override files (every *.md under user/,
+# both scopes) into the system prompt. The runtime never creates or
+# writes any of these — AI creates PROFILE.md on first activation per
+# the schema in skills/no-vibe/SKILL.md; user owns user/. Read order
+# in SKILL.md "The Adaptation Iron Law". ---
 
-TEMPLATES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/templates"
-
-seed_if_missing() {
-    local target="$1" template="$2"
-    [ -f "$target" ] && return 0
-    [ -f "$template" ] || return 0
-    mkdir -p "$(dirname "$target")" 2>/dev/null || return 0
-    cp "$template" "$target" 2>/dev/null || true
-}
-
-seed_if_missing "$HOME/.no-vibe/NO-VIBE.md" "$TEMPLATES_DIR/NO-VIBE.global.md"
-seed_if_missing "$cwd/.no-vibe/NO-VIBE.md"  "$TEMPLATES_DIR/NO-VIBE.project.md"
-
-emit_no_vibe_md() {
+emit_file() {
     local label="$1" path="$2" placeholder="$3"
     echo
     if [ -f "$path" ]; then
@@ -81,15 +69,41 @@ emit_no_vibe_md() {
         cat "$path"
         echo "=== END $label ==="
     else
-        echo "=== $label (not yet customized — $path missing) ==="
+        echo "=== $label (not present — $path) ==="
         echo "$placeholder"
         echo "=== END $label ==="
     fi
 }
 
-emit_no_vibe_md "USER TEACHING PREFERENCES" "$HOME/.no-vibe/NO-VIBE.md" \
-    "User has not yet customized teaching style. Apply the Feynman default style from skills/no-vibe/SKILL.md."
-emit_no_vibe_md "PROJECT TEACHING CANVAS" "$cwd/.no-vibe/NO-VIBE.md" \
-    "Project has no canvas yet. Apply the default Where -> code -> why -> run+verify format from skills/no-vibe/SKILL.md."
+emit_user_dir() {
+    local label="$1" dir="$2" placeholder="$3"
+    echo
+    echo "=== $label ($dir/) ==="
+    if [ -d "$dir" ]; then
+        local found=0
+        # POSIX-portable sorted glob; suppress nullglob warnings via [ -e ] guard.
+        for f in "$dir"/*.md; do
+            [ -e "$f" ] || continue
+            found=1
+            echo "--- $f ---"
+            cat "$f"
+        done
+        if [ "$found" -eq 0 ]; then
+            echo "$placeholder"
+        fi
+    else
+        echo "$placeholder"
+    fi
+    echo "=== END $label ==="
+}
+
+emit_file "GLOBAL PROFILE" "$HOME/.no-vibe/PROFILE.md" \
+    "PROFILE.md missing — AI creates it on first activation per the schema in SKILL.md \"PROFILE.md — the progression file\"."
+emit_file "PROJECT PROFILE" "$cwd/.no-vibe/PROFILE.md" \
+    "PROFILE.md missing — AI creates it on first activation per the schema in SKILL.md \"PROFILE.md — the progression file\"."
+emit_user_dir "GLOBAL USER OVERRIDES" "$HOME/.no-vibe/user" \
+    "No user-authored override files — defaults and PROFILE.md apply unmodified."
+emit_user_dir "PROJECT USER OVERRIDES" "$cwd/.no-vibe/user" \
+    "No user-authored override files — defaults and PROFILE.md apply unmodified."
 
 exit 0

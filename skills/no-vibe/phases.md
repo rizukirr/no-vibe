@@ -17,15 +17,14 @@ Rhythm: introduce → user types → user runs + sees output → user says "next
 
 Before Phase 1a, run this checklist in order:
 
-1. **Read `~/.no-vibe/NO-VIBE.md`.** Apply every clause to this session. The Adaptation Iron Law binds — skipping = guessing at the user's preferences.
-2. **Read `.no-vibe/NO-VIBE.md`.** Apply the project's `## Format` for code-bearing replies, plus any `## Conventions` and `## Notes`.
-3. **Auto-resume check.** On Claude Code / OpenCode / Pi the SessionStart status line already surfaces the most recent in-progress session as `no-vibe: ON — resuming "<topic>" (layer N/M, phaseX)`. If you see that line, treat it as the trigger — skip step 4's directory walk and go straight to step 5 with the named session. On Codex / Gemini (no hook surface) you must do the directory walk yourself.
-4. Read all files in `.no-vibe/data/sessions/`. Look for `status: "in_progress"`. Pick the most recently modified one if multiple exist.
-5. If found:
+1. **Read the adaptation stack.** `~/.no-vibe/PROFILE.md`, `.no-vibe/PROFILE.md`, every `*.md` under `~/.no-vibe/user/` and `.no-vibe/user/` (sorted by filename). The Adaptation Iron Law binds. Default teaching style at the top of SKILL.md is the floor; PROFILE.md overrides where it disagrees; `user/*.md` overrides everything. If PROFILE.md is missing on first activation, create it per the SKILL.md schema.
+2. **Auto-resume check.** On Claude Code / OpenCode / Pi the SessionStart status line already surfaces the most recent in-progress session as `no-vibe: ON — resuming "<topic>" (layer N/M, phaseX)`. If you see that line, treat it as the trigger — skip step 3's directory walk and go straight to step 4 with the named session. On Codex / Gemini (no hook surface) you must do the directory walk yourself.
+3. Read all files in `.no-vibe/data/sessions/`. Look for `status: "in_progress"`. Pick the most recently modified one if multiple exist.
+4. If found:
    > "Found incomplete session: **{topic}** ({layers_completed}/{layers_total} layers). Continue where you left off, or start fresh?"
-6. Continue → read session JSON, resume at `current_phase` + `current_layer`. If `current_phase == "phase1c"`, re-present curriculum for approval. If Phase 2 or later, enter directly at recorded phase.
-7. Start fresh → set old session's `status: "abandoned"`. Proceed to Phase 1a.
-8. No incomplete session → Phase 1a normally.
+5. Continue → read session JSON, resume at `current_phase` + `current_layer`. If `current_phase == "phase1c"`, re-present curriculum for approval. If Phase 2 or later, enter directly at recorded phase.
+6. Start fresh → set old session's `status: "abandoned"`. Proceed to Phase 1a.
+7. No incomplete session → Phase 1a normally.
 
 ## Phase 1a — Context analysis & targeted clarification
 
@@ -35,8 +34,7 @@ Silently analyze before asking anything:
 - User's project: Read/Grep a few files to infer stack/style/skill
 - Attached reference project's top-level structure
 - Conversation history
-- **Global `~/.no-vibe/NO-VIBE.md`** — teaching style preferences (already read in Phase 0; re-consult if intake clarifies a relevant clause)
-- **Project `.no-vibe/NO-VIBE.md`** — project format, conventions, notes (same)
+- **Adaptation stack** — `PROFILE.md` (global+project) and `user/*.md` (global+project), already read in Phase 0; re-consult if intake clarifies a relevant clause
 - **Project `.no-vibe/data/sessions/`** — incomplete or past sessions in this project
 
 Form a working hypothesis. Ask only about **genuine forks** that would change the curriculum. Otherwise, do a locked sanity-check:
@@ -47,7 +45,7 @@ Form a working hypothesis. Ask only about **genuine forks** that would change th
 
 Then 2–3 yes/no assumption checks the user can reject fast.
 
-**Rule:** never ask what you could have answered by reading the code or NO-VIBE.md. Assumption checks are yes/no.
+**Rule:** never ask what you could have answered by reading the code or the adaptation stack. Assumption checks are yes/no.
 
 ## Phase 1b — Reference suggestion (if none provided)
 
@@ -82,9 +80,10 @@ Present curriculum in chat. User approves or edits. Approval gates Phase 2.
 
 Create `.no-vibe/data/sessions/<slug>.json` with initial state. Set `status: "in_progress"`, `current_phase: "phase1c"`, `current_layer: 1`, `revision_id: 0`, `layers_total` to curriculum length, `layers_completed: 0`.
 
-**Adaptive difficulty:** read NO-VIBE.md before drafting.
-- Global `## User additions` mentions topic competence ("solid on Go", "new to async") → skip basics on competent territory; add scaffolding on weak areas.
-- Project `## Conventions` names a pattern the user has already committed to → don't re-teach that pattern unless the curriculum explicitly revisits it.
+**Adaptive difficulty:** read the adaptation stack before drafting.
+- Global PROFILE.md `## Identity & expertise` or `## Observed strengths` flags topic competence ("solid on Go", seen 4×) → skip basics on competent territory.
+- Global PROFILE.md `## Known gaps` flags weak areas → add scaffolding (worked-example mode).
+- Any `user/*.md` file naming an explicit instruction → that wins over PROFILE.md and over the floor; respect it without re-asking.
 - Project `## Notes` mentions deferred items from a prior session → consider whether to surface them now.
 
 **Offer implementation forks.** Pure-Python vs numpy, recursive vs iterative, stdlib vs third-party — surface both in one sentence each with tradeoff. User picks before Phase 2.
@@ -106,7 +105,7 @@ Introduce exactly **one** new concept. **Split test — layer is too big if any 
 
 Split before showing.
 
-Each Phase 3 turn follows the project NO-VIBE.md `## Format` block. The default format prescribes **six structural steps in order**:
+Each Phase 3 turn follows the layer outcomes defined in SKILL.md "Default teaching style" plus any overrides from PROFILE.md / `user/*.md`. The default prescribes **six structural steps in order**:
 
 1. **Concept prose** (1–2 sentences concept mode; up to 6 only when mental-model territory demands it)
 2. **Code block(s) with exact `Where:` anchor.** Name the file (`src/foo.c`) and the position (`:42`, or `inside cc__backend_end_frame`, `near the CC_* prototypes`, `between Clay_Raylib_Render(...) and EndDrawing()`, `add one line at the end`). Never "add this" — user must be able to locate the change without guessing. Replacements / deletions: quote exact old line(s) so the user can locate, then show new line(s). **Per-block explanation:** when a layer has multiple code blocks, each block gets a 1–2-sentence explanation immediately after, before the next block. Pattern: `[Where] → [block 1] → [explain 1] → [Where] → [block 2] → [explain 2] → …`. Never dump all blocks then explain at the end.
@@ -118,7 +117,7 @@ Each Phase 3 turn follows the project NO-VIBE.md `## Format` block. The default 
 5. **Run command + expected output signature** — one line stating what user sees on correct run (e.g. "expect: `Linear(in=2, out=3)`"). Without this, typos pass silently until Phase 4.
 6. **Deliberately absent** — one sentence naming what this layer does NOT do yet, so user doesn't assume "done" (e.g. "computes matmul; doesn't broadcast or handle batches — that's next").
 
-If the user has overridden the default `## Format` in project NO-VIBE.md, follow the override. The override exists because it serves the user's learning experience better in this project.
+If a `user/*.md` file overrides the default layer format (or PROFILE.md `## Style notes` records a confirmed adaptation that contradicts a default), follow the override. Overrides exist because they serve the user's learning experience better.
 
 **Explanation budget** covers concept prose (step 1) + *why* sentence (step 3). Structural one-liners (steps 2 per-block, 4, 5, 6) don't count. Concept mode may stretch to 6 sentences when mental-model territory needs it; skill mode keeps concept+why to 1–2. If prose budget overflows, the layer is too big — split.
 
@@ -172,7 +171,7 @@ Ask:
 
 Cycle exits when curriculum complete.
 
-## Phase 6 — Synthesize & conditional NO-VIBE.md updates
+## Phase 6 — Synthesize & per-layer self-check rollup
 
 When curriculum exhausted, produce:
 
@@ -184,14 +183,13 @@ Auto-save synthesis to `.no-vibe/notes/YYYY-MM-DD-<topic>.md` (writes to `.no-vi
 
 **Close the session.** Update session JSON: `status: "completed"`, `current_phase: "phase6"`, `layers_completed = layers_total`.
 
-**Conditional NO-VIBE.md updates.** Apply the four-trigger write rule from SKILL.md:
+**PROFILE.md rollup.** The per-layer self-check has already fired at each Phase 4 close, so most updates are already in. At session close, do one final pass against the rules in SKILL.md "PROFILE.md — the progression file":
 
-- A clause in `## Default style` (global) failed this user durably ("would still apply tomorrow") → replace it with the version that worked.
-- A new style preference emerged this session that generalizes across projects → append to global `## User additions`.
-- A new project convention or format adjustment crystallized this session → update project `## Conventions` or `## Format`.
-- Anything genuinely durable about *this project's pickup hint* for the next session → add to project `## Notes`.
+- `Recent layer outcomes` — prune any entries older than the last 2 sessions before adding this session's final outcome line.
+- `Known gaps` confirmed cleared this session — promote to `Observed strengths` (don't duplicate).
+- `Identity & expertise` — only update if this session contradicted or confirmed an existing entry.
 
-If nothing fires, write nothing. Most sessions produce zero NO-VIBE.md writes — that is the correct outcome.
+If nothing fires, write nothing. Most sessions produce zero PROFILE.md writes at close beyond the recent-outcomes prune — that is the correct outcome. Never write to `user/*.md`; if the user said something durable that belongs in `user/`, show the exact line in chat.
 
 ## Curriculum Revision Triggers
 

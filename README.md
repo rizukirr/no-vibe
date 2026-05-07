@@ -9,30 +9,31 @@ Pair with [vibekit](https://github.com/rizukirr/vibekit): vibekit when you want 
 - **Top-down, one layer at a time.** Minimal runnable skeleton first; each layer runs and shows output before the next.
 - **Where → code → why → run + verify.** Each step says exactly which file and line, then what runs and what should print.
 - **Real code, not hallucinations.** Attach `--ref <url>` and the AI quotes actual source with `file:line` citations.
-- **Adapts to you.** You and the AI co-edit two `NO-VIBE.md` files that capture *how* you want to be taught.
+- **Adapts to you.** The AI keeps a `PROFILE.md` it writes itself — observed strengths, known gaps, style notes that improve over sessions. You can edit it, or layer explicit overrides via `user/*.md`.
 - **Your files stay yours.** Hard write-guards on Claude Code, OpenCode, and Pi block writes (file *and* Bash) outside `.no-vibe/**`. Codex/Gemini enforce the same rule via instruction.
 
-## How NO-VIBE.md works
+## How adaptation works
 
-NO-VIBE.md is the AI's living memory of how to teach *you*. Two plain-Markdown files, seeded with sensible defaults on your first `/no-vibe on`:
+no-vibe uses a three-layer stack:
 
-| File | Scope | What lives in it |
+| Layer | Owner | What lives in it |
 |---|---|---|
-| `~/.no-vibe/NO-VIBE.md` | Global — applies in any project | Teaching style: pacing, jargon tolerance, analogies that work for you, topics you're already solid on |
-| `.no-vibe/NO-VIBE.md` | This project only | Format for code blocks, project-specific conventions, notes the next session should pick up |
+| **Default teaching style** | **Plugin** — defined in `skills/no-vibe/SKILL.md` | Plain words first, concrete-before-abstract, hint-before-answer, run + verify after every layer. The floor. |
+| `~/.no-vibe/PROFILE.md` and `.no-vibe/PROFILE.md` | **AI** — created on first `/no-vibe`, rewritten per layer when something durable is observed | Identity, expertise, observed strengths, known gaps, style notes, recent layer outcomes |
+| `~/.no-vibe/user/*.md` and `.no-vibe/user/*.md` | **You** — AI never creates, edits, or deletes anything inside | Explicit overrides: instructions you want the AI to follow without inferring them |
 
-**The AI maintains these files automatically.** It reads both at every turn (the *Adaptation Iron Law*), and writes back when it learns something durable about how you learn — *"the next session would behave better because of this line."* Most turns produce no write. The AI is meant to be conservative with edits so the file stays small and load-bearing.
+**PROFILE.md is the AI's progression file.** On your first `/no-vibe` activation, the AI creates it with empty section headings. After each layer, the AI runs a one-line self-check — *"did this layer reveal something that would make next session better?"* — and only rewrites the file when the answer is yes. Most layers produce no write. The schema is fixed (Identity & expertise, Observed strengths, Known gaps, Style notes, Recent layer outcomes); the AI consolidates entries when they pile up so the file stays small. Read it any time to see what the AI has learned about you; edit it yourself if something looks wrong.
 
-**You can edit either file directly at any time.** The AI re-reads them every turn, so your edit takes effect immediately. This is the fast path: instead of waiting for the AI to notice a pattern over five sessions, write it down once.
+**`user/*.md` is your override layer.** Drop any `.md` file into `~/.no-vibe/user/` (global) or `.no-vibe/user/` (project) and the AI loads it sorted by filename. Anything in `user/` wins on conflict with PROFILE.md or the default style. The AI is forbidden from writing to `user/` — when it notices a pattern that belongs there, it shows you the exact line and lets you add it.
 
-Practical examples — anything in this style works:
+Practical examples — anything in this style works in `user/*.md`:
 
 - *"Use Rust analogies when you explain memory or ownership."* → global, applies everywhere
 - *"I'm already solid on async/await — skip the basics."* → global, AI stops explaining what you know
 - *"This project uses tabs not spaces; don't comment on it."* → project, kills repeated nudges
 - *"Always show the failing run before the fix."* → global, changes how reviews happen
 
-The defaults are starting points, not gospel — replace any clause when something better fits you. Per-session cycle state (current phase, layer, resume hints) lives separately in `.no-vibe/data/sessions/<slug>.json` — you generally don't touch that.
+Per-session cycle state (current phase, layer, resume hints) lives separately in `.no-vibe/data/sessions/<slug>.json` — you generally don't touch that.
 
 ## Quick start
 
@@ -92,7 +93,7 @@ Flags combine: `/no-vibe --ref pytorch --mode concept how does autograd work`.
 | Bash-write guard (hook) | ✓ | ✓ | ✓ | soft | soft |
 | Status + resume hint | ✓ | ✓ | ✓ | soft | soft |
 | Commands | ✓ | ✓ | ✓ | ✓ | ✓ |
-| NO-VIBE.md adaptation | ✓ | ✓ | ✓ | ✓ | ✓ |
+| PROFILE.md + user/ overrides | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 "soft" = instruction-enforced (no hook surface available); the rule still binds.
 

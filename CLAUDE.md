@@ -19,6 +19,7 @@ bash tests/test_status.sh
 node tests/test_opencode_plugin.mjs
 bash tests/test_escape_hatch.sh
 bash tests/test_gemini_guard.sh
+bash tests/test_contract_injection.sh
 node tests/test_pi_plugin.mjs
 ```
 
@@ -60,10 +61,14 @@ If one changes, update the others.
 
 ## Two data layers (easy to confuse)
 
-- **Adaptation memory — two NO-VIBE.md files.** `~/.no-vibe/NO-VIBE.md` is global teaching style (Feynman defaults + user additions). `.no-vibe/NO-VIBE.md` is the project canvas (teaching format, conventions, notes). Defaults are seeded from `templates/NO-VIBE.global.md` and `templates/NO-VIBE.project.md` on first activation. The four runtime hooks (`hooks/status.sh`, `.opencode/plugins/no-vibe.js`, `.pi-plugin/extensions/no-vibe/index.ts`, plus the Codex/Gemini context files) inject both contents into the system prompt at session start so the AI cannot skip the user's stated preferences (the "Adaptation Iron Law" in `skills/no-vibe/SKILL.md`).
+- **Adaptation memory — three-layer stack.**
+  - **Default teaching style (the floor):** lives in `skills/no-vibe/SKILL.md` "Default teaching style" section. Ships with the plugin, versioned with the plugin, never templated.
+  - **`PROFILE.md` (AI-managed progression files):** `~/.no-vibe/PROFILE.md` (global — identity, expertise, observed strengths/gaps, style notes, recent layer outcomes) and `.no-vibe/PROFILE.md` (project — domain progress in this codebase). AI creates either on first `/no-vibe` activation per the schema in SKILL.md "PROFILE.md — the progression file". AI rewrites at layer close *only* when the silent-default rule fires (most layers produce no write). Schema-preserving, bounded length, stale-removal discipline. AI **may** write these.
+  - **`user/*.md` (user-managed overrides):** `~/.no-vibe/user/*.md` and `.no-vibe/user/*.md`. AI loads every `.md` file in either directory sorted by filename and treats their contents as authoritative on conflict with PROFILE.md or the floor. AI **must never** create, edit, or delete files inside `user/`.
+  - All of these are injected into the system prompt at session start by the runtime hooks (`hooks/status.sh`, `.opencode/plugins/no-vibe.js`, `.pi-plugin/extensions/no-vibe/index.ts`) and re-read every turn on Codex/Gemini per the "Adaptation Iron Law" in `skills/no-vibe/SKILL.md`. The runtime never creates PROFILE.md or `user/` — AI handles PROFILE.md creation; user handles `user/`.
 - **Cycle state — per-session JSON.** `.no-vibe/data/sessions/<slug>.json` tracks `current_phase`, `current_layer`, `revision_id`, `status`, `layers_total`, `layers_completed`. This is the state machine for the six-phase cycle, not adaptation memory.
 
-The two layers do not overlap. Adaptation belongs in NO-VIBE.md; cycle progress belongs in session JSON. Putting one in the other is the v1 anti-pattern this design replaces.
+Adaptation belongs in PROFILE.md / `user/`; cycle progress belongs in session JSON. Mixing them is the v1 anti-pattern this design replaces.
 
 ## Versioning
 
