@@ -1,5 +1,5 @@
 {
   "name": "no-vibe",
   "description": "Tutor mode for AI coding assistants. AI shows code in chat and reviews your work, but never writes to your project files.",
-  "version": "2.0.1"
+  "version": "2.0.2"
 }
