@@ -49,14 +49,15 @@ grep -rl '"status": "in_progress"' .no-vibe/data/sessions/ 2>/dev/null
 ### 3. Read the adaptation stack
 
 Read (when present):
-- `~/.no-vibe/PROFILE.md` — global progression. The AI's record of how this user learns.
-- `.no-vibe/PROFILE.md` — project progression. Domain knowledge in this codebase, recent layer outcomes.
+- `~/.no-vibe/PROFILE.md` — global stable identity. The AI's record of how this user learns across every project.
+- `.no-vibe/SUMMARY.md` — project running journey. Current focus, accomplishments, and open questions in this codebase.
 - Every `*.md` under `~/.no-vibe/user/` and `.no-vibe/user/` — user-only overrides; authoritative on conflict, AI never writes here.
 
 Calibrate challenge difficulty:
 - PROFILE.md `## Identity & expertise` or `## Observed strengths` flags topic competence ("solid on Go", `(seen 4×)`) → tune scope upward.
 - PROFILE.md `## Known gaps` flags weak areas → tune scope downward, more scaffolding.
-- `## Recent layer outcomes` — reinforce a recent Block area, or build on a recent Clear.
+- SUMMARY.md `## Open Questions` flags concepts the user dodged in prior layers → reinforce them in the challenge.
+- SUMMARY.md `## Accomplishments` shows what the user has already built → build on a recent success or revisit a recent Block area.
 - Any `user/*.md` file naming an explicit constraint → respect it without re-asking.
 
 ### 4. Present the challenge

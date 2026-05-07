@@ -28,9 +28,11 @@ under `.gemini/commands/` are auto-discovered.
 1. In any project, run `/no-vibe on` — creates `.no-vibe/active`. PROFILE.md
    is not created yet; it is created by the AI on its first reply.
 2. Send a topic. On the AI's first reply, confirm `~/.no-vibe/PROFILE.md`
-   and `.no-vibe/PROFILE.md` exist with the schema headings (`## Identity
-   & expertise`, `## Observed strengths`, `## Known gaps`, `## Style
-   notes`, `## Recent layer outcomes`) and empty bullets under each.
+   exists with the schema headings (`## Identity & expertise`,
+   `## Learning style`, `## Observed strengths`, `## Known gaps`) and
+   empty bullets under each. `.no-vibe/SUMMARY.md` should NOT exist
+   yet — it appears at the first layer close worth recording, with
+   sections `## Current Focus`, `## Accomplishments`, `## Open Questions`.
 3. Ask the assistant to edit a project file — it should refuse with the
    no-vibe guard message (soft-block; see caveat below).
 4. Ask the assistant to `echo bad > someproj.py` or `sed -i 's/x/y/'
@@ -63,17 +65,16 @@ hook. If you need a hard block, use the Claude Code or OpenCode surface.
 
 ## Customizing teaching style
 
-no-vibe uses a three-layer adaptation stack:
+no-vibe uses a four-layer adaptation stack, split by *write cadence* and *scope*:
 
 - **Default teaching style** — the floor. Defined in `skills/no-vibe/SKILL.md`. Ships with the plugin; you never edit this directly.
-- **`PROFILE.md` — the AI's progression files (AI-managed):**
-  - `~/.no-vibe/PROFILE.md` — global progression. AI-created on your first `/no-vibe` activation, AI-updated per layer when it learns something durable about how *you* learn.
-  - `.no-vibe/PROFILE.md` — same shape, project-scoped.
+- **`~/.no-vibe/PROFILE.md` — global, stable identity (AI-managed):** identity, expertise, learning style, observed strengths, known gaps. AI-created on your first `/no-vibe` activation, rewritten only when something cross-project durable shifts.
+- **`.no-vibe/SUMMARY.md` — project, running journey (AI-managed):** current focus, accomplishments, open questions in *this* project. AI-created at the first layer close worth recording, updated frequently, pruned aggressively.
 - **`user/*.md` — your override files (user-managed, AI never touches):**
   - `~/.no-vibe/user/*.md` — global overrides
   - `.no-vibe/user/*.md` — project overrides
 
-You don't need to do anything to bootstrap — the AI creates PROFILE.md on first activation. To add an explicit override the AI must respect, create a file under `user/`:
+You don't need to do anything to bootstrap — the AI creates PROFILE.md on first activation and SUMMARY.md when the journey produces an outcome worth recording. To add an explicit override the AI must respect, create a file under `user/`:
 
 ```bash
 mkdir -p ~/.no-vibe/user
@@ -85,7 +86,7 @@ EOF
 
 The filename is yours to choose; the AI loads every `.md` file in `user/` sorted by filename. Anything in `user/` is read-only for the AI.
 
-Gemini has no SessionStart hook, so the AI is instructed (per `GEMINI.md` and `skills/no-vibe/SKILL.md`) to read PROFILE.md (both scopes) and every `user/*.md` at session start, and to create PROFILE.md on first activation if missing.
+Gemini has no SessionStart hook, so the AI is instructed (per `GEMINI.md` and `skills/no-vibe/SKILL.md`) to read `~/.no-vibe/PROFILE.md`, `.no-vibe/SUMMARY.md`, and every `user/*.md` at session start, and to create PROFILE.md on first activation if missing. SUMMARY.md absence is fine — it gets created later when there's a journey outcome to record.
 
 ## Troubleshooting
 

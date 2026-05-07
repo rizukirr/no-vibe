@@ -8,6 +8,17 @@ This repo **is** the `no-vibe` plugin itself — not a consumer of it. It ships 
 
 Do **not** confuse "developing this plugin" with "being in no-vibe mode". Editing files inside this repo is normal plugin development — the no-vibe write guard does not apply here unless `.no-vibe/active` exists at the repo root.
 
+## What no-vibe is for (read before changing teaching behavior)
+
+**no-vibe is a productive constraint, not a feature limitation.** The plugin exists because vibe-coding — letting AI write code while the user watches — produces output without producing understanding. no-vibe inverts that contract:
+
+- **The user writes every line of project code.** AI refuses to. That's the hard guard, enforced by hooks across all five surfaces.
+- **The user learns from the project they are actually building.** Not contrived exercises, not toy examples — the real codebase, the real bugs, the real architectural decisions in front of them. Teaching is *in situ*.
+- **AI is a Socratic guide, not a code generator.** It asks questions, gives hints scaled to the learner's level, reviews what the user wrote, and explains how things work *when the user is ready to integrate the explanation*.
+- **Learning is bottom-up and incremental.** Six phases (0–6), broken into layers, each layer a small unit the user can write themselves. Progress is observable in the user's actual diff.
+
+When making teaching-related changes (skills, prompts, the cycle, memory), test them against this frame: *does this make the user a better engineer at the end of the project, or does it just make the project ship faster?* If the latter, you are designing for vibe-coding and against no-vibe's purpose.
+
 ## Verification
 
 No root npm script runner. Run all test suites before finishing plugin changes:
@@ -61,14 +72,16 @@ If one changes, update the others.
 
 ## Two data layers (easy to confuse)
 
-- **Adaptation memory — three-layer stack.**
+- **Adaptation memory — four-layer stack** (split by write cadence and scope):
   - **Default teaching style (the floor):** lives in `skills/no-vibe/SKILL.md` "Default teaching style" section. Ships with the plugin, versioned with the plugin, never templated.
-  - **`PROFILE.md` (AI-managed progression files):** `~/.no-vibe/PROFILE.md` (global — identity, expertise, observed strengths/gaps, style notes, recent layer outcomes) and `.no-vibe/PROFILE.md` (project — domain progress in this codebase). AI creates either on first `/no-vibe` activation per the schema in SKILL.md "PROFILE.md — the progression file". AI rewrites at layer close *only* when the silent-default rule fires (most layers produce no write). Schema-preserving, bounded length, stale-removal discipline. AI **may** write these.
-  - **`user/*.md` (user-managed overrides):** `~/.no-vibe/user/*.md` and `.no-vibe/user/*.md`. AI loads every `.md` file in either directory sorted by filename and treats their contents as authoritative on conflict with PROFILE.md or the floor. AI **must never** create, edit, or delete files inside `user/`.
-  - All of these are injected into the system prompt at session start by the runtime hooks (`hooks/status.sh`, `.opencode/plugins/no-vibe.js`, `.pi-plugin/extensions/no-vibe/index.ts`) and re-read every turn on Codex/Gemini per the "Adaptation Iron Law" in `skills/no-vibe/SKILL.md`. The runtime never creates PROFILE.md or `user/` — AI handles PROFILE.md creation; user handles `user/`.
+  - **`~/.no-vibe/PROFILE.md` (AI-managed, global, stable identity):** identity, expertise, learning style, observed strengths, known gaps. AI creates on first `/no-vibe` activation per the schema in SKILL.md "PROFILE.md and SUMMARY.md — the progression files". Rewrites are rare — only when something cross-project durable shifts. AI **may** write.
+  - **`.no-vibe/SUMMARY.md` (AI-managed, project, running journey):** current focus, accomplishments, open questions for *this* project. AI creates the first time a layer close produces an outcome worth recording (not seeded on activation). Rewrites are frequent — every layer close is a candidate. Pruning is aggressive, especially on `Open Questions`. AI **may** write.
+  - **`user/*.md` (user-managed overrides):** `~/.no-vibe/user/*.md` and `.no-vibe/user/*.md`. AI loads every `.md` file in either directory sorted by filename and treats their contents as authoritative on conflict with PROFILE.md, SUMMARY.md, or the floor. AI **must never** create, edit, or delete files inside `user/`.
+  - All of these are injected into the system prompt at session start by the runtime hooks (`hooks/status.sh`, `.opencode/plugins/no-vibe.js`, `.pi-plugin/extensions/no-vibe/index.ts`) under a `## Background Memory` block prefaced with *"Use this memory sparingly — only when directly relevant"*, and re-read every turn on Codex/Gemini per the "Adaptation Iron Law" in `skills/no-vibe/SKILL.md`. The runtime never creates PROFILE.md, SUMMARY.md, or `user/` — AI handles PROFILE/SUMMARY creation; user handles `user/`.
+  - Both AI-managed files share two write disciplines borrowed from DeepTutor's memory service: the **silent default** ("most layer-closes produce no write") and the **NO_CHANGE rule** ("never rewrite a file with content equivalent to what's already there — silence is the right outcome when nothing changed"). Heading-validation hook (Phase 2) enforces canonical section presence on Claude/OpenCode/Pi.
 - **Cycle state — per-session JSON.** `.no-vibe/data/sessions/<slug>.json` tracks `current_phase`, `current_layer`, `revision_id`, `status`, `layers_total`, `layers_completed`. This is the state machine for the six-phase cycle, not adaptation memory.
 
-Adaptation belongs in PROFILE.md / `user/`; cycle progress belongs in session JSON. Mixing them is the v1 anti-pattern this design replaces.
+Adaptation belongs in PROFILE.md (global stable) / SUMMARY.md (project running) / `user/` (user overrides); cycle progress belongs in session JSON. Mixing them is the anti-pattern this design avoids — and the PROFILE/SUMMARY split itself enforces a second discipline: stable identity (rare-write) and running journey (frequent-write) live in different files because they have different cadences.
 
 ## Versioning
 

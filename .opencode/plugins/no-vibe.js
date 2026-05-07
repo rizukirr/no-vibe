@@ -54,44 +54,54 @@ const buildBootstrap = (skillsDir, cwd) => {
     skillBody = stripFrontmatter(fs.readFileSync(skillPath, "utf8")).trim()
   }
 
-  // Adaptation Iron Law: inject the AI's progression files (PROFILE.md,
-  // both scopes) and the user's override files (every *.md under user/,
-  // both scopes). The runtime never creates or writes any of these —
-  // AI creates PROFILE.md on first activation per the schema in
+  // Adaptation Iron Law: inject the AI's progression files
+  // (~/.no-vibe/PROFILE.md = global stable identity, .no-vibe/SUMMARY.md =
+  // project running journey) and the user's override files (every *.md
+  // under user/, both scopes). The runtime never creates or writes any
+  // of these — AI creates PROFILE.md on first activation and SUMMARY.md
+  // at the first layer close worth recording per the schemas in
   // skills/no-vibe/SKILL.md; user owns user/. Gated on `.no-vibe/active`
   // existing — projects that have not opted into no-vibe mode should
   // not have a `.no-vibe/` directory created as a side effect of plugin
-  // loading.
+  // loading. The whole block is wrapped in a `## Background Memory`
+  // preamble (DeepTutor pattern) telling the AI to use it sparingly.
   const noVibeActive = fs.existsSync(path.join(cwd, ".no-vibe", "active"))
-  let globalProfile = ""
-  let projectProfile = ""
-  let globalUser = ""
-  let projectUser = ""
+  let backgroundMemory = ""
   if (noVibeActive) {
     const globalProfilePath = path.join(os.homedir(), ".no-vibe", "PROFILE.md")
-    const projectProfilePath = path.join(cwd, ".no-vibe", "PROFILE.md")
+    const projectSummaryPath = path.join(cwd, ".no-vibe", "SUMMARY.md")
     const globalUserDir = path.join(os.homedir(), ".no-vibe", "user")
     const projectUserDir = path.join(cwd, ".no-vibe", "user")
-    globalProfile = readSingleFile(
+    const globalProfile = readSingleFile(
       "GLOBAL PROFILE",
       globalProfilePath,
-      "PROFILE.md missing — AI creates it on first activation per the schema in SKILL.md \"PROFILE.md — the progression file\".",
+      "PROFILE.md missing — AI creates it on first activation per the schema in SKILL.md \"PROFILE.md and SUMMARY.md — the progression files\".",
     )
-    projectProfile = readSingleFile(
-      "PROJECT PROFILE",
-      projectProfilePath,
-      "PROFILE.md missing — AI creates it on first activation per the schema in SKILL.md \"PROFILE.md — the progression file\".",
+    const projectSummary = readSingleFile(
+      "PROJECT SUMMARY",
+      projectSummaryPath,
+      "SUMMARY.md not yet created — appears at the first layer close worth recording. Schema in SKILL.md \"PROFILE.md and SUMMARY.md — the progression files\".",
     )
-    globalUser = readUserDir(
+    const globalUser = readUserDir(
       "GLOBAL USER OVERRIDES",
       globalUserDir,
-      "No user-authored override files — defaults and PROFILE.md apply unmodified.",
+      "No user-authored override files — defaults, PROFILE.md, and SUMMARY.md apply unmodified.",
     )
-    projectUser = readUserDir(
+    const projectUser = readUserDir(
       "PROJECT USER OVERRIDES",
       projectUserDir,
-      "No user-authored override files — defaults and PROFILE.md apply unmodified.",
+      "No user-authored override files — defaults, PROFILE.md, and SUMMARY.md apply unmodified.",
     )
+    backgroundMemory = [
+      "",
+      "## Background Memory",
+      "Use this memory sparingly — only when directly relevant to the current turn.",
+      "Read order: PROFILE (global stable) → SUMMARY (project running) → user/ (user overrides). user/ wins on conflict.",
+      globalProfile,
+      projectSummary,
+      globalUser,
+      projectUser,
+    ].join("\n")
   }
 
   return [
@@ -100,10 +110,7 @@ const buildBootstrap = (skillsDir, cwd) => {
     "no-vibe mode is available in this repository.",
     "",
     skillBody,
-    globalProfile,
-    projectProfile,
-    globalUser,
-    projectUser,
+    backgroundMemory,
     "",
     "**Tool Mapping for OpenCode:**",
     "When skill content references tools you do not have, use OpenCode equivalents:",

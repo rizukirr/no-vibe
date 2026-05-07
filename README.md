@@ -4,25 +4,43 @@ Turn your AI assistant into a tutor. It plans, shows code, and reviews — but *
 
 Pair with [vibekit](https://github.com/rizukirr/vibekit): vibekit when you want speed, no-vibe when you want to learn.
 
+## Why no-vibe
+
+Vibe-coding produces output without producing understanding. no-vibe inverts that contract:
+
+- **You write every line of project code.** AI refuses to. Hard-guarded by hooks across all five surfaces.
+- **You learn from the project you're actually building** — not contrived exercises. Real code, real bugs, real decisions in your repo.
+- **AI is a Socratic guide, not a generator.** It asks, hints, reviews, and explains *when you're ready to integrate the explanation*.
+- **Bottom-up and incremental.** Six phases, small layers; your diff is the proof of progress.
+
+If you want speed, use vibekit. If you want to be a better engineer at the end of *this* project, stay here.
+
 ## How it works
 
 - **Top-down, one layer at a time.** Minimal runnable skeleton first; each layer runs and shows output before the next.
 - **Where → code → why → run + verify.** Each step says exactly which file and line, then what runs and what should print.
 - **Real code, not hallucinations.** Attach `--ref <url>` and the AI quotes actual source with `file:line` citations.
-- **Adapts to you.** The AI keeps a `PROFILE.md` it writes itself — observed strengths, known gaps, style notes that improve over sessions. You can edit it, or layer explicit overrides via `user/*.md`.
+- **Adapts to you.** The AI keeps a `PROFILE.md` (global, stable identity) and a `SUMMARY.md` (per-project, running journey) it writes itself — observed strengths, known gaps, style notes, current focus, open questions. You can edit either, or layer explicit overrides via `user/*.md`.
 - **Your files stay yours.** Hard write-guards on Claude Code, OpenCode, and Pi block writes (file *and* Bash) outside `.no-vibe/**`. Codex/Gemini enforce the same rule via instruction.
 
 ## How adaptation works
 
-no-vibe uses a three-layer stack:
+no-vibe uses a four-layer stack, split by *write cadence* and *scope*:
 
 | Layer | Owner | What lives in it |
 |---|---|---|
 | **Default teaching style** | **Plugin** — defined in `skills/no-vibe/SKILL.md` | Plain words first, concrete-before-abstract, hint-before-answer, run + verify after every layer. The floor. |
-| `~/.no-vibe/PROFILE.md` and `.no-vibe/PROFILE.md` | **AI** — created on first `/no-vibe`, rewritten per layer when something durable is observed | Identity, expertise, observed strengths, known gaps, style notes, recent layer outcomes |
+| `~/.no-vibe/PROFILE.md` (global, stable identity) | **AI** — created on first `/no-vibe`, rewritten *rarely* when cross-project identity / style shifts | Identity & expertise, learning style, observed strengths, known gaps |
+| `.no-vibe/SUMMARY.md` (project, running journey) | **AI** — created at the first layer close worth recording, rewritten *often* (every closed layer is a candidate) | Current Focus, Accomplishments, Open Questions in *this* project |
 | `~/.no-vibe/user/*.md` and `.no-vibe/user/*.md` | **You** — AI never creates, edits, or deletes anything inside | Explicit overrides: instructions you want the AI to follow without inferring them |
 
-**PROFILE.md is the AI's progression file.** On your first `/no-vibe` activation, the AI creates it with empty section headings. After each layer, the AI runs a one-line self-check — *"did this layer reveal something that would make next session better?"* — and only rewrites the file when the answer is yes. Most layers produce no write. The schema is fixed (Identity & expertise, Observed strengths, Known gaps, Style notes, Recent layer outcomes); the AI consolidates entries when they pile up so the file stays small. Read it any time to see what the AI has learned about you; edit it yourself if something looks wrong.
+**Why the split.** Stable identity (the things that wouldn't change if you opened a different project tomorrow) and running journey (the things that only make sense inside *this* project) update on totally different cadences. Keeping them in one file forces the AI to decide on every rewrite whether *this* fact is stable or transient — and gets it wrong. PROFILE only holds cross-project-durable facts; SUMMARY only holds project-bound state.
+
+**PROFILE.md is the AI's global progression file.** On your first `/no-vibe` activation, the AI creates it with empty section headings (Identity & expertise, Learning style, Observed strengths, Known gaps). It's rewritten only when something durable about how you learn shifts — most layers produce no PROFILE update.
+
+**SUMMARY.md is the AI's per-project journey file.** It's not seeded on activation — the AI creates it the first time a layer close produces an outcome worth recording, then keeps it tight by pruning resolved Open Questions and old Accomplishments. The most valuable section is `Open Questions` — things you dodged with a workaround or didn't fully integrate, surfaced so the next session can revisit them.
+
+**The silent-default + NO_CHANGE rule.** Both files follow two disciplines: *most layer-closes produce no write* (silent default), and *the AI never rewrites a file with content equivalent to what's already there* (NO_CHANGE). A no-op write is treated as a bug. Read either file any time to see what the AI has learned; edit them yourself if something looks wrong.
 
 **`user/*.md` is your override layer.** Drop any `.md` file into `~/.no-vibe/user/` (global) or `.no-vibe/user/` (project) and the AI loads it sorted by filename. Anything in `user/` wins on conflict with PROFILE.md or the default style. The AI is forbidden from writing to `user/` — when it notices a pattern that belongs there, it shows you the exact line and lets you add it.
 

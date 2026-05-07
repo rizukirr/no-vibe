@@ -36,24 +36,23 @@ opencode run --print-logs "check no-vibe plugin"
 
 1. Run `/no-vibe on`. This creates `.no-vibe/active`; PROFILE.md is not created yet (it is created by the AI on its first reply).
 2. Start a lesson topic (for example `/no-vibe build a linear layer`)
-3. On the AI's first reply, confirm `~/.no-vibe/PROFILE.md` and `.no-vibe/PROFILE.md` exist with the schema headings (`## Identity & expertise`, `## Observed strengths`, `## Known gaps`, `## Style notes`, `## Recent layer outcomes`) and empty bullets under each.
+3. On the AI's first reply, confirm `~/.no-vibe/PROFILE.md` exists with the schema headings (`## Identity & expertise`, `## Learning style`, `## Observed strengths`, `## Known gaps`) and empty bullets under each. `.no-vibe/SUMMARY.md` should NOT exist yet — it appears at the first layer close worth recording, with sections `## Current Focus`, `## Accomplishments`, `## Open Questions`.
 4. Confirm the assistant teaches in chat and does not write project files directly.
 
 CLI note: when using `opencode run`, invoke commands with `--command` (for example `opencode run --command no-vibe on`). Do not pass `/no-vibe on` as a plain message if you expect command execution.
 
 ## Customizing teaching style
 
-no-vibe uses a three-layer adaptation stack:
+no-vibe uses a four-layer adaptation stack, split by *write cadence* and *scope*:
 
 - **Default teaching style** — the floor. Defined in `skills/no-vibe/SKILL.md`. Ships with the plugin; you never edit this directly.
-- **`PROFILE.md` — the AI's progression files (AI-managed):**
-  - `~/.no-vibe/PROFILE.md` — global progression. AI-created on your first `/no-vibe` activation, AI-updated per layer when it learns something durable about how *you* learn.
-  - `.no-vibe/PROFILE.md` — same shape, project-scoped.
+- **`~/.no-vibe/PROFILE.md` — global, stable identity (AI-managed):** identity, expertise, learning style, observed strengths, known gaps. AI-created on your first `/no-vibe` activation, rewritten only when something cross-project durable shifts.
+- **`.no-vibe/SUMMARY.md` — project, running journey (AI-managed):** current focus, accomplishments, open questions in *this* project. AI-created at the first layer close worth recording, updated frequently, pruned aggressively.
 - **`user/*.md` — your override files (user-managed, AI never touches):**
   - `~/.no-vibe/user/*.md` — global overrides
   - `.no-vibe/user/*.md` — project overrides
 
-The OpenCode bootstrap hook is gated on `.no-vibe/active`, so projects without no-vibe never get a stray `.no-vibe/` directory. The hook injects PROFILE.md (both scopes, when present) and every `user/*.md` into the system prompt; it does NOT create PROFILE.md or `user/` — AI creates PROFILE.md on first activation, you create files under `user/` if you want explicit overrides.
+The OpenCode bootstrap hook is gated on `.no-vibe/active`, so projects without no-vibe never get a stray `.no-vibe/` directory. The hook injects `~/.no-vibe/PROFILE.md`, `.no-vibe/SUMMARY.md` (when present), and every `user/*.md` into the system prompt under a `## Background Memory` block prefaced with *"Use this memory sparingly — only when directly relevant"*. It does NOT create PROFILE.md, SUMMARY.md, or `user/` — AI creates the first two when needed; you create files under `user/` if you want explicit overrides.
 
 Example explicit override:
 

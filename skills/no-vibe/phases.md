@@ -17,7 +17,7 @@ Rhythm: introduce → user types → user runs + sees output → user says "next
 
 Before Phase 1a, run this checklist in order:
 
-1. **Read the adaptation stack.** `~/.no-vibe/PROFILE.md`, `.no-vibe/PROFILE.md`, every `*.md` under `~/.no-vibe/user/` and `.no-vibe/user/` (sorted by filename). The Adaptation Iron Law binds. Default teaching style at the top of SKILL.md is the floor; PROFILE.md overrides where it disagrees; `user/*.md` overrides everything. If PROFILE.md is missing on first activation, create it per the SKILL.md schema.
+1. **Read the adaptation stack.** `~/.no-vibe/PROFILE.md` (global stable identity), `.no-vibe/SUMMARY.md` (project running journey), every `*.md` under `~/.no-vibe/user/` and `.no-vibe/user/` (sorted by filename). The Adaptation Iron Law binds. Default teaching style at the top of SKILL.md is the floor; PROFILE.md overrides where it disagrees; SUMMARY.md overrides PROFILE; `user/*.md` overrides everything. If PROFILE.md is missing on first activation, create it per the SKILL.md schema. SUMMARY.md is not seeded — its absence on a fresh project is correct.
 2. **Auto-resume check.** On Claude Code / OpenCode / Pi the SessionStart status line already surfaces the most recent in-progress session as `no-vibe: ON — resuming "<topic>" (layer N/M, phaseX)`. If you see that line, treat it as the trigger — skip step 3's directory walk and go straight to step 4 with the named session. On Codex / Gemini (no hook surface) you must do the directory walk yourself.
 3. Read all files in `.no-vibe/data/sessions/`. Look for `status: "in_progress"`. Pick the most recently modified one if multiple exist.
 4. If found:
@@ -34,7 +34,7 @@ Silently analyze before asking anything:
 - User's project: Read/Grep a few files to infer stack/style/skill
 - Attached reference project's top-level structure
 - Conversation history
-- **Adaptation stack** — `PROFILE.md` (global+project) and `user/*.md` (global+project), already read in Phase 0; re-consult if intake clarifies a relevant clause
+- **Adaptation stack** — `~/.no-vibe/PROFILE.md`, `.no-vibe/SUMMARY.md`, and `user/*.md` (global+project), already read in Phase 0; re-consult if intake clarifies a relevant clause
 - **Project `.no-vibe/data/sessions/`** — incomplete or past sessions in this project
 
 Form a working hypothesis. Ask only about **genuine forks** that would change the curriculum. Otherwise, do a locked sanity-check:
@@ -83,8 +83,10 @@ Create `.no-vibe/data/sessions/<slug>.json` with initial state. Set `status: "in
 **Adaptive difficulty:** read the adaptation stack before drafting.
 - Global PROFILE.md `## Identity & expertise` or `## Observed strengths` flags topic competence ("solid on Go", seen 4×) → skip basics on competent territory.
 - Global PROFILE.md `## Known gaps` flags weak areas → add scaffolding (worked-example mode).
-- Any `user/*.md` file naming an explicit instruction → that wins over PROFILE.md and over the floor; respect it without re-asking.
-- Project `## Notes` mentions deferred items from a prior session → consider whether to surface them now.
+- Project SUMMARY.md `## Open Questions` flags concepts the user dodged or didn't fully integrate in prior layers → revisit them in this curriculum where natural.
+- Project SUMMARY.md `## Accomplishments` shows what the user has already built in this codebase → don't re-teach those layers.
+- Any `user/*.md` file naming an explicit instruction → that wins over PROFILE.md, SUMMARY.md, and the floor; respect it without re-asking.
+- Project `## Notes` in `.no-vibe/session.md` mentions deferred items from a prior session → consider whether to surface them now.
 
 **Offer implementation forks.** Pure-Python vs numpy, recursive vs iterative, stdlib vs third-party — surface both in one sentence each with tradeoff. User picks before Phase 2.
 
@@ -105,7 +107,7 @@ Introduce exactly **one** new concept. **Split test — layer is too big if any 
 
 Split before showing.
 
-Each Phase 3 turn follows the layer outcomes defined in SKILL.md "Default teaching style" plus any overrides from PROFILE.md / `user/*.md`. The default prescribes **six structural steps in order**:
+Each Phase 3 turn follows the layer outcomes defined in SKILL.md "Default teaching style" plus any overrides from PROFILE.md, SUMMARY.md, or `user/*.md`. The default prescribes **six structural steps in order**:
 
 1. **Concept prose** (1–2 sentences concept mode; up to 6 only when mental-model territory demands it)
 2. **Code block(s) with exact `Where:` anchor.** Name the file (`src/foo.c`) and the position (`:42`, or `inside cc__backend_end_frame`, `near the CC_* prototypes`, `between Clay_Raylib_Render(...) and EndDrawing()`, `add one line at the end`). Never "add this" — user must be able to locate the change without guessing. Replacements / deletions: quote exact old line(s) so the user can locate, then show new line(s). **Per-block explanation:** when a layer has multiple code blocks, each block gets a 1–2-sentence explanation immediately after, before the next block. Pattern: `[Where] → [block 1] → [explain 1] → [Where] → [block 2] → [explain 2] → …`. Never dump all blocks then explain at the end.
@@ -117,7 +119,7 @@ Each Phase 3 turn follows the layer outcomes defined in SKILL.md "Default teachi
 5. **Run command + expected output signature** — one line stating what user sees on correct run (e.g. "expect: `Linear(in=2, out=3)`"). Without this, typos pass silently until Phase 4.
 6. **Deliberately absent** — one sentence naming what this layer does NOT do yet, so user doesn't assume "done" (e.g. "computes matmul; doesn't broadcast or handle batches — that's next").
 
-If a `user/*.md` file overrides the default layer format (or PROFILE.md `## Style notes` records a confirmed adaptation that contradicts a default), follow the override. Overrides exist because they serve the user's learning experience better.
+If a `user/*.md` file overrides the default layer format (or PROFILE.md `## Learning style` records a confirmed adaptation that contradicts a default), follow the override. Overrides exist because they serve the user's learning experience better.
 
 **Explanation budget** covers concept prose (step 1) + *why* sentence (step 3). Structural one-liners (steps 2 per-block, 4, 5, 6) don't count. Concept mode may stretch to 6 sentences when mental-model territory needs it; skill mode keeps concept+why to 1–2. If prose budget overflows, the layer is too big — split.
 
@@ -183,13 +185,18 @@ Auto-save synthesis to `.no-vibe/notes/YYYY-MM-DD-<topic>.md` (writes to `.no-vi
 
 **Close the session.** Update session JSON: `status: "completed"`, `current_phase: "phase6"`, `layers_completed = layers_total`.
 
-**PROFILE.md rollup.** The per-layer self-check has already fired at each Phase 4 close, so most updates are already in. At session close, do one final pass against the rules in SKILL.md "PROFILE.md — the progression file":
+**PROFILE.md and SUMMARY.md rollup.** The per-layer self-check has already fired at each Phase 4 close, so most updates are already in. At session close, do one final pass against the rules in SKILL.md "PROFILE.md and SUMMARY.md — the progression files". The NO_CHANGE rule binds — never rewrite either file with content equivalent to what's already there.
 
-- `Recent layer outcomes` — prune any entries older than the last 2 sessions before adding this session's final outcome line.
+PROFILE.md (global, rare):
 - `Known gaps` confirmed cleared this session — promote to `Observed strengths` (don't duplicate).
-- `Identity & expertise` — only update if this session contradicted or confirmed an existing entry.
+- `Identity & expertise` / `Learning style` — only update if this session contradicted or confirmed an existing entry, *and* the change would still apply tomorrow in a different project.
 
-If nothing fires, write nothing. Most sessions produce zero PROFILE.md writes at close beyond the recent-outcomes prune — that is the correct outcome. Never write to `user/*.md`; if the user said something durable that belongs in `user/`, show the exact line in chat.
+SUMMARY.md (project, frequent):
+- `Accomplishments` — append a single line summarizing this completed session (`YYYY-MM-DD <topic> completed: <one-line shape>`); prune anything older than the last ~5 entries.
+- `Open Questions` — remove any entries that this session resolved; carry forward any that remain genuinely open.
+- `Current Focus` — clear it (curriculum is complete) or set it to the next named goal if one is queued.
+
+If nothing fires for either file, write nothing. Most sessions produce one SUMMARY update and zero PROFILE writes at close — that is the correct outcome. Never write to `user/*.md`; if the user said something durable that belongs in `user/`, show the exact line in chat.
 
 ## Curriculum Revision Triggers
 

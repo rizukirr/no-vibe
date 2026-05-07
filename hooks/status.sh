@@ -54,12 +54,16 @@ fi
 
 echo "$line"
 
-# --- Adaptation Iron Law: inject the AI's progression files (PROFILE.md,
-# both scopes) and the user's override files (every *.md under user/,
-# both scopes) into the system prompt. The runtime never creates or
-# writes any of these — AI creates PROFILE.md on first activation per
-# the schema in skills/no-vibe/SKILL.md; user owns user/. Read order
-# in SKILL.md "The Adaptation Iron Law". ---
+# --- Adaptation Iron Law: inject the AI's progression files
+# (~/.no-vibe/PROFILE.md = global stable identity, .no-vibe/SUMMARY.md =
+# project running journey) and the user's override files (every *.md
+# under user/, both scopes) into the system prompt. The runtime never
+# creates or writes any of these — AI creates PROFILE.md on first
+# activation and SUMMARY.md at the first layer close worth recording per
+# the schemas in skills/no-vibe/SKILL.md; user owns user/. Read order in
+# SKILL.md "The Adaptation Iron Law". The whole block is wrapped in a
+# `## Background Memory` preamble (DeepTutor pattern) telling the AI to
+# use it sparingly. ---
 
 emit_file() {
     local label="$1" path="$2" placeholder="$3"
@@ -97,13 +101,18 @@ emit_user_dir() {
     echo "=== END $label ==="
 }
 
+echo
+echo "## Background Memory"
+echo "Use this memory sparingly — only when directly relevant to the current turn."
+echo "Read order: PROFILE (global stable) → SUMMARY (project running) → user/ (user overrides). user/ wins on conflict."
+
 emit_file "GLOBAL PROFILE" "$HOME/.no-vibe/PROFILE.md" \
-    "PROFILE.md missing — AI creates it on first activation per the schema in SKILL.md \"PROFILE.md — the progression file\"."
-emit_file "PROJECT PROFILE" "$cwd/.no-vibe/PROFILE.md" \
-    "PROFILE.md missing — AI creates it on first activation per the schema in SKILL.md \"PROFILE.md — the progression file\"."
+    "PROFILE.md missing — AI creates it on first activation per the schema in SKILL.md \"PROFILE.md and SUMMARY.md — the progression files\"."
+emit_file "PROJECT SUMMARY" "$cwd/.no-vibe/SUMMARY.md" \
+    "SUMMARY.md not yet created — appears at the first layer close worth recording. Schema in SKILL.md \"PROFILE.md and SUMMARY.md — the progression files\"."
 emit_user_dir "GLOBAL USER OVERRIDES" "$HOME/.no-vibe/user" \
-    "No user-authored override files — defaults and PROFILE.md apply unmodified."
+    "No user-authored override files — defaults, PROFILE.md, and SUMMARY.md apply unmodified."
 emit_user_dir "PROJECT USER OVERRIDES" "$cwd/.no-vibe/user" \
-    "No user-authored override files — defaults and PROFILE.md apply unmodified."
+    "No user-authored override files — defaults, PROFILE.md, and SUMMARY.md apply unmodified."
 
 exit 0

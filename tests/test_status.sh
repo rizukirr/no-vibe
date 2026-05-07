@@ -105,39 +105,42 @@ EOF
     assert_contains "$out" "Newer Topic" "newer session wins"
 }
 
-# --- Test 8: PROFILE.md (project + global) is injected when present ---
+# --- Test 8: PROFILE.md (global) and SUMMARY.md (project) are injected when present ---
 test_profile_md_injected_when_present() {
     local cwd; cwd=$(make_sandbox)
     mkdir -p "$cwd/.no-vibe"
     touch "$cwd/.no-vibe/active"
     mkdir -p "$FAKE_HOME/.no-vibe"
     printf '%s\n' "# PROFILE — global" "## Identity & expertise" "- CS background, Rust solid" > "$FAKE_HOME/.no-vibe/PROFILE.md"
-    printf '%s\n' "# PROFILE — project" "## Recent layer outcomes" "- async-rust layer 3/5 Clear" > "$cwd/.no-vibe/PROFILE.md"
+    printf '%s\n' "# SUMMARY — project" "## Accomplishments" "- async-rust layer 3/5 Clear" > "$cwd/.no-vibe/SUMMARY.md"
     local out; out=$(echo "{\"cwd\":\"$cwd\"}" | "$HOOK")
     rm -rf "$cwd" "$FAKE_HOME/.no-vibe"
     assert_contains "$out" "no-vibe: ON" "ON line still emitted"
+    assert_contains "$out" "## Background Memory" "Background Memory preamble emitted"
+    assert_contains "$out" "Use this memory sparingly" "use-sparingly preamble emitted"
     assert_contains "$out" "GLOBAL PROFILE" "global PROFILE.md labeled"
     assert_contains "$out" "CS background, Rust solid" "global PROFILE.md content present"
-    assert_contains "$out" "PROJECT PROFILE" "project PROFILE.md labeled"
-    assert_contains "$out" "async-rust layer 3/5" "project PROFILE.md content present"
+    assert_contains "$out" "PROJECT SUMMARY" "project SUMMARY.md labeled"
+    assert_contains "$out" "async-rust layer 3/5" "project SUMMARY.md content present"
 }
 
-# --- Test 9: PROFILE.md absent → placeholder, no auto-creation ---
+# --- Test 9: PROFILE.md and SUMMARY.md absent → placeholder, no auto-creation ---
 test_profile_md_absent_uses_placeholder_no_create() {
     local cwd; cwd=$(make_sandbox)
     mkdir -p "$cwd/.no-vibe"
     touch "$cwd/.no-vibe/active"
     local out; out=$(echo "{\"cwd\":\"$cwd\"}" | "$HOOK")
     local globalProfile="missing"
-    local projectProfile="missing"
+    local projectSummary="missing"
     [ -e "$FAKE_HOME/.no-vibe/PROFILE.md" ] && globalProfile="present"
-    [ -e "$cwd/.no-vibe/PROFILE.md" ] && projectProfile="present"
+    [ -e "$cwd/.no-vibe/SUMMARY.md" ] && projectSummary="present"
     rm -rf "$cwd"
     assert_contains "$out" "GLOBAL PROFILE" "global PROFILE section emitted even when absent"
-    assert_contains "$out" "PROJECT PROFILE" "project PROFILE section emitted even when absent"
+    assert_contains "$out" "PROJECT SUMMARY" "project SUMMARY section emitted even when absent"
     assert_contains "$out" "PROFILE.md missing" "placeholder text used when PROFILE.md absent"
+    assert_contains "$out" "SUMMARY.md not yet created" "placeholder text used when SUMMARY.md absent"
     assert_eq "missing" "$globalProfile" "hook must not create global PROFILE.md"
-    assert_eq "missing" "$projectProfile" "hook must not create project PROFILE.md"
+    assert_eq "missing" "$projectSummary" "hook must not create project SUMMARY.md"
 }
 
 # --- Test 10: PROFILE.md absence does NOT change the OFF or no-dir cases ---

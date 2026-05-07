@@ -188,22 +188,25 @@ const run = async () => {
   process.env.USERPROFILE = fakeHome
 
   try {
-    // ----- Phase A: PROFILE.md absent, user/ absent -----
+    // ----- Phase A: PROFILE.md / SUMMARY.md absent, user/ absent -----
     const phaseAplugin = await NoVibePlugin({ directory: adaptationCwd })
     const phaseAoutput = makeOutput()
     await phaseAplugin["experimental.chat.messages.transform"]({}, phaseAoutput)
     const phaseAtext = phaseAoutput.messages[0].parts[0].text
+    assert.ok(phaseAtext.includes("## Background Memory"), "Background Memory preamble emitted")
+    assert.ok(phaseAtext.includes("Use this memory sparingly"), "use-sparingly preamble emitted")
     assert.ok(phaseAtext.includes("GLOBAL PROFILE"), "global PROFILE section labeled when absent")
-    assert.ok(phaseAtext.includes("PROJECT PROFILE"), "project PROFILE section labeled when absent")
+    assert.ok(phaseAtext.includes("PROJECT SUMMARY"), "project SUMMARY section labeled when absent")
     assert.ok(phaseAtext.includes("PROFILE.md missing"), "PROFILE.md placeholder used when file absent")
+    assert.ok(phaseAtext.includes("SUMMARY.md not yet created"), "SUMMARY.md placeholder used when file absent")
     assert.ok(phaseAtext.includes("GLOBAL USER OVERRIDES"), "global user/ section labeled when absent")
     assert.ok(phaseAtext.includes("PROJECT USER OVERRIDES"), "project user/ section labeled when absent")
     assert.ok(phaseAtext.includes("No user-authored override files"), "user/ placeholder used when dir absent")
 
-    // Plugin must NOT create PROFILE.md or user/ — that's AI's / user's job
+    // Plugin must NOT create PROFILE.md, SUMMARY.md, or user/ — those are AI's / user's job
     assert.ok(
-      !fs.existsSync(path.join(adaptationCwd, ".no-vibe", "PROFILE.md")),
-      "plugin must not create project PROFILE.md",
+      !fs.existsSync(path.join(adaptationCwd, ".no-vibe", "SUMMARY.md")),
+      "plugin must not create project SUMMARY.md",
     )
     assert.ok(
       !fs.existsSync(path.join(fakeHome, ".no-vibe", "PROFILE.md")),
@@ -218,22 +221,22 @@ const run = async () => {
       "plugin must not create global user/ dir",
     )
 
-    // ----- Phase B: PROFILE.md present (both scopes) -----
+    // ----- Phase B: PROFILE.md (global) + SUMMARY.md (project) present -----
     fs.mkdirSync(path.join(fakeHome, ".no-vibe"), { recursive: true })
     fs.writeFileSync(
       path.join(fakeHome, ".no-vibe", "PROFILE.md"),
       "# PROFILE — global\n## Identity & expertise\n- CS background, Rust solid (seen 4×)\n",
     )
     fs.writeFileSync(
-      path.join(adaptationCwd, ".no-vibe", "PROFILE.md"),
-      "# PROFILE — project\n## Recent layer outcomes\n- async-rust layer 3/5 Clear\n",
+      path.join(adaptationCwd, ".no-vibe", "SUMMARY.md"),
+      "# SUMMARY — project\n## Accomplishments\n- async-rust layer 3/5 Clear\n",
     )
     const phaseBplugin = await NoVibePlugin({ directory: adaptationCwd })
     const phaseBoutput = makeOutput()
     await phaseBplugin["experimental.chat.messages.transform"]({}, phaseBoutput)
     const phaseBtext = phaseBoutput.messages[0].parts[0].text
     assert.ok(phaseBtext.includes("CS background, Rust solid"), "global PROFILE.md content injected when present")
-    assert.ok(phaseBtext.includes("async-rust layer 3/5"), "project PROFILE.md content injected when present")
+    assert.ok(phaseBtext.includes("async-rust layer 3/5"), "project SUMMARY.md content injected when present")
 
     // ----- Phase C: user/*.md loaded, sorted, .md only -----
     fs.mkdirSync(path.join(fakeHome, ".no-vibe", "user"), { recursive: true })

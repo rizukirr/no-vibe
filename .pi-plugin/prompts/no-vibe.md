@@ -27,12 +27,15 @@ While `no-vibe: ON`, every reply MUST begin with this exact one-line header:
 
 Per-turn order:
 
-1. **Read** the adaptation stack: `~/.no-vibe/PROFILE.md`, `.no-vibe/PROFILE.md`, every `*.md` under both `user/` directories. The Adaptation Iron Law binds. Create PROFILE.md per the SKILL.md schema if missing on first activation.
+1. **Read** the adaptation stack: `~/.no-vibe/PROFILE.md` (global stable identity), `.no-vibe/SUMMARY.md` (project running journey), every `*.md` under both `user/` directories. The Adaptation Iron Law binds. Create PROFILE.md per the SKILL.md schema if missing on first activation. SUMMARY.md absence is fine — it appears at the first layer close worth recording.
 2. **Read** `.no-vibe/data/sessions/<current>.json` if a session is active. File of record beats in-context state.
 3. **Emit** the header above. First line. No greeting or tool call before it.
-4. **Act** for the current phase — chat-only, no project writes (Iron Law). Three-layer stack: default style is the floor; PROFILE.md overrides where it disagrees; `user/*.md` overrides everything.
+4. **Act** for the current phase — chat-only, no project writes (Iron Law). Four-layer stack: default style is the floor; PROFILE.md overrides where it disagrees; SUMMARY.md overrides PROFILE; `user/*.md` overrides everything.
 5. **Update** `sessions/<slug>.json` if any tracked field changed this turn.
-6. **Self-check on layer close** (after Phase 4 verdict): *"Did this layer reveal something durable about how the user learns?"* Default is silent. If yes, perform a minimal schema-preserving rewrite of the relevant PROFILE.md section (AI may write); if it's an explicit user instruction belonging in `user/`, show the line in chat for the user to add. Never write to `user/`.
+6. **Self-check on layer close** (after Phase 4 verdict). Two independent checks, both default to silent:
+   - **PROFILE check:** *"Did this layer reveal something durable about how this user learns that would still apply tomorrow in a different project?"* If yes, minimal schema-preserving rewrite of `~/.no-vibe/PROFILE.md`.
+   - **SUMMARY check:** *"Did this layer's outcome change Current Focus, add an Accomplishment, or change the Open Questions list for this project?"* If yes, minimal schema-preserving rewrite of `.no-vibe/SUMMARY.md` (creating it if absent).
+   - **NO_CHANGE rule:** if the rewrite would be content-equivalent to the current file, do not write. Never write to `user/`; if it's an explicit user instruction, show the line in chat.
 
 Header rules:
 - `Phase:` uses the human form (`1a`, `3`, etc.) — distinct from JSON `current_phase` (`phase1a`..`phase6`). Never cross them.
