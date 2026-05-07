@@ -25,17 +25,21 @@ under `.gemini/commands/` are auto-discovered.
 
 ## Verify
 
-1. In any project, run `/no-vibe on` — creates `.no-vibe/active` and
-   bootstraps learner state.
-2. Ask the assistant to edit a project file — it should refuse with the
+1. In any project, run `/no-vibe on` — creates `.no-vibe/active`. PROFILE.md
+   is not created yet; it is created by the AI on its first reply.
+2. Send a topic. On the AI's first reply, confirm `~/.no-vibe/PROFILE.md`
+   and `.no-vibe/PROFILE.md` exist with the schema headings (`## Identity
+   & expertise`, `## Observed strengths`, `## Known gaps`, `## Style
+   notes`, `## Recent layer outcomes`) and empty bullets under each.
+3. Ask the assistant to edit a project file — it should refuse with the
    no-vibe guard message (soft-block; see caveat below).
-3. Ask the assistant to `echo bad > someproj.py` or `sed -i 's/x/y/'
+4. Ask the assistant to `echo bad > someproj.py` or `sed -i 's/x/y/'
    src/file` — it should also refuse, citing the Bash guard rules in
    `GEMINI.md`. If it complies, the model is drifting; remind it.
-4. Start a fresh session in a project with an in-progress session JSON
+5. Start a fresh session in a project with an in-progress session JSON
    under `.no-vibe/data/sessions/` — first turn should print
    `no-vibe: ON — resuming "<topic>" (layer N/M, phaseX)`.
-5. Run `/no-vibe off` — removes the marker.
+6. Run `/no-vibe off` — removes the marker.
 
 ## Caveat — soft block
 

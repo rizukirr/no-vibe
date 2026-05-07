@@ -34,9 +34,10 @@ opencode run --print-logs "check no-vibe plugin"
 
 ## Verify
 
-1. Run `/no-vibe on`
+1. Run `/no-vibe on`. This creates `.no-vibe/active`; PROFILE.md is not created yet (it is created by the AI on its first reply).
 2. Start a lesson topic (for example `/no-vibe build a linear layer`)
-3. Confirm the assistant teaches in chat and does not write project files directly
+3. On the AI's first reply, confirm `~/.no-vibe/PROFILE.md` and `.no-vibe/PROFILE.md` exist with the schema headings (`## Identity & expertise`, `## Observed strengths`, `## Known gaps`, `## Style notes`, `## Recent layer outcomes`) and empty bullets under each.
+4. Confirm the assistant teaches in chat and does not write project files directly.
 
 CLI note: when using `opencode run`, invoke commands with `--command` (for example `opencode run --command no-vibe on`). Do not pass `/no-vibe on` as a plain message if you expect command execution.
 

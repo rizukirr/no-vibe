@@ -24,11 +24,12 @@ cmd /c mklink /J "$env:USERPROFILE\.agents\skills\no-vibe" "$env:USERPROFILE\.co
 ## Verify Installation
 
 1. Start a Codex session in any project
-2. Run `$no-vibe on` — should create `.no-vibe/active` marker
-3. Ask the assistant to edit a project file — it should refuse with the no-vibe guard message (instruction-based soft block)
-4. Ask the assistant to `echo bad > someproj.py` or `sed -i …` on a project file — it should also refuse, citing the Iron Law's Bash list in `skills/no-vibe/SKILL.md`. If it complies, the model is drifting; remind it.
-5. Start a fresh session with an in-progress session JSON in `.no-vibe/data/sessions/` — the assistant should announce the resume hint (topic + `layer N/M, phaseX`) on the first turn (Phase 0 auto-resume).
-6. Run `$no-vibe off` — should remove marker
+2. Run `$no-vibe on` — should create `.no-vibe/active` marker. PROFILE.md is not created yet; it is created by the AI on its first reply.
+3. Send a topic. On the AI's first reply, confirm `~/.no-vibe/PROFILE.md` and `.no-vibe/PROFILE.md` exist with the schema headings (`## Identity & expertise`, `## Observed strengths`, `## Known gaps`, `## Style notes`, `## Recent layer outcomes`) and empty bullets under each.
+4. Ask the assistant to edit a project file — it should refuse with the no-vibe guard message (instruction-based soft block)
+5. Ask the assistant to `echo bad > someproj.py` or `sed -i …` on a project file — it should also refuse, citing the Iron Law's Bash list in `skills/no-vibe/SKILL.md`. If it complies, the model is drifting; remind it.
+6. Start a fresh session with an in-progress session JSON in `.no-vibe/data/sessions/` — the assistant should announce the resume hint (topic + `layer N/M, phaseX`) on the first turn (Phase 0 auto-resume).
+7. Run `$no-vibe off` — should remove marker
 
 ## Caveat — soft block
 
