@@ -25,6 +25,15 @@
                         "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-bash-writes.sh"
                     }
                 ]
+            },
+            {
+                "matcher": "Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "${CLAUDE_PLUGIN_ROOT}/hooks/validate-memory-write.sh"
+                    }
+                ]
             }
         ],
         "SessionStart": [

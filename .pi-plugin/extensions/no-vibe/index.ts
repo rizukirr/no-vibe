@@ -143,6 +143,33 @@ const isWithinNoVibeDir = (cwd: string, absoluteTargetPath: string): boolean => 
   return false;
 };
 
+// Validate full-content writes to PROFILE.md / SUMMARY.md against the
+// canonical heading set. Mirrors hooks/validate-memory-write.sh and the
+// OpenCode plugin. Only fires on full write (not edit) — edit is for
+// incremental updates and existing files should already carry canonical
+// headings. Returns null on pass, a string reason on fail.
+const PROFILE_HEADINGS = /^(## Identity & expertise|## Learning style|## Observed strengths|## Known gaps)\s*$/m;
+const SUMMARY_HEADINGS = /^(## Current Focus|## Accomplishments|## Open Questions)\s*$/m;
+
+const classifyMemoryTarget = (cwd: string, absoluteTargetPath: string): "profile" | "summary" | null => {
+  const globalProfile = canonicalize(path.resolve(os.homedir(), ".no-vibe", "PROFILE.md"));
+  const projectSummary = canonicalize(path.resolve(cwd, ".no-vibe", "SUMMARY.md"));
+  const canonical = canonicalize(absoluteTargetPath);
+  if (canonical === globalProfile) return "profile";
+  if (canonical === projectSummary) return "summary";
+  return null;
+};
+
+const validateMemoryContent = (kind: "profile" | "summary", content: unknown): string | null => {
+  if (typeof content !== "string" || content.length === 0) return null;
+  const re = kind === "profile" ? PROFILE_HEADINGS : SUMMARY_HEADINGS;
+  if (re.test(content)) return null;
+  if (kind === "profile") {
+    return `proposed PROFILE.md content does not contain any canonical section heading. Expected one of: "## Identity & expertise", "## Learning style", "## Observed strengths", "## Known gaps". This usually means a chat reply was about to be written into the file by mistake. Re-issue the write with the correct schema, or use edit for incremental updates that preserve existing headings. See SKILL.md "PROFILE.md and SUMMARY.md — the progression files".`;
+  }
+  return `proposed SUMMARY.md content does not contain any canonical section heading. Expected one of: "## Current Focus", "## Accomplishments", "## Open Questions". This usually means a chat reply was about to be written into the file by mistake. Re-issue the write with the correct schema, or use edit for incremental updates that preserve existing headings. See SKILL.md "PROFILE.md and SUMMARY.md — the progression files".`;
+};
+
 const isSafeBashTarget = (cwd: string, rawPath: string): boolean => {
   if (!rawPath) return false;
   let p = rawPath;
@@ -317,7 +344,24 @@ export default async function (pi: ExtensionAPI) {
     }
 
     const absoluteTargetPath = path.isAbsolute(targetPath) ? path.resolve(targetPath) : path.resolve(cwd, targetPath);
-    if (isWithinNoVibeDir(cwd, absoluteTargetPath)) return;
+    if (isWithinNoVibeDir(cwd, absoluteTargetPath)) {
+      // Inside the safe-zone — also validate canonical headings for
+      // full-content writes targeting PROFILE.md / SUMMARY.md.
+      if (toolName === "write") {
+        const kind = classifyMemoryTarget(cwd, absoluteTargetPath);
+        if (kind) {
+          const content = (input as any).content ?? (input as any).text ?? (input as any).body ?? "";
+          const reason = validateMemoryContent(kind, content);
+          if (reason) {
+            return {
+              block: true,
+              reason: `no-vibe heading-validation: refusing write to '${absoluteTargetPath}' — ${reason}`,
+            };
+          }
+        }
+      }
+      return;
+    }
 
     return {
       block: true,

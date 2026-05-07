@@ -260,6 +260,34 @@ const isWithinNoVibeDir = (cwd, absoluteTargetPath) => {
   return false
 }
 
+// Validate full-content writes to PROFILE.md / SUMMARY.md against the
+// canonical heading set. Mirrors hooks/validate-memory-write.sh and the
+// Pi extension. Only fires on full Write (not Edit / MultiEdit) — Edit
+// is for incremental updates and the existing file should already
+// carry canonical headings. Returns null on pass, a string reason on
+// fail.
+const PROFILE_HEADINGS = /^(## Identity & expertise|## Learning style|## Observed strengths|## Known gaps)\s*$/m
+const SUMMARY_HEADINGS = /^(## Current Focus|## Accomplishments|## Open Questions)\s*$/m
+
+const classifyMemoryTarget = (cwd, absoluteTargetPath) => {
+  const globalProfile = canonicalizePathForAllowlist(path.resolve(os.homedir(), ".no-vibe", "PROFILE.md"))
+  const projectSummary = canonicalizePathForAllowlist(path.resolve(cwd, ".no-vibe", "SUMMARY.md"))
+  const canonical = canonicalizePathForAllowlist(absoluteTargetPath)
+  if (canonical === globalProfile) return "profile"
+  if (canonical === projectSummary) return "summary"
+  return null
+}
+
+const validateMemoryContent = (kind, content) => {
+  if (typeof content !== "string" || content.length === 0) return null
+  const re = kind === "profile" ? PROFILE_HEADINGS : SUMMARY_HEADINGS
+  if (re.test(content)) return null
+  if (kind === "profile") {
+    return `proposed PROFILE.md content does not contain any canonical section heading. Expected one of: "## Identity & expertise", "## Learning style", "## Observed strengths", "## Known gaps". This usually means a chat reply was about to be written into the file by mistake. Re-issue the write with the correct schema, or use edit for incremental updates that preserve existing headings. See SKILL.md "PROFILE.md and SUMMARY.md — the progression files".`
+  }
+  return `proposed SUMMARY.md content does not contain any canonical section heading. Expected one of: "## Current Focus", "## Accomplishments", "## Open Questions". This usually means a chat reply was about to be written into the file by mistake. Re-issue the write with the correct schema, or use edit for incremental updates that preserve existing headings. See SKILL.md "PROFILE.md and SUMMARY.md — the progression files".`
+}
+
 export const NoVibePlugin = async ({ directory } = {}) => {
   const projectRoot = path.resolve(directory || process.cwd())
   const skillsDir = getSkillsDir()
@@ -378,7 +406,23 @@ export const NoVibePlugin = async ({ directory } = {}) => {
         )
       }
 
-      if (isWithinNoVibeDir(cwd, absoluteTargetPath)) return
+      if (isWithinNoVibeDir(cwd, absoluteTargetPath)) {
+        // Inside the safe-zone — also validate canonical headings for
+        // full-content writes targeting PROFILE.md / SUMMARY.md.
+        const toolName = String(input?.tool || "").toLowerCase()
+        if (toolName === "write") {
+          const kind = classifyMemoryTarget(cwd, absoluteTargetPath)
+          if (kind) {
+            const args = output?.args || input?.args || {}
+            const content = args.content ?? args.text ?? args.body ?? ""
+            const reason = validateMemoryContent(kind, content)
+            if (reason) {
+              throw new Error(`no-vibe heading-validation: refusing write to '${absoluteTargetPath}' — ${reason}`)
+            }
+          }
+        }
+        return
+      }
 
       throw new Error(
         `no-vibe mode is active. Refusing write to '${absoluteTargetPath}'. Show code in chat and let the user type it. Use '.no-vibe/' for notes, or run '/no-vibe off' to disable.`,

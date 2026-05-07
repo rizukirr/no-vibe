@@ -26,6 +26,7 @@ No root npm script runner. Run all test suites before finishing plugin changes:
 ```bash
 bash tests/test_block_writes.sh
 bash tests/test_block_bash_writes.sh
+bash tests/test_validate_memory_write.sh
 bash tests/test_status.sh
 node tests/test_opencode_plugin.mjs
 bash tests/test_escape_hatch.sh
@@ -53,6 +54,14 @@ Path-handling, Bash-parsing rules, and the safe-target allowlist (`.no-vibe/**`,
 - `skills/no-vibe/SKILL.md` Iron Law (Codex + shared)
 
 If one changes, update the others.
+
+**Memory heading-validation** (DeepTutor port — blocks Write calls to `~/.no-vibe/PROFILE.md` or `.no-vibe/SUMMARY.md` when the proposed content has no canonical section heading):
+- Claude Code: `hooks/validate-memory-write.sh` — PreToolUse hook on `Write` only.
+- OpenCode: folded into `.opencode/plugins/no-vibe.js` `tool.execute.before` (Write tool, when target is the safe-zone PROFILE/SUMMARY paths).
+- Pi: folded into `.pi-plugin/extensions/no-vibe/index.ts` `pi.on("tool_call", ...)` (same conditions).
+- Codex / Gemini: instruction-only enforcement via SKILL.md "Heading validation — write integrity check".
+
+The canonical heading sets are duplicated across all four runtime surfaces and the SKILL.md instruction. If one changes, update the others. Edit / MultiEdit / NotebookEdit are intentionally NOT validated — they are for incremental updates and existing files should already carry canonical headings.
 
 **Status line** (`no-vibe: ON|OFF`, silent when no `.no-vibe/` dir exists to avoid noise in unrelated projects):
 - Claude: `hooks/status.sh` (SessionStart)
