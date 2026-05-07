@@ -16,23 +16,34 @@ const PLUGIN_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 
 const getSkillsDir = () => path.resolve(PLUGIN_ROOT, "skills")
 
-const seedIfMissing = (target, template) => {
-  if (fs.existsSync(target)) return
-  if (!fs.existsSync(template)) return
-  try {
-    fs.mkdirSync(path.dirname(target), { recursive: true })
-    fs.copyFileSync(template, target)
-  } catch {
-    // Permission errors etc. — silent; the placeholder branch below covers it.
-  }
-}
-
-const readNoVibeMd = (label, p, placeholder) => {
+const readSingleFile = (label, p, placeholder) => {
   if (fs.existsSync(p)) {
     const body = fs.readFileSync(p, "utf8")
     return `\n\n=== ${label} (${p}) ===\n${body}\n=== END ${label} ===`
   }
-  return `\n\n=== ${label} (not yet customized — ${p} missing) ===\n${placeholder}\n=== END ${label} ===`
+  return `\n\n=== ${label} (not present — ${p}) ===\n${placeholder}\n=== END ${label} ===`
+}
+
+const readUserDir = (label, dir, placeholder) => {
+  if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
+    return `\n\n=== ${label} (${dir}/) ===\n${placeholder}\n=== END ${label} ===`
+  }
+  let entries
+  try {
+    entries = fs.readdirSync(dir).filter((n) => n.toLowerCase().endsWith(".md")).sort()
+  } catch {
+    return `\n\n=== ${label} (${dir}/) ===\n${placeholder}\n=== END ${label} ===`
+  }
+  if (entries.length === 0) {
+    return `\n\n=== ${label} (${dir}/) ===\n${placeholder}\n=== END ${label} ===`
+  }
+  const parts = entries.map((name) => {
+    const full = path.join(dir, name)
+    let body = ""
+    try { body = fs.readFileSync(full, "utf8") } catch { body = "" }
+    return `--- ${full} ---\n${body}`
+  })
+  return `\n\n=== ${label} (${dir}/) ===\n${parts.join("\n")}\n=== END ${label} ===`
 }
 
 const buildBootstrap = (skillsDir, cwd) => {
@@ -43,30 +54,43 @@ const buildBootstrap = (skillsDir, cwd) => {
     skillBody = stripFrontmatter(fs.readFileSync(skillPath, "utf8")).trim()
   }
 
-  // Adaptation Iron Law: seed both NO-VIBE.md files from templates/ if
-  // missing, then inject contents so the AI literally cannot start a
-  // teaching reply without seeing the user's stated preferences. Gated
-  // on `.no-vibe/active` existing — projects that have not opted into
-  // no-vibe mode should not have a `.no-vibe/` directory created as a
-  // side effect of plugin loading.
+  // Adaptation Iron Law: inject the AI's progression files (PROFILE.md,
+  // both scopes) and the user's override files (every *.md under user/,
+  // both scopes). The runtime never creates or writes any of these —
+  // AI creates PROFILE.md on first activation per the schema in
+  // skills/no-vibe/SKILL.md; user owns user/. Gated on `.no-vibe/active`
+  // existing — projects that have not opted into no-vibe mode should
+  // not have a `.no-vibe/` directory created as a side effect of plugin
+  // loading.
   const noVibeActive = fs.existsSync(path.join(cwd, ".no-vibe", "active"))
-  let globalNoVibe = ""
-  let projectNoVibe = ""
+  let globalProfile = ""
+  let projectProfile = ""
+  let globalUser = ""
+  let projectUser = ""
   if (noVibeActive) {
-    const templatesDir = path.resolve(PLUGIN_ROOT, "templates")
-    const globalPath = path.join(os.homedir(), ".no-vibe", "NO-VIBE.md")
-    const projectPath = path.join(cwd, ".no-vibe", "NO-VIBE.md")
-    seedIfMissing(globalPath, path.join(templatesDir, "NO-VIBE.global.md"))
-    seedIfMissing(projectPath, path.join(templatesDir, "NO-VIBE.project.md"))
-    globalNoVibe = readNoVibeMd(
-      "USER TEACHING PREFERENCES",
-      globalPath,
-      "User has not yet customized teaching style. Apply the Feynman default style from skills/no-vibe/SKILL.md.",
+    const globalProfilePath = path.join(os.homedir(), ".no-vibe", "PROFILE.md")
+    const projectProfilePath = path.join(cwd, ".no-vibe", "PROFILE.md")
+    const globalUserDir = path.join(os.homedir(), ".no-vibe", "user")
+    const projectUserDir = path.join(cwd, ".no-vibe", "user")
+    globalProfile = readSingleFile(
+      "GLOBAL PROFILE",
+      globalProfilePath,
+      "PROFILE.md missing — AI creates it on first activation per the schema in SKILL.md \"PROFILE.md — the progression file\".",
     )
-    projectNoVibe = readNoVibeMd(
-      "PROJECT TEACHING CANVAS",
-      projectPath,
-      "Project has no canvas yet. Apply the default Where -> code -> why -> run+verify format from skills/no-vibe/SKILL.md.",
+    projectProfile = readSingleFile(
+      "PROJECT PROFILE",
+      projectProfilePath,
+      "PROFILE.md missing — AI creates it on first activation per the schema in SKILL.md \"PROFILE.md — the progression file\".",
+    )
+    globalUser = readUserDir(
+      "GLOBAL USER OVERRIDES",
+      globalUserDir,
+      "No user-authored override files — defaults and PROFILE.md apply unmodified.",
+    )
+    projectUser = readUserDir(
+      "PROJECT USER OVERRIDES",
+      projectUserDir,
+      "No user-authored override files — defaults and PROFILE.md apply unmodified.",
     )
   }
 
@@ -76,8 +100,10 @@ const buildBootstrap = (skillsDir, cwd) => {
     "no-vibe mode is available in this repository.",
     "",
     skillBody,
-    globalNoVibe,
-    projectNoVibe,
+    globalProfile,
+    projectProfile,
+    globalUser,
+    projectUser,
     "",
     "**Tool Mapping for OpenCode:**",
     "When skill content references tools you do not have, use OpenCode equivalents:",

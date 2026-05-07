@@ -56,20 +56,31 @@ $no-vibe off                               # exit
 
 ## Customizing teaching style
 
-no-vibe adapts via two plain-Markdown files: `~/.no-vibe/NO-VIBE.md` (global teaching style — applies in any project) and `.no-vibe/NO-VIBE.md` (per-project canvas — teaching format, conventions, notes for *this* codebase).
+no-vibe uses a three-layer adaptation stack:
 
-Codex has no SessionStart hook, so the AI is instructed (per `skills/no-vibe/SKILL.md`) to seed both from `templates/` on first activation. For more reliable behavior, seed them yourself with a one-time copy:
+- **Default teaching style** — the floor. Defined in `skills/no-vibe/SKILL.md`. Ships with the plugin; you never edit this directly.
+- **`PROFILE.md` — the AI's progression files (AI-managed):**
+  - `~/.no-vibe/PROFILE.md` — global progression. AI-created on your first `/no-vibe` activation, AI-updated per layer when it learns something durable about how *you* learn ("solid on closures", "needs a worked example for async", recent layer outcomes).
+  - `.no-vibe/PROFILE.md` — same shape, project-scoped. Tracks your domain progress in this codebase.
+- **`user/*.md` — your override files (user-managed, AI never touches):**
+  - `~/.no-vibe/user/*.md` — global overrides. Any `.md` file in this directory becomes authoritative on conflict with PROFILE.md or the default style.
+  - `.no-vibe/user/*.md` — same, project-scoped.
+
+You don't need to do anything to bootstrap — the AI creates PROFILE.md on first activation. Read it any time to see what the AI has learned about you; you can edit it yourself if something looks wrong.
+
+To add an explicit override the AI must respect, create a file under `user/`:
 
 ```bash
-# Global (once per machine)
-mkdir -p ~/.no-vibe
-[ -f ~/.no-vibe/NO-VIBE.md ] || cp ~/.codex/no-vibe/templates/NO-VIBE.global.md ~/.no-vibe/NO-VIBE.md
-
-# Per-project (once per project, after `$no-vibe on`)
-[ -f .no-vibe/NO-VIBE.md ] || cp ~/.codex/no-vibe/templates/NO-VIBE.project.md .no-vibe/NO-VIBE.md
+mkdir -p ~/.no-vibe/user
+cat > ~/.no-vibe/user/style.md <<'EOF'
+- Skip the 12-year-old framing — I have a CS background; technical vocab is fine.
+- Prefer direct mechanism over kitchen/sports analogies.
+EOF
 ```
 
-Edit either file at any time to override the defaults — the AI re-reads them every turn. The defaults are starting points, not gospel; replace clauses cleanly when something better serves you.
+The filename is yours to choose; the AI loads every `.md` file in `user/` sorted by filename. Anything in `user/` is read-only for the AI.
+
+Codex has no SessionStart hook, so the AI is instructed (per `skills/no-vibe/SKILL.md`) to read PROFILE.md (both scopes) and every `user/*.md` at session start, and to create PROFILE.md on first activation if missing.
 
 ## Troubleshooting
 

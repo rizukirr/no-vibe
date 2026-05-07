@@ -91,14 +91,29 @@ ln -s ~/Projects/no-vibe/.pi-plugin/extensions/no-vibe           ~/.pi/agent/ext
 
 ## Customizing teaching style
 
-no-vibe adapts via two plain-Markdown files seeded automatically on first activation:
+no-vibe uses a three-layer adaptation stack:
 
-- `~/.no-vibe/NO-VIBE.md` — global teaching style. *How* you want to be taught. Applies in any project.
-- `.no-vibe/NO-VIBE.md` — per-project canvas. Teaching format, conventions, notes for *this* codebase.
+- **Default teaching style** — the floor. Defined in `skills/no-vibe/SKILL.md`. Ships with the plugin; you never edit this directly.
+- **`PROFILE.md` — the AI's progression files (AI-managed):**
+  - `~/.no-vibe/PROFILE.md` — global progression. AI-created on your first `/no-vibe` activation, AI-updated per layer when it learns something durable about how *you* learn.
+  - `.no-vibe/PROFILE.md` — same shape, project-scoped.
+- **`user/*.md` — your override files (user-managed, AI never touches):**
+  - `~/.no-vibe/user/*.md` — global overrides
+  - `.no-vibe/user/*.md` — project overrides
 
-Both files are seeded from the plugin's `templates/` directory by the `before_agent_start` extension hook the first time you run `/no-vibe on` in a project. The hook is gated on `.no-vibe/active`, so projects without no-vibe never get a stray `.no-vibe/` directory.
+The Pi `before_agent_start` extension hook is gated on `.no-vibe/active`, so projects without no-vibe never get a stray `.no-vibe/` directory. The hook injects PROFILE.md (both scopes, when present) and every `user/*.md` into the system prompt; it does NOT create PROFILE.md or `user/` — AI creates PROFILE.md on first activation, you create files under `user/` if you want explicit overrides.
 
-Edit either file at any time to override the defaults — the AI re-reads them every turn. The defaults are starting points, not gospel; replace clauses cleanly when something better serves you.
+Example explicit override:
+
+```bash
+mkdir -p ~/.no-vibe/user
+cat > ~/.no-vibe/user/style.md <<'EOF'
+- Skip the 12-year-old framing — I have a CS background; technical vocab is fine.
+- Prefer direct mechanism over kitchen/sports analogies.
+EOF
+```
+
+The filename is yours to choose; the AI loads every `.md` file in `user/` sorted by filename. Anything in `user/` is read-only for the AI.
 
 ## Notes
 

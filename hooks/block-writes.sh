@@ -83,8 +83,10 @@ else
     home_scratch_root="$home_dir/.no-vibe"
 fi
 
-# Allow writes inside project-local .no-vibe/ (scratch escape hatch) and
-# global ~/.no-vibe/ (cross-project state: NO-VIBE.md teaching preferences).
+# Allow writes inside project-local .no-vibe/ (scratch escape hatch, plus
+# AI-managed PROFILE.md) and global ~/.no-vibe/ (cross-project state:
+# PROFILE.md). The user/ subdirectories are inside this guard's allowlist
+# but writes there are forbidden at the instruction level (SKILL.md).
 case "$abs_target" in
     "$scratch_root"/*|"$scratch_root") exit 0 ;;
     "$home_scratch_root"/*|"$home_scratch_root") exit 0 ;;

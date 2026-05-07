@@ -263,14 +263,14 @@ test_marker_allows_write_home_scratch() {
     mkdir -p "$fake_home/.no-vibe"
     local input
     input=$(cat <<EOF
-{"tool_name":"Write","tool_input":{"file_path":"$fake_home/.no-vibe/NO-VIBE.md","content":"x"},"cwd":"$cwd"}
+{"tool_name":"Write","tool_input":{"file_path":"$fake_home/.no-vibe/PROFILE.md","content":"x"},"cwd":"$cwd"}
 EOF
 )
     local exit_code
     HOME="$fake_home" bash -c "echo '$input' | '$HOOK' >/dev/null 2>&1"
     exit_code=$?
     rm -rf "$cwd" "$fake_home"
-    assert_eq "0" "$exit_code" "marker + Write to \$HOME/.no-vibe/NO-VIBE.md → allow"
+    assert_eq "0" "$exit_code" "marker + Write to \$HOME/.no-vibe/PROFILE.md → allow"
 }
 
 test_marker_allows_write_home_scratch

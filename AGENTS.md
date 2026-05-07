@@ -27,13 +27,14 @@
   - `node tests/test_opencode_plugin.mjs`
   - `bash tests/test_escape_hatch.sh`
   - `bash tests/test_gemini_guard.sh`
+  - `bash tests/test_contract_injection.sh`
   - `node tests/test_pi_plugin.mjs`
 - There is no root npm script runner; run tests directly with the commands above.
 
 ## Conventions that are easy to miss
 - Keep behavior aligned across the three hard-block surfaces — Claude shell hooks (`hooks/block-writes.sh`, `hooks/block-bash-writes.sh`), OpenCode plugin guard (`.opencode/plugins/no-vibe.js`), and Pi extension (`.pi-plugin/extensions/no-vibe/index.ts`). If one path-handling, allowlist, or Bash-pattern rule changes, update the others.
 - Keep command docs aligned across `commands/`, `.opencode/commands/`, `.pi-plugin/prompts/`, and `.gemini/commands/` when changing no-vibe flow or memory requirements.
-- Adaptation memory is two plain-Markdown files: `~/.no-vibe/NO-VIBE.md` (global teaching style) and `.no-vibe/NO-VIBE.md` (project canvas). Defaults are seeded from `templates/NO-VIBE.global.md` and `templates/NO-VIBE.project.md`. The four runtime hooks (`hooks/status.sh`, `.opencode/plugins/no-vibe.js`, `.pi-plugin/extensions/no-vibe/index.ts`, plus the Codex/Gemini context files) inject both NO-VIBE.md contents into the system prompt at session start so the AI cannot skip the user's stated preferences.
+- Adaptation memory is a three-layer stack. (1) Default teaching style lives in `skills/no-vibe/SKILL.md` "Default teaching style" section — the floor, ships with the plugin. (2) `~/.no-vibe/PROFILE.md` and `.no-vibe/PROFILE.md` — the AI's progression files. AI creates each on first `/no-vibe` activation per the schema in SKILL.md "PROFILE.md — the progression file"; AI rewrites at layer close only when the silent-default rule fires. AI **may** write these. (3) `~/.no-vibe/user/*.md` and `.no-vibe/user/*.md` — user-only overrides; AI loads every `.md` sorted by filename, authoritative on conflict, AI **must never** write here. The runtime hooks (`hooks/status.sh`, `.opencode/plugins/no-vibe.js`, `.pi-plugin/extensions/no-vibe/index.ts`, plus the Codex/Gemini context files) inject all of this into the system prompt at session start. The runtime never creates PROFILE.md or `user/`.
 - Per-session JSON state (`.no-vibe/data/sessions/<slug>.json`) still tracks `current_phase`, `current_layer`, `revision_id`, `status`, etc. — that is the cycle state machine, separate from adaptation memory.
 - `.no-vibe/` is intentionally writable during active mode; project paths outside it are intentionally blocked.
 
@@ -44,4 +45,4 @@
   - `.claude-plugin/marketplace.json`
   - `gemini-extension.json`
   - `.pi-plugin/plugin.json`
-- Use `scripts/bump-version.sh <version|patch|minor|major>` to keep plugin/marketplace versions in sync. The pi parity test (`tests/test_pi_plugin.mjs`) asserts `package.json` and `.pi-plugin/plugin.json` versions match.
+- Version numbers are duplicated in `package.json`, `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `gemini-extension.json`, and `.pi-plugin/plugin.json`. Bump all five by hand and confirm parity with `grep -E '"version"' package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json gemini-extension.json .pi-plugin/plugin.json`. (A `scripts/bump-version.sh` helper used to live in this repo and was removed in commit `7f8afda` — restore it rather than papering over with hand-edits if a release ever drifts the five files apart.) The pi parity test (`tests/test_pi_plugin.mjs`) asserts `package.json` and `.pi-plugin/plugin.json` versions match.

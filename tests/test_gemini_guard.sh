@@ -83,9 +83,6 @@ echo "Structural discipline:"
 check "Iron Law block is present" \
   "NO CODE INTO|no code.*project files.*ever|iron law"
 
-check "Red Flags self-check list exists" \
-  "red flag"
-
 check "Rationalization table exists" \
   "rationalization table|\| excuse \||\| rationalization \|"
 

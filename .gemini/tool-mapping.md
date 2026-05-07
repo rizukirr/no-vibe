@@ -36,8 +36,16 @@ Show code in chat; user types it.
 
 ## Data persistence
 
-Use `save_memory` sparingly — no-vibe's adaptation state lives in two
-plain-Markdown files: `~/.no-vibe/NO-VIBE.md` (global teaching style) and
-`.no-vibe/NO-VIBE.md` (project canvas). Per-session cycle state lives in
-`.no-vibe/data/sessions/<slug>.json`. Do not duplicate any of those into
-Gemini memory — write directly to the Markdown / JSON files.
+Use `save_memory` sparingly — no-vibe's adaptation state lives in plain
+Markdown: `~/.no-vibe/PROFILE.md` and `.no-vibe/PROFILE.md` (the AI's
+progression files — AI-created on first `/no-vibe` per the schema in
+SKILL.md, AI-updated per layer when something durable is learned) plus
+every `*.md` under `~/.no-vibe/user/` and `.no-vibe/user/` (user-only
+overrides — AI never creates, edits, or deletes files inside `user/`).
+Per-session cycle state lives in `.no-vibe/data/sessions/<slug>.json`.
+Do not duplicate any of those into Gemini memory. For cycle state,
+write directly to the JSON file. For adaptation, write to PROFILE.md
+when the silent-default rule fires (see SKILL.md "PROFILE.md — the
+progression file"). For explicit user instructions belonging in
+`user/`, show the line in chat for the user to add — do not write
+to `user/` yourself.

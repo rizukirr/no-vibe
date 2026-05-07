@@ -45,12 +45,13 @@ grep -rl '"status": "in_progress"' .no-vibe/data/sessions/ 2>/dev/null
 - Use the focus area to narrow the challenge topic
 - Combine with session/project context for relevance
 
-### 3. Read teaching preferences
+### 3. Read the adaptation stack
 
-Read `~/.no-vibe/NO-VIBE.md` and `.no-vibe/NO-VIBE.md` if they exist. Calibrate challenge difficulty:
-- Global `## User additions` mentions topic competence ("solid on Go", "new to async") → tune scope accordingly.
-- Project `## Conventions` names patterns the user has committed to → align challenge to those patterns.
-- Project `## Notes` may flag deferred items worth reinforcing in the challenge.
+Read `~/.no-vibe/PROFILE.md`, `.no-vibe/PROFILE.md`, and every `*.md` under `~/.no-vibe/user/` and `.no-vibe/user/` (sorted by filename) when present. Calibrate challenge difficulty:
+- PROFILE.md `## Identity & expertise` / `## Observed strengths` flags competence → tune scope upward.
+- PROFILE.md `## Known gaps` flags weak areas → tune scope downward; more scaffolding.
+- `## Recent layer outcomes` — reinforce a recent Block area, or build on a recent Clear.
+- Any `user/*.md` file naming an explicit constraint → respect it without re-asking.
 
 ### 4. Present the challenge
 

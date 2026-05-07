@@ -45,11 +45,7 @@ mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/a
 mkdir -p ~/.no-vibe
 ```
 
-NO-VIBE.md files are auto-seeded from the plugin's `templates/` by the
-OpenCode `before_agent_start` hook on the next session start, so there is
-no `cp` step here. The first session after activation may run with the
-"not yet customized" placeholder injected by the hook; subsequent
-sessions read the seeded files directly.
+PROFILE.md (both scopes) is created by the AI on first activation per the schema in `skills/no-vibe/SKILL.md`, not by this command. The OpenCode `before_agent_start` bootstrap hook injects PROFILE.md and `user/*.md` contents into the system prompt every session — the first session may run with the "PROFILE.md missing" placeholder, after which the AI creates the file and subsequent sessions read it directly.
 
 Then verify with:
 
@@ -59,7 +55,7 @@ test -f .no-vibe/active
 
 If verification succeeds, explicitly state in chat: `no-vibe is active (.no-vibe/active exists)`.
 
-- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first (which includes conditional NO-VIBE.md updates per the cadence rule). Then you MUST run:
+- If turning OFF: if a lesson is mid-flight (check `.no-vibe/session.md` for unchecked items), run Phase 6 synthesis first (which includes the PROFILE.md rollup pass per phases.md). Then you MUST run:
 
 ```bash
 rm -f .no-vibe/active
@@ -118,12 +114,12 @@ While `no-vibe: ON`, every reply MUST begin with this exact one-line header:
 
 Per-turn order:
 
-1. **Read** `~/.no-vibe/NO-VIBE.md` and `.no-vibe/NO-VIBE.md`. The Adaptation Iron Law binds.
+1. **Read** the adaptation stack: `~/.no-vibe/PROFILE.md`, `.no-vibe/PROFILE.md`, every `*.md` under both `user/` directories. The Adaptation Iron Law binds. Create PROFILE.md per the SKILL.md schema if missing on first activation.
 2. **Read** `.no-vibe/data/sessions/<current>.json` if a session is active. File of record beats in-context state.
 3. **Emit** the header above. First line. No greeting or tool call before it.
-4. **Act** for the current phase — chat-only, no project writes (Iron Law).
+4. **Act** for the current phase — chat-only, no project writes (Iron Law). Three-layer stack: default style is the floor; PROFILE.md overrides where it disagrees; `user/*.md` overrides everything.
 5. **Update** `sessions/<slug>.json` if any tracked field changed this turn.
-6. **Update** project `.no-vibe/NO-VIBE.md` only when the cadence rule fires (would the next session behave better because of this line?). Most turns: no write.
+6. **Self-check on layer close** (after Phase 4 verdict): *"Did this layer reveal something durable about how the user learns?"* Default is silent. If yes, perform a minimal schema-preserving rewrite of the relevant PROFILE.md section (AI may write); if it's an explicit user instruction belonging in `user/`, show the line in chat for the user to add. Never write to `user/`.
 
 Header rules:
 - `Phase:` uses the human form (`1a`, `3`, etc.) — distinct from JSON `current_phase` (`phase1a`..`phase6`). Never cross them.
