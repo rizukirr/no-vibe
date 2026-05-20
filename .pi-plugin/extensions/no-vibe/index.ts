@@ -148,7 +148,7 @@ const isWithinNoVibeDir = (cwd: string, absoluteTargetPath: string): boolean => 
 // OpenCode plugin. Only fires on full write (not edit) — edit is for
 // incremental updates and existing files should already carry canonical
 // headings. Returns null on pass, a string reason on fail.
-const PROFILE_HEADINGS = /^(## Identity & expertise|## Learning style|## Observed strengths|## Known gaps)\s*$/m;
+const PROFILE_HEADINGS = /^(## Identity & expertise|## Learning style|## Disclosure mode|## Observed strengths|## Known gaps)\s*$/m;
 const SUMMARY_HEADINGS = /^(## Current Focus|## Accomplishments|## Open Questions)\s*$/m;
 
 const classifyMemoryTarget = (cwd: string, absoluteTargetPath: string): "profile" | "summary" | null => {
@@ -165,7 +165,7 @@ const validateMemoryContent = (kind: "profile" | "summary", content: unknown): s
   const re = kind === "profile" ? PROFILE_HEADINGS : SUMMARY_HEADINGS;
   if (re.test(content)) return null;
   if (kind === "profile") {
-    return `proposed PROFILE.md content does not contain any canonical section heading. Expected one of: "## Identity & expertise", "## Learning style", "## Observed strengths", "## Known gaps". This usually means a chat reply was about to be written into the file by mistake. Re-issue the write with the correct schema, or use edit for incremental updates that preserve existing headings. See SKILL.md "PROFILE.md and SUMMARY.md — the progression files".`;
+    return `proposed PROFILE.md content does not contain any canonical section heading. Expected one of: "## Identity & expertise", "## Learning style", "## Disclosure mode", "## Observed strengths", "## Known gaps". This usually means a chat reply was about to be written into the file by mistake. Re-issue the write with the correct schema, or use edit for incremental updates that preserve existing headings. See SKILL.md "PROFILE.md and SUMMARY.md — the progression files".`;
   }
   return `proposed SUMMARY.md content does not contain any canonical section heading. Expected one of: "## Current Focus", "## Accomplishments", "## Open Questions". This usually means a chat reply was about to be written into the file by mistake. Re-issue the write with the correct schema, or use edit for incremental updates that preserve existing headings. See SKILL.md "PROFILE.md and SUMMARY.md — the progression files".`;
 };

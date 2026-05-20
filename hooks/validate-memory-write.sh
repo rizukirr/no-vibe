@@ -81,8 +81,8 @@ content=$(echo "$input" | jq -r '.tool_input.content // empty' 2>/dev/null)
 [ -z "$content" ] && exit 0
 
 if [ "$target_kind" = "profile" ]; then
-    canonical_re='^(## Identity & expertise|## Learning style|## Observed strengths|## Known gaps)[[:space:]]*$'
-    canonical_human='one of: "## Identity & expertise", "## Learning style", "## Observed strengths", "## Known gaps"'
+    canonical_re='^(## Identity & expertise|## Learning style|## Disclosure mode|## Observed strengths|## Known gaps)[[:space:]]*$'
+    canonical_human='one of: "## Identity & expertise", "## Learning style", "## Disclosure mode", "## Observed strengths", "## Known gaps"'
     label="PROFILE.md"
 else
     canonical_re='^(## Current Focus|## Accomplishments|## Open Questions)[[:space:]]*$'

@@ -127,6 +127,19 @@ test_summary_with_profile_heading_blocks() {
     assert_eq "2" "$code" "SUMMARY.md with PROFILE heading → block"
 }
 
+# --- Test 9: PROFILE.md with only `## Disclosure mode` heading → allow ---
+test_profile_with_disclosure_heading_allows() {
+    local cwd; cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe"
+    touch "$cwd/.no-vibe/active"
+    local content='# PROFILE\n## Disclosure mode\n- mode: guided\n- prediction_gate: on\n'
+    local input="{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$HOME/.no-vibe/PROFILE.md\",\"content\":\"$content\"},\"cwd\":\"$cwd\"}"
+    echo "$input" | "$HOOK" >/dev/null 2>&1
+    local code=$?
+    rm -rf "$cwd"
+    assert_eq "0" "$code" "PROFILE.md with Disclosure mode heading → allow"
+}
+
 test_no_marker_allows
 test_non_write_tool_allows
 test_unrelated_write_allows
@@ -135,4 +148,5 @@ test_profile_without_canonical_heading_blocks
 test_summary_with_canonical_heading_allows
 test_summary_without_canonical_heading_blocks
 test_summary_with_profile_heading_blocks
+test_profile_with_disclosure_heading_allows
 summary
