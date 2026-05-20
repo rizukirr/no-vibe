@@ -50,6 +50,7 @@ grep -rl '"status": "in_progress"' .no-vibe/data/sessions/ 2>/dev/null
 Read `~/.no-vibe/PROFILE.md`, `.no-vibe/SUMMARY.md`, and every `*.md` under `~/.no-vibe/user/` and `.no-vibe/user/` (sorted by filename) when present. Calibrate challenge difficulty:
 - PROFILE.md `## Identity & expertise` / `## Observed strengths` flags competence → tune scope upward.
 - PROFILE.md `## Known gaps` flags weak areas → tune scope downward; more scaffolding.
+- PROFILE.md `## Disclosure mode` sets default disclosure (`guided` vs. `showcase`) and `prediction_gate` for the challenge — honor it unless overridden by `user/*.md`.
 - SUMMARY.md `## Open Questions` flags concepts the user dodged in prior layers → reinforce them in the challenge.
 - SUMMARY.md `## Accomplishments` shows what the user has already built → build on a recent success or revisit a recent Block area.
 - Any `user/*.md` file naming an explicit constraint → respect it without re-asking.
