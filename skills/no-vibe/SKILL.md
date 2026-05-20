@@ -84,6 +84,8 @@ On Claude / OpenCode / Pi the SessionStart / bootstrap injection puts all of thi
 | "Header already shows the phase, I don't need to write the JSON every turn." | Wrong. The header is in chat — it dies with the conversation. A future agent (other runtime, fresh session, different surface) reads the *files*, not your transcript. Header ↔ JSON ↔ curriculum checkbox lockstep is the contract — see "Per-turn action order" step 5. If the header changed, the JSON gets written this turn, period. |
 | "I'll batch the checkbox tick into the next layer's intro turn." | No. On a Phase 4 Clear, the checkbox in `.no-vibe/session.md` gets ticked in the same turn that emits the Clear verdict. Batching means a crash, a session swap, or a runtime switch loses the progress signal — which is the failure this rule exists to prevent. |
 | "Prediction question = the same value the expected-output line already named." | The user will just parrot the signature. Target an edge case, intermediate value, branch, or failure mode the signature did not name. See "The prediction gate" section. |
+| "User pushed back on the Block, I'll concede to keep the flow moving." | Assertion-only pushback is not evidence — it is pressure. Score the rebuttal: did the user name a line, a behavior, or a constraint you missed? If no, re-emit Block. Folding without facts trains the user that pushing back ends review, which is the Phase 4 failure mode the write-guard cannot catch. See "Phase 4 Verdict Gate — Rebuttal handling". |
+| "I'll flag the issue in general terms, the user can find the line themselves." | No. Every Block issue must anchor to `file:line`, a named symbol the user wrote, or a runnable command + observed output. Abstract critique ("might fail under concurrency", "logic is slightly off", "you should handle the empty case") is forbidden — the user has no way to verify it against their own diff, and in-situ learning depends on the anchor. See "Phase 4 Verdict Gate — Locator discipline". |
 
 ## Turn Response Contract
 
@@ -197,6 +199,40 @@ Phrases that ARE NOT override (re-emit Block):
 - `proceed`
 
 **On override.** Emit the Override verdict header (format above). The next user turn opens Phase 5 with its own header. No log, no append — the override vanishes after the turn.
+
+### Locator discipline — every issue anchors to code
+
+Every Block-verdict issue statement must point at a concrete locator the user can navigate to. A locator is one of:
+
+- `file:line` — preferred; pulled from the user's actual code.
+- A named symbol the user wrote — `the call to <fn>`, `the <field> in <struct>`, `the <variable> on the right of the assignment`.
+- A runnable command + observed output — `run \`<cmd>\`; the loop prints 0 once and exits`.
+
+Abstract claims with no anchor are forbidden. Pattern table:
+
+| Forbidden (abstract) | Required (anchored) |
+|---|---|
+| "this might fail under concurrency" | "`worker.c:42` — `count++` outside the mutex held on lines 38–45; two threads racing here drop one increment." |
+| "the logic is slightly off" | "`parser.c:88` — `while (i < n)` misses index `n-1`; the layer's inclusive bound needs `<=`." |
+| "you should handle the empty case" | "`reduce.c:14` — `arr[0]` dereferences without checking `len > 0`; empty input crashes on entry." |
+| "the call order looks wrong" | "`init.c:22` — `next_token()` runs before `init_lexer()` on line 18, so `lexer` is NULL when dereferenced on line 24." |
+
+The *why* sentence must also be locator-anchored — name the invariant in terms of a line, a value, or an observable behavior. If you cannot point at where the rule is violated, you do not yet have a Block-class issue; demote to a chat note or drop it.
+
+Rationale: abstract critique teaches the user nothing they can verify against their own diff. Locator-anchored critique forces them to look at their own line, which is exactly where in-situ learning happens. This is the locator analogue of the Iron Law: review without an anchor is review the user cannot do anything with.
+
+### Rebuttal handling — anti-sycophancy
+
+After a Block verdict, the user may push back ("no, that's correct", "you're wrong", "it works on my machine"). The AI MUST NOT concede on assertion alone. Score the rebuttal before responding:
+
+- **Concrete rebuttal** — the user names a specific line the AI misread, quotes runnable behavior the AI did not check, identifies a constraint or invariant the AI got wrong, or otherwise shows the audit was wrong on the facts. → Re-run the audit against the new information. If the rebuttal lands, emit Clear with explicit acknowledgement ("you're right — I misread `<sym>` at `file:line`"). If it still does not land, re-emit Block naming the exact point the rebuttal failed to address.
+- **Assertion-only rebuttal** — "it's fine", "you're wrong", "trust me", appeal to seniority, or a restatement of the code without naming where the AI's audit went wrong. → Re-emit the same Block verdict with one extra line: *"Your rebuttal didn't name what I missed. Quote the line or behavior I got wrong, or use a defer phrase to advance with the issue noted."*
+
+The rule binds because sycophantic collapse is the Phase 4 failure the write-guard cannot catch. Capitulating without facts turns the audit into theatre, and the user learns that pushing back makes the AI fold — the opposite of the thought-process contract in CLAUDE.md "What no-vibe is for".
+
+If the user's code is genuinely better than what the AI suggested, that is NOT sycophancy — that is the audit being wrong, and the existing rule in phases.md Phase 4 binds (acknowledge explicitly, keep their version). The test is whether the user *named what was better*, not whether the user *insisted it was better*.
+
+A bare "no" or "you're wrong" is not a defer phrase either. The user must either supply concrete grounds (Clear path) or speak the defer phrase (Override path). Re-emit Block until one of those happens.
 
 ### What is NOT a Phase 4 block
 

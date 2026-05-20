@@ -169,7 +169,7 @@ Use Read to look at user's file(s). Check (a) layer's intent is present, (b) cod
 Three verdicts (per "Phase 4 Verdict Gate" in SKILL.md):
 
 - **Clear** → brief affirmation + **compact recap**: 2–4 sentences naming what user has built across all completed layers and how pieces connect (data flow / call order / who owns what). No code restating, no cheerleading, no next-layer preview. Cements mental model. Advance to Phase 5. **In the same turn**, tick the just-completed layer's checkbox in `.no-vibe/session.md` (`- [ ] N. <layer>` → `- [x] N. <layer>`) and bump `layers_completed` in `sessions/<slug>.json` — see SKILL.md "Per-turn action order" step 5 for the full lockstep rule.
-- **Block** → point at issue with `file:line`, quote buggy code, show fix as chat code block (Iron Law: never via Edit/Write), one sentence on *why* it's wrong, closing line about `next` to retry or defer phrase to advance. User stays in Phase 4 until Clear or Override.
+- **Block** → point at issue with `file:line`, quote buggy code, show fix as chat code block (Iron Law: never via Edit/Write), one sentence on *why* it's wrong, closing line about `next` to retry or defer phrase to advance. User stays in Phase 4 until Clear or Override. Every issue and every *why* must be locator-anchored (`file:line`, named symbol, or runnable command + observed output) — abstract critique is forbidden. See SKILL.md "Phase 4 Verdict Gate — Locator discipline".
 - **Override** → user used a defer phrase (`next anyway`, `skip for now`, etc.). Acknowledge in one or two lines, advance to Phase 5. No log, no append — the override vanishes after the turn.
 
 **Hint-escalation (no answer-leak).** On a Block, never jump to the corrected code on the first pass. Escalate in order, one level per user retry. (This is the AI-correction ladder — distinct from the Phase 3 user-pull graded-help ladder in SKILL.md "Graded help". Phase 3: user asks for more help while attempting code. Phase 4: AI escalates corrections on wrong code.)
@@ -184,6 +184,8 @@ Skill/debug mode may collapse levels 1–2 into one terse pointer, but still mus
 **Reproduce-before-fix.** If user reports unexpected behavior ("it doesn't work", "output is wrong"), do NOT theorize into a fix. First have user write a one-line minimal test/print that demonstrates failure, run it to confirm symptom. Only after deterministic reproduction propose a fix. Forces precision on what "broken" means; prevents symptom-patching.
 
 If user's code is *better* than what you suggested, acknowledge explicitly and keep their version.
+
+**Rebuttal handling.** When the user pushes back on a Block, do not concede on assertion alone. A concrete rebuttal (naming a line, behavior, or constraint the audit got wrong) earns a re-audit; an assertion-only rebuttal ("it's fine", "you're wrong", restating the code) earns the same Block re-emitted with a request to name what the audit missed. Full rule: SKILL.md "Phase 4 Verdict Gate — Rebuttal handling".
 
 ## Phase 5 — Check-in
 
