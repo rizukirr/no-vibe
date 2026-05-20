@@ -1,20 +1,18 @@
 # no-vibe
 
-Turn your AI assistant into a tutor. It plans, hints, and reviews — but **you do the thinking and you type every line**. Keep the muscle memory *and* the mental model; lose the dependency.
+Turn your AI assistant into a tutor. It plans, hints, reviews and adapts with you.
 
-Pair with [vibekit](https://github.com/rizukirr/vibekit): vibekit when you want speed, no-vibe when you want to learn.
+> Pair with [vibekit](https://github.com/rizukirr/vibekit): vibekit when you want speed, no-vibe when you want to learn.
 
 ## Why no-vibe
 
-no-vibe is **pure for learning by doing**. Vibe-coding produces output without producing understanding — and *copy-typing what the AI shows you* produces the same hollow result one keystroke at a time. The thing that actually transfers is the **thought process**: deciding what to do, predicting what will happen, naming what broke. no-vibe is built so you contribute that, not just keystrokes.
+Vibe-coding produces output without producing understanding and *copy-typing what the AI shows you* produces the same hollow result one keystroke at a time. The thing that actually transfers is the **thought process** and **manual code writing**: deciding what to do, predicting what will happen and naming what broke, no-vibe is built so you contribute that, not just keystrokes.
 
 - **You write every line of project code.** AI refuses to. Hard-guarded by hooks across all five surfaces.
 - **You think before you type.** Guided write is the default — AI walks you toward the code in English with graded hints (`hint` / `analogy` / `pseudo` / `show` / `less`), so the code you write comes from a decision you made, not a block you transcribed.
 - **You predict before you run.** Every layer ends with a one-question prediction gate: name the edge case, the failing branch, or the intermediate value *before* the program runs. The run becomes a self-test, not passive verification.
 - **AI is a Socratic guide, not a generator.** It asks, hints, reviews, and explains *when you're ready to integrate the explanation*.
 - **You learn from the project you're actually building** — not contrived exercises. Real code, real bugs, real decisions in your repo. Bottom-up and incremental: six phases, small layers, your diff is the proof of progress.
-
-If you want speed, use vibekit. If you want to be a better engineer at the end of *this* project — and to actually remember how you got there — stay here.
 
 ## How it works
 
