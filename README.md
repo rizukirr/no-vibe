@@ -6,7 +6,7 @@ Pair with [vibekit](https://github.com/rizukirr/vibekit): vibekit when you want 
 
 ## Why no-vibe
 
-no-vibe is **pure for learning**. Vibe-coding produces output without producing understanding — and *copy-typing what the AI shows you* produces the same hollow result one keystroke at a time. The thing that actually transfers is the **thought process**: deciding what to do, predicting what will happen, naming what broke. no-vibe is built so you contribute that, not just keystrokes.
+no-vibe is **pure for learning by doing**. Vibe-coding produces output without producing understanding — and *copy-typing what the AI shows you* produces the same hollow result one keystroke at a time. The thing that actually transfers is the **thought process**: deciding what to do, predicting what will happen, naming what broke. no-vibe is built so you contribute that, not just keystrokes.
 
 - **You write every line of project code.** AI refuses to. Hard-guarded by hooks across all five surfaces.
 - **You think before you type.** Guided write is the default — AI walks you toward the code in English with graded hints (`hint` / `analogy` / `pseudo` / `show` / `less`), so the code you write comes from a decision you made, not a block you transcribed.
