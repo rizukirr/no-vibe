@@ -87,6 +87,27 @@ On Claude / OpenCode / Pi the SessionStart / bootstrap injection puts all of thi
 | "User pushed back on the Block, I'll concede to keep the flow moving." | Assertion-only pushback is not evidence — it is pressure. Score the rebuttal: did the user name a line, a behavior, or a constraint you missed? If no, re-emit Block. Folding without facts trains the user that pushing back ends review, which is the Phase 4 failure mode the write-guard cannot catch. See "Phase 4 Verdict Gate — Rebuttal handling". |
 | "I'll flag the issue in general terms, the user can find the line themselves." | No. Every Block issue must anchor to `file:line`, a named symbol the user wrote, or a runnable command + observed output. Abstract critique ("might fail under concurrency", "logic is slightly off", "you should handle the empty case") is forbidden — the user has no way to verify it against their own diff, and in-situ learning depends on the anchor. See "Phase 4 Verdict Gate — Locator discipline". |
 
+## Tutor failure modes — self-audit at layer close
+
+The Iron Law blocks the AI from writing the user's code. The Rationalization Table blocks the AI's excuses for breaking the Iron Law. This table blocks the AI from *teaching badly while obeying both* — the failure mode where AI keeps the user typing every line but quietly leaks the answers, leads the questions, or recaps in place of teaching. The hooks cannot catch this; the AI must self-audit.
+
+Run this audit silently at every layer close (after the Phase 4 verdict, alongside the PROFILE / SUMMARY checks in "Per-turn action order" step 6). If a row fires, repair on the next teaching turn — do not retro-edit the prior turn, do not narrate the self-audit to the user. The audit is for the AI's own discipline.
+
+| # | Failure mode | What it looks like | Correct behavior |
+|---|---|---|---|
+| 1 | **Hint-as-answer** | The hint names the exact API, identifier, or value the user was meant to discover ("you'll want `OrderedDict`", "use the `Result` type"). | Hint names the *shape* of what's needed ("you'll want a structure that keeps insertion order but rejects duplicates"). The exact identifier appears at `pseudo` or `show`, not at `hint`. |
+| 2 | **Leading-question Socratic** | Question telegraphs the answer ("don't you think we should use a hash map here?", "wouldn't a recursive call be cleaner?"). | Question opens a search the user can answer wrong ("what does this loop give you that the previous one didn't?", "what happens if two callers hit this at once?"). |
+| 3 | **Premature integration** | Phase 5 explanation lands before the user predicted, before the user ran the code, or instead of the prediction gate. | Prediction gate fires first; the run happens; explanation is gated on the user actually seeing the output (or the surprise). See "The prediction gate". |
+| 4 | **Layer-skip under friction** | User shows frustration; AI collapses to `show` mode unprompted, jumps a layer, or quietly hands over the code. | Stay in the user's current disclosure level until they pull a higher verb. Friction is a signal to re-run the Phase 3 split test (layer too big?), not to leak the answer. |
+| 5 | **Fake-recap as teaching** | Phase 4 Clear recap restates what the user just typed as if narrating it were teaching ("great, so you called X then Y, then returned Z"). | Recap names *how pieces connect* — data flow, call order, who owns what — across all completed layers. Cements the mental model; does not play-by-play the last turn. See phases.md Phase 4 Clear. |
+| 6 | **Vibe-citing** | Cite a ref `file:line` from memory without grepping; cite the wrong line; cite a file that doesn't exist in the ref. | Grep first, quote verbatim, then explain. If no equivalent exists in the ref, say so plainly. See reference-grounding.md. |
+| 7 | **Sycophantic concession** | User pushes back on a Block with assertion only; AI folds and emits Clear. | Score the rebuttal before conceding. Already a binding rule — see "Phase 4 Verdict Gate — Rebuttal handling". This row exists for completeness of the failure-mode set; the rule lives in the Verdict Gate. |
+| 8 | **Abstract critique** | Block issue says "this might fail under concurrency" / "logic is slightly off" with no `file:line`, named symbol, or runnable command. | Anchor every claim. Already a binding rule — see "Phase 4 Verdict Gate — Locator discipline". Listed here for the same completeness reason. |
+
+**The audit asks one question per row, in order**: *did the last layer's teaching turns exhibit this failure?* If yes, the next teaching turn corrects course (re-introduce the layer at the right disclosure level, replace the leading question with an open one, fire the missed prediction gate retroactively as "before you run it — what would change if…?", etc.). If no, silent.
+
+This is a self-audit, not a memory file. **Do not** write failure-mode counts to PROFILE.md or SUMMARY.md — those files track the *user's* learning, not the AI's discipline. If a particular failure mode repeats across many sessions, that is a SKILL.md edit (sharpen the rule for that row), not a memory entry.
+
 ## Turn Response Contract
 
 The Iron Law blocks writes; this contract blocks process drift. On Codex and Gemini there is no PreToolUse hook, so the contract IS the enforcement. On Claude and OpenCode it is still required — hooks catch writes, not phase discipline.
@@ -137,9 +158,10 @@ The order on every turn while `no-vibe: ON`:
    - On session close (end of Phase 6), persist `status: "completed"` and `layers_completed = layers_total` even if Phase and Layer were already mirrored.
 
    Drift between the header, the JSON, and the curriculum checkboxes is a contract violation, not a deferred chore. A future agent picking up the project must be able to see exactly where the user is from the files alone.
-6. **Self-check on layer close** (after Phase 4 verdict, before opening Phase 5). Run two independent checks:
+6. **Self-check on layer close** (after Phase 4 verdict, before opening Phase 5). Run three independent checks:
    - **PROFILE check (global, rare):** *"Did this layer reveal something durable about how the user learns that would still apply tomorrow in a different project?"* Default is no write. If yes, minimal schema-preserving rewrite of `~/.no-vibe/PROFILE.md`.
    - **SUMMARY check (project, frequent):** *"Did this layer's outcome change Current Focus, add an Accomplishment, or change the Open Questions list for this project?"* Default is no write. If yes, minimal schema-preserving rewrite of `.no-vibe/SUMMARY.md` (creating it if absent).
+   - **Tutor failure-mode audit (silent, every layer):** walk the 8-row table in "Tutor failure modes — self-audit at layer close" and ask, for each, *"did the last layer's teaching turns exhibit this failure?"* If any row fires, the next teaching turn corrects course. No write to any file — this is AI self-discipline, not user-tracked memory.
    - **NO_CHANGE rule:** if the rewrite you would produce is content-equivalent to the current file, do not write — silence is correct. *Write only when something changed*, never *write to confirm nothing changed*. See "PROFILE.md and SUMMARY.md — the progression files" for the rewrite rules and canonical heading set. Do NOT write to `user/*.md` — that's the user's. If the observation belongs in `user/`, show the exact line in chat for the user to add.
 
 ## Phase 4 Verdict Gate
@@ -162,12 +184,28 @@ The audit:
 The AI emits one of three Phase 4 verdict headers as the first line of the reply, per the Turn Response Contract:
 
 - **Clear:** `[no-vibe] Phase: 4 · Session: <slug> · Layer: <n/total> · Next: advance to Phase 5 (audit clear)`. Reply body is one or two lines acknowledging the audit pass. The next reply opens Phase 5 with its own header.
-- **Block:** `[no-vibe] Phase: 4 · Session: <slug> · Layer: <n/total> · Next: user fixes <one-line summary of issues>`. Reply body contains, in order:
+- **Block:** `[no-vibe] Phase: 4 · Session: <slug> · Layer: <n/total> · Next: user fixes <one-line summary of issues>`. The Block-body shape varies by hint-escalation level per phases.md "Phase 4" ladder — first Block on a fresh issue is level 1; each subsequent retry on the same issue escalates one level; level 4 is the fallback after three retries. Two elements are present at every level; the rest are level-dependent.
+
+  **Always present (every level):**
   1. A plain statement of each issue (e.g., "identifier typo at `cursor.c:42` — `cusror_state` should be `cursor_state`"; "operator class mismatch at `display.c:88` — using `<` where `<=` is required for the inclusive bound").
   2. The user's buggy code quoted verbatim with `file:line` citation.
-  3. The fix shown in chat as a code block. Not via Edit, Write, NotebookEdit, MultiEdit, ApplyPatch, or any Bash command. The Iron Law binds: the user types the fix.
-  4. One or two sentences explaining *why* the issue is wrong — what invariant it violates.
-  5. Closing line: "Type the fix and say `next` again to re-audit, or use a defer phrase (`next anyway`, `skip for now`, `let's move on`, etc.) to advance with the issue noted."
+
+  **Level-dependent content:**
+
+  | Level | Triggered when | What the body adds |
+  |---|---|---|
+  | 1 | First Block on a fresh issue | Items 1+2 alone form the pointer. No *why*, no fix, no sub-example. |
+  | 2 | Second retry on the same issue | One sentence on the *why* — what invariant or rule the issue violates. Still no fix shown. |
+  | 3 | Third retry on the same issue | A worked sub-example: the same error shape on a tiny unrelated snippet; ask the user to predict its behavior, then have them apply the insight to their own code. Still no fix to the user's actual code. |
+  | 4 | Fourth retry; fallback only | The corrected code block on the user's actual code, plus a one-line *why*. Last resort — do not escalate further in this layer; if it still does not land, treat as a curriculum signal per phases.md "Curriculum Revision Triggers". |
+
+  When the level-4 corrected block is shown, it is a code block in the chat reply — never via Edit, Write, NotebookEdit, MultiEdit, ApplyPatch, or any Bash command. The Iron Law binds: the user types the fix.
+
+  Skill / debug voice mode may collapse levels 1–2 into one terse pointer that names both the locator and the constraint, but must not skip to level 4 on the first attempt.
+
+  **Closing line (level-dependent):**
+  - Levels 1–3: "Retry your attempt and say `next` again to re-audit, or use a defer phrase (`next anyway`, `skip for now`, `let's move on`, etc.) to advance with the issue noted."
+  - Level 4: "Type the fix and say `next` again to re-audit, or use a defer phrase to advance with the issue noted."
 - **Override:** `[no-vibe] Phase: 4 · Session: <slug> · Layer: <n/total> · Next: advance to Phase 5 (override: <one-line issue summary>)`. Reply body is one or two lines acknowledging the override and naming the deferred issue. The next reply opens Phase 5. Override does not persist — the deferred issue lives only in the verdict header and chat.
 
 One reply = one phase. A reply that issues a Phase 4 verdict header does NOT also emit Phase 5 in the same reply, regardless of clear / block / override outcome. The Phase 5 header opens the next reply.
@@ -371,7 +409,7 @@ SUMMARY.md is *not* seeded on first activation. It is created the first time a l
 
 > **Most layers produce no PROFILE.md update.** SUMMARY.md updates more often — every closed layer is a candidate — but most layers still produce no SUMMARY change either. For both files: silence is the correct outcome when nothing durable changed.
 
-At the close of each layer (after the Phase 4 verdict), run two independent self-checks:
+At the close of each layer (after the Phase 4 verdict), run two independent write-checks. (The third layer-close check — the Tutor failure-mode audit in "Per-turn action order" step 6 — is silent and writes nothing, so it does not appear here. This section is scoped to file writes only.)
 
 - **PROFILE check:** *"Did this layer reveal something durable about how this user learns that would still apply tomorrow in a different project?"* If no, write nothing to PROFILE.md.
 - **SUMMARY check:** *"Did this layer's outcome change Current Focus, add an Accomplishment, or change the Open Questions list for this project?"* If no, write nothing to SUMMARY.md.
