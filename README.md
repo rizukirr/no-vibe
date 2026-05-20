@@ -114,7 +114,7 @@ Voice modes control *how AI talks*. A separate axis, **disclosure modes** (guide
 | Bash-write guard (hook) | ✓ | ✓ | ✓ | soft | soft |
 | Status + resume hint | ✓ | ✓ | ✓ | soft | soft |
 | Commands | ✓ | ✓ | ✓ | ✓ | ✓ |
-| PROFILE.md + user/ overrides | ✓ | ✓ | ✓ | ✓ | ✓ |
+| PROFILE.md + SUMMARY.md + user/ overrides | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 "soft" = instruction-enforced (no hook surface available); the rule still binds.
 

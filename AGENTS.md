@@ -24,6 +24,7 @@
 - Run all local test suites before finishing plugin changes:
   - `bash tests/test_block_writes.sh`
   - `bash tests/test_block_bash_writes.sh`
+  - `bash tests/test_validate_memory_write.sh`
   - `bash tests/test_status.sh`
   - `node tests/test_opencode_plugin.mjs`
   - `bash tests/test_escape_hatch.sh`
