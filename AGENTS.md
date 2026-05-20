@@ -2,6 +2,7 @@
 
 ## Repo purpose
 - This repo is a plugin package (`no-vibe`) that enforces tutor-style coding: AI can teach/review, but should not write project files during active no-vibe sessions.
+- **no-vibe is pure for learning.** The plugin's goal is not just to make the user type the code — it is to make the user contribute the *thought process* behind it (deciding, predicting, naming what broke). Copy-typing AI output is the failure mode the design is built to prevent. Guided write (English-first walk with graded help verbs) is the default disclosure mode, and a one-question prediction gate runs before every Phase 3 run so the run becomes a self-test rather than passive verification. When changing teaching behavior, the test is: *does this make the user contribute more of the thought process, or does it just make typing easier?* The latter is a regression.
 
 ## Architecture (high-signal files)
 - OpenCode plugin entrypoint: `index.js` re-exports `.opencode/plugins/no-vibe.js`.

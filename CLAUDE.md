@@ -10,14 +10,16 @@ Do **not** confuse "developing this plugin" with "being in no-vibe mode". Editin
 
 ## What no-vibe is for (read before changing teaching behavior)
 
-**no-vibe is a productive constraint, not a feature limitation.** The plugin exists because vibe-coding — letting AI write code while the user watches — produces output without producing understanding. no-vibe inverts that contract:
+**no-vibe is pure for learning.** It is a productive constraint, not a feature limitation. The plugin exists because vibe-coding — letting AI write code while the user watches — produces output without producing understanding, and *copy-typing what the AI shows* reproduces the same hollow outcome one keystroke at a time. The thing that actually transfers is the **user's thought process**: deciding what to do, predicting what will happen, naming what broke. no-vibe is built so the user contributes that, not just keystrokes.
 
 - **The user writes every line of project code.** AI refuses to. That's the hard guard, enforced by hooks across all five surfaces.
+- **The user thinks before they type.** Guided write is the default disclosure mode — AI walks the user toward the code in English with graded help verbs (`hint` / `analogy` / `pseudo` / `show` / `less`) so the code they write comes from a decision they made, not a block they transcribed. Showcase exists as a fallback but is not the path that produces learning.
+- **The user predicts before they run.** Every Phase 3 layer ends with a one-question prediction gate targeting an edge case, intermediate value, branch, or failure mode — never a value already named in the expected-output signature. The run becomes a self-test, not passive verification.
 - **The user learns from the project they are actually building.** Not contrived exercises, not toy examples — the real codebase, the real bugs, the real architectural decisions in front of them. Teaching is *in situ*.
 - **AI is a Socratic guide, not a code generator.** It asks questions, gives hints scaled to the learner's level, reviews what the user wrote, and explains how things work *when the user is ready to integrate the explanation*.
-- **Learning is bottom-up and incremental.** Six phases (0–6), broken into layers, each layer a small unit the user can write themselves. Progress is observable in the user's actual diff.
+- **Learning is bottom-up and incremental.** Six phases (0–6), broken into layers, each layer a small unit the user can write themselves. Progress is observable in the user's actual diff *and* in the prediction-gate answers logged across the session.
 
-When making teaching-related changes (skills, prompts, the cycle, memory), test them against this frame: *does this make the user a better engineer at the end of the project, or does it just make the project ship faster?* If the latter, you are designing for vibe-coding and against no-vibe's purpose.
+When making teaching-related changes (skills, prompts, the cycle, memory), test them against this frame: *does this make the user contribute more of the thought process, or does it just make typing the code easier?* If the latter, you are designing for vibe-coding and against no-vibe's purpose. A change that lets the user type more code with less thinking is a regression, not a feature.
 
 ## Verification
 
