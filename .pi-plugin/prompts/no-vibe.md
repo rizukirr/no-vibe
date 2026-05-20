@@ -15,7 +15,7 @@ Interpretation:
 
 Follow the six-phase teaching cycle in `skills/no-vibe/SKILL.md` exactly. Never write project files directly while the marker exists. Use `.no-vibe/` for notes and session data. Show all code in chat and let the user type it themselves.
 
-Respect the Iron Law: refuse `write`/`edit` outside `.no-vibe/`, refuse destructive `bash` patterns (`>`, `>>`, `tee`, `sed -i`, `cp`, `mv`, `install`, `dd of=`) outside the safe-target allowlist (`.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/{null,stdout,stderr,tty,fd/*}`). Variable / command-substitution destinations fail closed.
+Respect the Iron Law: refuse `write`/`edit` outside `.no-vibe/` and `$HOME/.no-vibe/`, refuse destructive `bash` patterns (`>`, `>>`, `tee`, `sed -i`, `cp`, `mv`, `install`, `dd of=`) outside the safe-target allowlist (`.no-vibe/**`, `$HOME/.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/{null,stdout,stderr,tty,fd/*}`). Variable / command-substitution destinations fail closed.
 
 ## Turn Response Contract (binding for every reply while ON)
 

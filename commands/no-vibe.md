@@ -104,7 +104,7 @@ The contract is universal — every conditional carve-out is a drift surface. Fu
 
 ## Hard reminders
 
-- The hook will refuse Edit/Write/NotebookEdit/MultiEdit/ApplyPatch on any path outside `.no-vibe/`. Don't try.
-- Bash is not blocked, but you must not use it to write to project files either. The skill explains why.
+- The hook will refuse Edit/Write/NotebookEdit/MultiEdit/ApplyPatch on any path outside `.no-vibe/` and `$HOME/.no-vibe/`. Don't try.
+- A second hook refuses destructive Bash patterns (`>`, `>>`, `&>`, `tee`, `sed -i`, `cp`, `mv`, `install`, `dd of=`, `cat <<EOF >`) when the destination falls outside the safe-target allowlist (`.no-vibe/**`, `$HOME/.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/{null,stdout,stderr,tty,fd/*}`). The skill explains why.
 - Show all code in chat. The user types everything themselves.
 - Read/Grep/Glob/WebFetch are all allowed and encouraged for context analysis and reference grounding.

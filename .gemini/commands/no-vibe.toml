@@ -14,7 +14,7 @@ mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/a
 mkdir -p ~/.no-vibe
 ```
 
-Gemini has no SessionStart hook. After creating the marker, on first activation `read_file` `~/.no-vibe/PROFILE.md`; if missing, create it with the schema in `skills/no-vibe/SKILL.md` "PROFILE.md and SUMMARY.md — the progression files" (heading-only seed: Identity & expertise, Learning style, Observed strengths, Known gaps — empty bullets under each). Also `read_file` `.no-vibe/SUMMARY.md` (absence is fine — it appears at the first layer close worth recording, with sections Current Focus, Accomplishments, Open Questions) and every `*.md` under `~/.no-vibe/user/` and `.no-vibe/user/` if those directories exist; never create the user/ directories yourself.
+Gemini has no SessionStart hook. After creating the marker, on first activation `read_file` `~/.no-vibe/PROFILE.md`; if missing, create it with the schema in `skills/no-vibe/SKILL.md` "PROFILE.md and SUMMARY.md — the progression files" (heading-only seed: Identity & expertise, Learning style, Disclosure mode, Observed strengths, Known gaps — empty bullets under each). Also `read_file` `.no-vibe/SUMMARY.md` (absence is fine — it appears at the first layer close worth recording, with sections Current Focus, Accomplishments, Open Questions) and every `*.md` under `~/.no-vibe/user/` and `.no-vibe/user/` if those directories exist; never create the user/ directories yourself.
 
 Turning OFF: synthesize current lesson if unchecked items exist in `.no-vibe/session.md` (Phase 6 includes the PROFILE.md and SUMMARY.md rollup pass per phases.md); then `rm -f .no-vibe/active`.
 
