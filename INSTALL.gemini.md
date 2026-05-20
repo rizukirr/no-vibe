@@ -29,7 +29,8 @@ under `.gemini/commands/` are auto-discovered.
    is not created yet; it is created by the AI on its first reply.
 2. Send a topic. On the AI's first reply, confirm `~/.no-vibe/PROFILE.md`
    exists with the schema headings (`## Identity & expertise`,
-   `## Learning style`, `## Observed strengths`, `## Known gaps`) and
+   `## Learning style`, `## Disclosure mode`, `## Observed strengths`,
+   `## Known gaps`) and
    empty bullets under each. `.no-vibe/SUMMARY.md` should NOT exist
    yet — it appears at the first layer close worth recording, with
    sections `## Current Focus`, `## Accomplishments`, `## Open Questions`.
@@ -68,7 +69,7 @@ hook. If you need a hard block, use the Claude Code or OpenCode surface.
 no-vibe uses a four-layer adaptation stack, split by *write cadence* and *scope*:
 
 - **Default teaching style** — the floor. Defined in `skills/no-vibe/SKILL.md`. Ships with the plugin; you never edit this directly.
-- **`~/.no-vibe/PROFILE.md` — global, stable identity (AI-managed):** identity, expertise, learning style, observed strengths, known gaps. AI-created on your first `/no-vibe` activation, rewritten only when something cross-project durable shifts.
+- **`~/.no-vibe/PROFILE.md` — global, stable identity (AI-managed):** identity, expertise, learning style, disclosure mode (guided vs. showcase default), observed strengths, known gaps. AI-created on your first `/no-vibe` activation, rewritten only when something cross-project durable shifts.
 - **`.no-vibe/SUMMARY.md` — project, running journey (AI-managed):** current focus, accomplishments, open questions in *this* project. AI-created at the first layer close worth recording, updated frequently, pruned aggressively.
 - **`user/*.md` — your override files (user-managed, AI never touches):**
   - `~/.no-vibe/user/*.md` — global overrides

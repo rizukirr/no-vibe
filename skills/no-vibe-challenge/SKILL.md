@@ -56,6 +56,7 @@ Read (when present):
 Calibrate challenge difficulty:
 - PROFILE.md `## Identity & expertise` or `## Observed strengths` flags topic competence ("solid on Go", `(seen 4×)`) → tune scope upward.
 - PROFILE.md `## Known gaps` flags weak areas → tune scope downward, more scaffolding.
+- PROFILE.md `## Disclosure mode` records the user's default disclosure preference (`guided` vs. `showcase`) — apply the same default when sketching the challenge prompt; `prediction_gate: off` skips the predict-before-run micro-check.
 - SUMMARY.md `## Open Questions` flags concepts the user dodged in prior layers → reinforce them in the challenge.
 - SUMMARY.md `## Accomplishments` shows what the user has already built → build on a recent success or revisit a recent Block area.
 - Any `user/*.md` file naming an explicit constraint → respect it without re-asking.

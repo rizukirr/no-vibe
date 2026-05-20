@@ -82,7 +82,7 @@ Create `.no-vibe/data/sessions/<slug>.json` with initial state. Set `status: "in
 
 **Adaptive difficulty:** read the adaptation stack before drafting.
 - Global PROFILE.md `## Identity & expertise` or `## Observed strengths` flags topic competence ("solid on Go", seen 4×) → skip basics on competent territory.
-- Global PROFILE.md `## Known gaps` flags weak areas → add scaffolding (worked-example mode).
+- Global PROFILE.md `## Known gaps` flags weak areas → add scaffolding (extra worked examples in concept voice mode; favor `guided` disclosure even if PROFILE defaults to `showcase`).
 - Project SUMMARY.md `## Open Questions` flags concepts the user dodged or didn't fully integrate in prior layers → revisit them in this curriculum where natural.
 - Project SUMMARY.md `## Accomplishments` shows what the user has already built in this codebase → don't re-teach those layers.
 - Any `user/*.md` file naming an explicit instruction → that wins over PROFILE.md, SUMMARY.md, and the floor; respect it without re-asking.
@@ -107,34 +107,58 @@ Introduce exactly **one** new concept. **Split test — layer is too big if any 
 
 Split before showing.
 
-Each Phase 3 turn follows the layer outcomes defined in SKILL.md "Default teaching style" plus any overrides from PROFILE.md, SUMMARY.md, or `user/*.md`. The default prescribes **six structural steps in order**:
+The shape of a Phase 3 turn depends on the active disclosure mode (see SKILL.md "Disclosure modes — guided write vs. showcase"). PROFILE.md `## Disclosure mode` sets the default; the user's verb overrides for the current layer. `user/*.md` overrides everything.
 
-1. **Concept prose** (1–2 sentences concept mode; up to 6 only when mental-model territory demands it)
+### Guided write (default mode)
+
+Each turn delivers, in order:
+
+1. **The layer's goal in plain English** — what the code will do, what goes in, what comes out. 1–3 sentences.
+2. **The non-obvious bits** — name the API, data structure, or invariant the user needs to reach for. Do not write the body. One or two bullets. Good guidance bullets name *what kind of thing* the user needs (e.g. "you'll want a structure that keeps insertion order but rejects duplicates") without naming the exact identifier (`OrderedDict`, `LinkedHashSet`).
+3. **The *why* sentence** — why this layer exists.
+4. **Ref citation** (if `--ref` attached) — `file:line` at matching conceptual level. Mismatch handling unchanged from showcase:
+   - **No equivalent** → say so: "no direct equivalent in `<ref>`; closest is `<file:line>` which does X instead because Y". No fabricated citation.
+   - **Ref more mature** → cite but name what ref does *beyond* this layer.
+   - **Trivially pedagogical layer** (print, rename) → skip citation.
+5. **Where: anchor** — name the file and the position so the user knows where their code goes. Same precision rules as showcase: `src/foo.c:42`, `inside <fn>`, `between X and Y`, `add at the end`. Never "add this".
+6. **Run command + expected output signature** — one line stating what the user sees on correct run.
+7. **Deliberately absent** — one sentence naming what this layer does NOT do yet.
+
+The user writes the code. When they signal completion (typed it, ready to run), AI runs the **prediction gate** before Phase 4: one short question, one sentence answer. See SKILL.md "The prediction gate" for response rules.
+
+If the user pulls graded help (`hint` / `analogy` / `pseudo` / `show`), AI delivers exactly that level and then waits again. The structural steps (4–7) are emitted at the start of the layer regardless of help level — the user needs the *Where* anchor and the run command to attempt anything. See SKILL.md "Graded help" for the verb table.
+
+### Showcase mode
+
+Each turn delivers the legacy six-step structure:
+
+1. **Concept prose** (1–2 sentences concept mode; up to 6 only when mental-model territory demands it).
 2. **Code block(s) with exact `Where:` anchor.** Name the file (`src/foo.c`) and the position (`:42`, or `inside cc__backend_end_frame`, `near the CC_* prototypes`, `between Clay_Raylib_Render(...) and EndDrawing()`, `add one line at the end`). Never "add this" — user must be able to locate the change without guessing. Replacements / deletions: quote exact old line(s) so the user can locate, then show new line(s). **Per-block explanation:** when a layer has multiple code blocks, each block gets a 1–2-sentence explanation immediately after, before the next block. Pattern: `[Where] → [block 1] → [explain 1] → [Where] → [block 2] → [explain 2] → …`. Never dump all blocks then explain at the end.
 3. **The *why* sentence** — why this layer exists.
-4. **Ref citation** (if `--ref` attached) — `file:line` with quoted snippet at matching conceptual level. Mismatch handling:
-   - **No equivalent** → say so: "no direct equivalent in `<ref>`; closest is `<file:line>` which does X instead because Y". No fabricated citation.
-   - **Ref more mature** → cite but name what ref does *beyond* this layer (e.g. "pytorch's `Linear.__init__` also wraps weight in `nn.Parameter` for autograd — we'll add that in layer N").
-   - **Trivially pedagogical layer** (print, rename) → skip citation.
+4. **Ref citation** (if `--ref` attached) — same rules as guided write.
 5. **Run command + expected output signature** — one line stating what user sees on correct run (e.g. "expect: `Linear(in=2, out=3)`"). Without this, typos pass silently until Phase 4.
 6. **Deliberately absent** — one sentence naming what this layer does NOT do yet, so user doesn't assume "done" (e.g. "computes matmul; doesn't broadcast or handle batches — that's next").
 
-If a `user/*.md` file overrides the default layer format (or PROFILE.md `## Learning style` records a confirmed adaptation that contradicts a default), follow the override. Overrides exist because they serve the user's learning experience better.
+User types, AI runs the **prediction gate**, then user runs the code.
 
-**Explanation budget** covers concept prose (step 1) + *why* sentence (step 3). Structural one-liners (steps 2 per-block, 4, 5, 6) don't count. Concept mode may stretch to 6 sentences when mental-model territory needs it; skill mode keeps concept+why to 1–2. If prose budget overflows, the layer is too big — split.
+### Rules that bind both modes
 
-Test every prose sentence: *does the user need this to understand the code I just showed?* If not, cut. Name by what it does, not by jargon (`owns its text` beats `has move semantics`). Don't repeat what the code says — explain the *why* or non-obvious mechanics.
+- **One reply = one layer's introduction.** Don't dump two layers, don't preview the next.
+- **Explanation budget** covers concept/goal prose + *why* sentence. Structural one-liners don't count. Concept mode may stretch to 6 sentences when mental-model territory needs it; skill mode keeps prose to 1–2. Overflow = layer too big, split.
+- **Test every prose sentence:** *does the user need this to understand or write the code?* If not, cut. Name by what it does, not by jargon (`owns its text` beats `has move semantics`). Don't repeat what the code says — explain the *why* or non-obvious mechanics.
+- **Turn discipline.** Don't:
+  - Open with preamble ("Great! Now let's…", "Perfect, moving on to…")
+  - Recap previous layer — user just typed it
+  - Preview next layer — steals surprise, bloats context
+  - Cheerlead ("Awesome!", "Nice work!") — noise
+  - Dump two layers in one turn even if trivial
+- **Naming a future layer inside a ref citation** ("we'll add that in layer N") is fine — it scopes the maturity comparison, not a preview.
+- **The Iron Law binds in both modes.** `show` and showcase emit code blocks in chat; the user still types them into the project file.
+- **The prediction gate fires once per layer**, after the user signals their code is ready to run.
 
-**Turn discipline.** Don't:
-- Open with preamble ("Great! Now let's…", "Perfect, moving on to…")
-- Recap previous layer — user just typed it
-- Preview next layer — steals surprise, bloats context
-- Cheerlead ("Awesome!", "Nice work!") — noise
-- Dump two layers in one turn even if trivial
+If a `user/*.md` file overrides the default layer format (or PROFILE.md `## Learning style` records a confirmed adaptation that contradicts a default), follow the override.
 
-Naming a future layer inside a ref citation ("we'll add that in layer N") is fine — it scopes the maturity comparison, not a preview.
-
-User writes, runs, says "next".
+Flow per layer: user writes the code → AI asks the prediction question → user answers in one sentence → user runs the code → user says "next".
 
 Update session JSON: increment `current_layer`, set `current_phase: "phase3"`.
 
@@ -144,11 +168,11 @@ Use Read to look at user's file(s). Check (a) layer's intent is present, (b) cod
 
 Three verdicts (per "Phase 4 Verdict Gate" in SKILL.md):
 
-- **Clear** → brief affirmation + **compact recap**: 2–4 sentences naming what user has built across all completed layers and how pieces connect (data flow / call order / who owns what). No code restating, no cheerleading, no next-layer preview. Cements mental model. Advance to Phase 5.
-- **Block** → point at issue with `file:line`, quote buggy code, show fix as chat code block (Iron Law: never via Edit/Write), one sentence on *why* it's wrong, closing line about `next` to retry or defer phrase to advance. User stays in Phase 4 until Clear or Override.
+- **Clear** → brief affirmation + **compact recap**: 2–4 sentences naming what user has built across all completed layers and how pieces connect (data flow / call order / who owns what). No code restating, no cheerleading, no next-layer preview. Cements mental model. Advance to Phase 5. **In the same turn**, tick the just-completed layer's checkbox in `.no-vibe/session.md` (`- [ ] N. <layer>` → `- [x] N. <layer>`) and bump `layers_completed` in `sessions/<slug>.json` — see SKILL.md "Per-turn action order" step 5 for the full lockstep rule.
+- **Block** → point at issue with `file:line` and quote buggy code (both always present); then escalate per the hint-escalation ladder below — first Block is pointer-only (no fix, no *why*), the *why* arrives at level 2, a worked sub-example at level 3, and the corrected block at level 4 (fallback only). Closing line directs the user to retry (levels 1–3) or type the fix (level 4), or use a defer phrase to advance. User stays in Phase 4 until Clear or Override. Every issue and every *why* must be locator-anchored (`file:line`, named symbol, or runnable command + observed output) — abstract critique is forbidden. Full Block-body shape: SKILL.md "Phase 4 Verdict Gate". Locator anchoring: SKILL.md "Phase 4 Verdict Gate — Locator discipline".
 - **Override** → user used a defer phrase (`next anyway`, `skip for now`, etc.). Acknowledge in one or two lines, advance to Phase 5. No log, no append — the override vanishes after the turn.
 
-**Hint-escalation (no answer-leak).** On a Block, never jump to the corrected code on the first pass. Escalate in order, one level per user retry:
+**Hint-escalation (no answer-leak).** On a Block, never jump to the corrected code on the first pass. Escalate in order, one level per user retry. (This is the AI-correction ladder — distinct from the Phase 3 user-pull graded-help ladder in SKILL.md "Graded help". Phase 3: user asks for more help while attempting code. Phase 4: AI escalates corrections on wrong code.)
 
 1. **Pointer only** — name the line or symbol. No fix. User retries.
 2. **Why + constraint** — one sentence on the misconception + the rule it violates. No fix. User retries.
@@ -160,6 +184,8 @@ Skill/debug mode may collapse levels 1–2 into one terse pointer, but still mus
 **Reproduce-before-fix.** If user reports unexpected behavior ("it doesn't work", "output is wrong"), do NOT theorize into a fix. First have user write a one-line minimal test/print that demonstrates failure, run it to confirm symptom. Only after deterministic reproduction propose a fix. Forces precision on what "broken" means; prevents symptom-patching.
 
 If user's code is *better* than what you suggested, acknowledge explicitly and keep their version.
+
+**Rebuttal handling.** When the user pushes back on a Block, do not concede on assertion alone. A concrete rebuttal (naming a line, behavior, or constraint the audit got wrong) earns a re-audit; an assertion-only rebuttal ("it's fine", "you're wrong", restating the code) earns the same Block re-emitted with a request to name what the audit missed. Full rule: SKILL.md "Phase 4 Verdict Gate — Rebuttal handling".
 
 ## Phase 5 — Check-in
 
