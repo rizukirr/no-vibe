@@ -30,13 +30,13 @@ no-vibe uses a four-layer stack, split by *write cadence* and *scope*:
 | Layer | Owner | What lives in it |
 |---|---|---|
 | **Default teaching style** | **Plugin** — defined in `skills/no-vibe/SKILL.md` | Plain words first, concrete-before-abstract, hint-before-answer, run + verify after every layer. The floor. |
-| `~/.no-vibe/PROFILE.md` (global, stable identity) | **AI** — created on first `/no-vibe`, rewritten *rarely* when cross-project identity / style shifts | Identity & expertise, learning style, observed strengths, known gaps |
+| `~/.no-vibe/PROFILE.md` (global, stable identity) | **AI** — created on first `/no-vibe`, rewritten *rarely* when cross-project identity / style shifts | Identity & expertise, learning style, disclosure mode, observed strengths, known gaps |
 | `.no-vibe/SUMMARY.md` (project, running journey) | **AI** — created at the first layer close worth recording, rewritten *often* (every closed layer is a candidate) | Current Focus, Accomplishments, Open Questions in *this* project |
 | `~/.no-vibe/user/*.md` and `.no-vibe/user/*.md` | **You** — AI never creates, edits, or deletes anything inside | Explicit overrides: instructions you want the AI to follow without inferring them |
 
 **Why the split.** Stable identity (the things that wouldn't change if you opened a different project tomorrow) and running journey (the things that only make sense inside *this* project) update on totally different cadences. Keeping them in one file forces the AI to decide on every rewrite whether *this* fact is stable or transient — and gets it wrong. PROFILE only holds cross-project-durable facts; SUMMARY only holds project-bound state.
 
-**PROFILE.md is the AI's global progression file.** On your first `/no-vibe` activation, the AI creates it with empty section headings (Identity & expertise, Learning style, Observed strengths, Known gaps). It's rewritten only when something durable about how you learn shifts — most layers produce no PROFILE update.
+**PROFILE.md is the AI's global progression file.** On your first `/no-vibe` activation, the AI creates it with empty section headings (Identity & expertise, Learning style, Disclosure mode, Observed strengths, Known gaps). It's rewritten only when something durable about how you learn shifts — most layers produce no PROFILE update.
 
 **SUMMARY.md is the AI's per-project journey file.** It's not seeded on activation — the AI creates it the first time a layer close produces an outcome worth recording, then keeps it tight by pruning resolved Open Questions and old Accomplishments. The most valuable section is `Open Questions` — things you dodged with a workaround or didn't fully integrate, surfaced so the next session can revisit them.
 
@@ -89,19 +89,21 @@ Codex uses `$` instead of `/`.
 | `/no-vibe on` / `off` | persistent mode toggle |
 | `/no-vibe <topic>` | one-shot lesson |
 | `/no-vibe --ref <url> <topic>` | attach a reference project |
-| `/no-vibe --mode concept\|skill\|debug <topic>` | set teaching style |
+| `/no-vibe --mode concept\|skill\|debug <topic>` | set voice mode |
 | `/no-vibe-btw <task>` | one-shot escape hatch — AI may write for this task only |
 | `/no-vibe-challenge [<focus>]` | get a coding challenge |
 
 Flags combine: `/no-vibe --ref pytorch --mode concept how does autograd work`.
 
-## Modes
+## Voice modes
 
 | Mode | Best for | Style |
 |------|----------|-------|
 | **concept** (default) | "teach me how X works" | more prose, deeper check-ins |
 | **skill** | "I want to practice writing Y" | muscle-memory repetition |
 | **debug** | "why does Z behave like this" | start from symptom, descend |
+
+Voice modes control *how AI talks*. A separate axis, **disclosure modes** (guided write vs. showcase), controls *how much AI reveals before the user writes code in a Phase 3 layer* — guided is the default and walks the user toward the code with English + graded hints on request; showcase shows the full code block upfront. Both default to running a one-question **prediction gate** before the user runs the code each layer, so the run becomes a self-test rather than passive verification. See `skills/no-vibe/SKILL.md` for the full disclosure-mode contract and the help verbs (`hint` / `analogy` / `pseudo` / `show` / `less`).
 
 ## Platform support
 

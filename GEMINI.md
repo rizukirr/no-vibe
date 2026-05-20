@@ -12,7 +12,7 @@ READ THE ADAPTATION STACK BEFORE EVERY TEACHING REPLY
 Four layers, in priority order from floor to ceiling:
 
 1. **Default teaching style** — the floor, defined in `skills/no-vibe/SKILL.md` "Default teaching style" section. Always applies.
-2. **`~/.no-vibe/PROFILE.md`** — the AI's global, stable-identity progression file. Identity, expertise, learning style, observed strengths, known gaps. AI-created on first `/no-vibe` activation per the schema in SKILL.md, AI-updated rarely (only when something cross-project durable shifts). Overrides the floor where they disagree.
+2. **`~/.no-vibe/PROFILE.md`** — the AI's global, stable-identity progression file. Identity, expertise, learning style, disclosure mode (guided vs. showcase default), observed strengths, known gaps. AI-created on first `/no-vibe` activation per the schema in SKILL.md, AI-updated rarely (only when something cross-project durable shifts). Overrides the floor where they disagree.
 3. **`.no-vibe/SUMMARY.md`** — the AI's project, running-journey progression file. Current focus, accomplishments, open questions in *this* project. AI-created at the first layer close worth recording (not seeded on activation), AI-updated frequently. Overrides PROFILE.md where they disagree.
 4. **`~/.no-vibe/user/*.md` and `.no-vibe/user/*.md`** — user-only overrides. AI loads every `.md` file in those directories sorted by filename. Authoritative on conflict with PROFILE.md, SUMMARY.md, or the floor. **AI must never create, edit, or delete files inside `user/`.**
 
@@ -72,7 +72,7 @@ Per-turn order:
 2. **Read** `.no-vibe/data/sessions/<current>.json` if a session is active. File of record beats in-context state.
 3. **Emit** the header above. First line. No greeting or tool call before it.
 4. **Act** for the current phase — chat-only, no project writes (Iron Law). Apply the four-layer stack: default style is the floor; PROFILE.md overrides where it disagrees; SUMMARY.md overrides PROFILE; `user/*.md` overrides everything.
-5. **Update** `sessions/<slug>.json` if any tracked field changed this turn.
+5. **Persist progress in lockstep with the header.** If the header you just emitted differs in `Phase` or `Layer` from the prior turn's header — or no `sessions/<slug>.json` exists yet for an active session — write `sessions/<slug>.json` *this turn* with `current_phase`, `current_layer`, `status`, `layers_completed` reflecting the just-emitted header. On a Phase 4 Clear verdict, in the same turn also tick the just-completed layer's checkbox in `.no-vibe/session.md` (`- [ ] N. <layer>` → `- [x] N. <layer>`) and bump `layers_completed`. Header ↔ JSON ↔ curriculum-checkbox lockstep is the contract — a future agent must be able to see progress from the files alone, without your transcript.
 6. **Self-check on layer close** (after Phase 4 verdict). Two independent checks, both default to silent:
    - **PROFILE check:** *"Did this layer reveal something durable about how this user learns that would still apply tomorrow in a different project?"* If yes, minimal schema-preserving rewrite of `~/.no-vibe/PROFILE.md`.
    - **SUMMARY check:** *"Did this layer's outcome change Current Focus, add an Accomplishment, or change the Open Questions list for this project?"* If yes, minimal schema-preserving rewrite of `.no-vibe/SUMMARY.md` (creating it if absent).

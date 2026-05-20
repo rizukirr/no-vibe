@@ -25,7 +25,7 @@ cmd /c mklink /J "$env:USERPROFILE\.agents\skills\no-vibe" "$env:USERPROFILE\.co
 
 1. Start a Codex session in any project
 2. Run `$no-vibe on` — should create `.no-vibe/active` marker. PROFILE.md is not created yet; it is created by the AI on its first reply.
-3. Send a topic. On the AI's first reply, confirm `~/.no-vibe/PROFILE.md` exists with the schema headings (`## Identity & expertise`, `## Learning style`, `## Observed strengths`, `## Known gaps`) and empty bullets under each. `.no-vibe/SUMMARY.md` should NOT exist yet — it appears at the first layer close worth recording, with sections `## Current Focus`, `## Accomplishments`, `## Open Questions`.
+3. Send a topic. On the AI's first reply, confirm `~/.no-vibe/PROFILE.md` exists with the schema headings (`## Identity & expertise`, `## Learning style`, `## Disclosure mode`, `## Observed strengths`, `## Known gaps`) and empty bullets under each. `.no-vibe/SUMMARY.md` should NOT exist yet — it appears at the first layer close worth recording, with sections `## Current Focus`, `## Accomplishments`, `## Open Questions`.
 4. Ask the assistant to edit a project file — it should refuse with the no-vibe guard message (instruction-based soft block)
 5. Ask the assistant to `echo bad > someproj.py` or `sed -i …` on a project file — it should also refuse, citing the Iron Law's Bash list in `skills/no-vibe/SKILL.md`. If it complies, the model is drifting; remind it.
 6. Start a fresh session with an in-progress session JSON in `.no-vibe/data/sessions/` — the assistant should announce the resume hint (topic + `layer N/M, phaseX`) on the first turn (Phase 0 auto-resume).
@@ -60,7 +60,7 @@ $no-vibe off                               # exit
 no-vibe uses a four-layer adaptation stack, split by *write cadence* and *scope*:
 
 - **Default teaching style** — the floor. Defined in `skills/no-vibe/SKILL.md`. Ships with the plugin; you never edit this directly.
-- **`~/.no-vibe/PROFILE.md` — global, stable identity (AI-managed):** identity, expertise, learning style, observed strengths, known gaps. AI-created on your first `/no-vibe` activation, rewritten only when something cross-project durable shifts.
+- **`~/.no-vibe/PROFILE.md` — global, stable identity (AI-managed):** identity, expertise, learning style, disclosure mode (guided vs. showcase default), observed strengths, known gaps. AI-created on your first `/no-vibe` activation, rewritten only when something cross-project durable shifts.
 - **`.no-vibe/SUMMARY.md` — project, running journey (AI-managed):** current focus, accomplishments, open questions in *this* project. AI-created at the first layer close worth recording (not seeded on activation), updated frequently, pruned aggressively.
 - **`user/*.md` — your override files (user-managed, AI never touches):**
   - `~/.no-vibe/user/*.md` — global overrides. Any `.md` file in this directory becomes authoritative on conflict with PROFILE.md, SUMMARY.md, or the default style.
