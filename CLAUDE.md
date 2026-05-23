@@ -45,7 +45,7 @@ The same no-vibe behavior is implemented five times, once per host CLI. A change
 - Claude Code: `hooks/block-writes.sh` — PreToolUse hook for Edit/Write/NotebookEdit/MultiEdit/ApplyPatch; `hooks/block-bash-writes.sh` — PreToolUse hook for Bash that rejects `>`, `>>`, `&>`, `&>>`, `tee`, `sed -i` / `--in-place`, `cp`, `mv`, `install`, `dd of=`, and `cat <<EOF >` targeting paths outside the safe-target allowlist below. Variable / command-substitution destinations (`$VAR`, `$(…)`, backticks) fail closed.
 - OpenCode: `.opencode/plugins/no-vibe.js` — in-process guard for both write tools and Bash commands (mirror of the two Claude hooks).
 - Pi: `.pi-plugin/extensions/no-vibe/index.ts` — TS extension using `pi.on("tool_call", ...)` for `write`/`edit` and dangerous `bash`; mirror of the OpenCode plugin (hard block).
-- Codex: **instruction-based** soft block via `skills/no-vibe/SKILL.md` (Iron Law enumerates the Bash patterns); no native PreToolUse hook wiring.
+- Codex: **two install paths.** Marketplace install (`.codex-plugin/plugin.json`) reuses the Claude PreToolUse hooks for `apply_patch` + Bash (hard block; Codex provides `${CLAUDE_PLUGIN_ROOT}` as legacy alias for `${PLUGIN_ROOT}`). Legacy symlink install falls back to instruction-based soft block via `skills/no-vibe/SKILL.md` (Iron Law enumerates the Bash patterns).
 - Gemini CLI: **instruction-based** soft block via `GEMINI.md` (write_file/replace + run_shell_command rules) and `.gemini/tool-mapping.md`; no hook surface available.
 
 Path-handling, Bash-parsing rules, and the safe-target allowlist (`.no-vibe/**`, `$HOME/.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/{null,stdout,stderr,tty,fd/*}`) must stay in lockstep across all five surfaces:
@@ -69,13 +69,14 @@ The canonical heading sets are duplicated across all four runtime surfaces and t
 - Claude: `hooks/status.sh` (SessionStart)
 - OpenCode: bootstrap inject in `.opencode/plugins/no-vibe.js`
 - Pi: `before_agent_start` injection in `.pi-plugin/extensions/no-vibe/index.ts`
+- Codex (marketplace install): `hooks/status.sh` reused via the SessionStart entry in `.codex-plugin/plugin.json`
 
 **Command specs** — one logical command, five physical copies:
 - `commands/no-vibe*.md` (Claude)
 - `.opencode/commands/no-vibe*.md` (OpenCode)
 - `.pi-plugin/prompts/no-vibe*.md` (Pi)
 - `.gemini/commands/no-vibe*.toml` (Gemini)
-- Codex reuses Claude's `commands/` via `INSTALL.codex.md`
+- Codex reuses Claude's `commands/` (via `INSTALL.codex.md` for legacy installs, and via the `skills` pointer in `.codex-plugin/plugin.json` for marketplace installs)
 
 **Teaching logic** lives in `skills/no-vibe/SKILL.md` (six-phase cycle) and is shared across all surfaces.
 
@@ -102,11 +103,12 @@ Version numbers are duplicated in:
 - `.claude-plugin/marketplace.json`
 - `gemini-extension.json`
 - `.pi-plugin/plugin.json`
+- `.codex-plugin/plugin.json`
 
-Bump all five by hand and confirm parity with:
+Bump all six by hand and confirm parity with:
 
 ```bash
-grep -E '"version"' package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json gemini-extension.json .pi-plugin/plugin.json
+grep -E '"version"' package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json gemini-extension.json .pi-plugin/plugin.json .codex-plugin/plugin.json
 ```
 
 (A `scripts/bump-version.sh` helper used to live in this repo; it was removed in commit `7f8afda`. If a release ever drifts the five files apart, restore the helper rather than papering over with hand-edits.) The pi parity test (`tests/test_pi_plugin.mjs`) also asserts that `package.json` and `.pi-plugin/plugin.json` versions match.

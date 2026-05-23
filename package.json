@@ -1,10 +1,54 @@
 {
   "name": "no-vibe",
   "version": "2.0.3-beta01",
-  "description": "Tutor mode for AI coding assistants. AI shows code in chat and reviews your work, but never writes to your project files.",
+  "description": "Tutor mode for AI coding assistants. AI shows code in chat and reviews your work, but never writes to your project files. Ships across Claude Code, OpenCode, Codex, Gemini CLI, and Pi.",
   "type": "module",
   "exports": "./index.js",
-  "keywords": ["pi-package"],
+  "main": "./index.js",
+  "license": "MIT",
+  "author": {
+    "name": "rizukirr",
+    "url": "https://github.com/rizukirr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rizukirr/no-vibe.git"
+  },
+  "homepage": "https://github.com/rizukirr/no-vibe#readme",
+  "bugs": {
+    "url": "https://github.com/rizukirr/no-vibe/issues"
+  },
+  "keywords": [
+    "pi-package",
+    "opencode-plugin",
+    "claude-code-plugin",
+    "codex-plugin",
+    "gemini-extension",
+    "ai-tutor",
+    "no-vibe",
+    "learning",
+    "education"
+  ],
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE",
+    "AGENTS.md",
+    "GEMINI.md",
+    "INSTALL.codex.md",
+    "INSTALL.gemini.md",
+    "INSTALL.opencode.md",
+    "INSTALL.pi.md",
+    "gemini-extension.json",
+    ".claude-plugin/",
+    ".codex-plugin/",
+    ".gemini/",
+    ".opencode/",
+    ".pi-plugin/",
+    "commands/",
+    "hooks/",
+    "skills/"
+  ],
   "pi": {
     "skills": ["./skills"],
     "prompts": ["./.pi-plugin/prompts"],

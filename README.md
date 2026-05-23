@@ -63,15 +63,53 @@ Per-session cycle state (current phase, layer, resume hints) lives separately in
 
 Restart Claude Code.
 
-### OpenCode / Codex / Gemini CLI / Pi
+### Codex
 
-Paste into the relevant CLI:
-
+```bash
+codex plugin marketplace add rizukirr/no-vibe
+codex plugin install no-vibe
 ```
-Fetch and follow instructions from https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/INSTALL.opencode.md
+
+(Requires a Codex CLI build with plugin marketplace support. For older Codex builds, see `INSTALL.codex.md` for the manual symlink path — skills only, soft block.)
+
+### Pi
+
+```bash
+pi install git:github.com/rizukirr/no-vibe
 ```
 
-(Swap `INSTALL.opencode.md` for `INSTALL.codex.md`, `INSTALL.gemini.md`, or `INSTALL.pi.md` as appropriate. Manual install: see each file directly.)
+Or from npm once published: `pi install npm:no-vibe`. See `INSTALL.pi.md` for verification steps.
+
+### Gemini CLI
+
+```bash
+gemini extensions install https://github.com/rizukirr/no-vibe
+```
+
+Pin a version with `--ref=v2.0.3-beta01`. See `INSTALL.gemini.md` for the legacy manual-symlink path.
+
+### OpenCode
+
+Add to `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["no-vibe@git+https://github.com/rizukirr/no-vibe.git"]
+}
+```
+
+OpenCode has no `plugin install` CLI, so commands also need to be fetched once:
+
+```bash
+mkdir -p ~/.config/opencode/commands
+for c in no-vibe no-vibe-challenge no-vibe-btw; do
+  curl -fsSL "https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/.opencode/commands/$c.md" \
+    -o "$HOME/.config/opencode/commands/$c.md"
+done
+```
+
+See `INSTALL.opencode.md` for verification steps and the cache-refresh tip.
 
 ### Your first lesson
 
@@ -108,10 +146,12 @@ Voice modes control *how AI talks*. A separate axis, **disclosure modes** (guide
 
 | Feature | Claude Code | OpenCode | Pi | Codex | Gemini CLI |
 |---|:-:|:-:|:-:|:-:|:-:|
-| File-write guard (hook) | ✓ | ✓ | ✓ | soft | soft |
-| Bash-write guard (hook) | ✓ | ✓ | ✓ | soft | soft |
-| Status + resume hint | ✓ | ✓ | ✓ | soft | soft |
+| File-write guard (hook) | ✓ | ✓ | ✓ | ✓ * | soft |
+| Bash-write guard (hook) | ✓ | ✓ | ✓ | ✓ * | soft |
+| Status + resume hint | ✓ | ✓ | ✓ | ✓ * | soft |
 | Commands | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+\* Codex hooks fire under the marketplace install (`codex plugin install no-vibe`). The legacy manual-symlink install path is soft-only.
 | PROFILE.md + SUMMARY.md + user/ overrides | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 "soft" = instruction-enforced (no hook surface available); the rule still binds.
