@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -32,6 +34,9 @@ jobs:
       - name: test_block_bash_writes
         run: bash tests/test_block_bash_writes.sh
 
+      - name: test_validate_memory_write
+        run: bash tests/test_validate_memory_write.sh
+
       - name: test_status
         run: bash tests/test_status.sh
 
@@ -49,3 +54,6 @@ jobs:
 
       - name: test_pi_plugin
         run: node tests/test_pi_plugin.mjs
+
+      - name: test_codex_plugin
+        run: node tests/test_codex_plugin.mjs

@@ -86,7 +86,7 @@ Or from npm once published: `pi install npm:no-vibe`. See `INSTALL.pi.md` for ve
 gemini extensions install https://github.com/rizukirr/no-vibe
 ```
 
-Pin a version with `--ref=v2.0.3-beta01`. See `INSTALL.gemini.md` for the legacy manual-symlink path.
+Pin a version with `--ref=v2.0.3`. See `INSTALL.gemini.md` for the legacy manual-symlink path.
 
 ### OpenCode
 
@@ -150,9 +150,9 @@ Voice modes control *how AI talks*. A separate axis, **disclosure modes** (guide
 | Bash-write guard (hook) | ✓ | ✓ | ✓ | ✓ * | soft |
 | Status + resume hint | ✓ | ✓ | ✓ | ✓ * | soft |
 | Commands | ✓ | ✓ | ✓ | ✓ | ✓ |
+| PROFILE.md + SUMMARY.md + user/ overrides | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 \* Codex hooks fire under the marketplace install (`codex plugin install no-vibe`). The legacy manual-symlink install path is soft-only.
-| PROFILE.md + SUMMARY.md + user/ overrides | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 "soft" = instruction-enforced (no hook surface available); the rule still binds.
 

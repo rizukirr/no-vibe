@@ -1,10 +1,10 @@
 {
     "name": "no-vibe",
-    "version": "2.0.3-beta01",
+    "version": "2.0.3",
     "description": "Tutor mode for AI coding assistants. AI shows code in chat and reviews your work, but never writes to your project files.",
     "author": {
         "name": "rizukirr",
-        "github": "https://github.com/rizkirr"
+        "github": "https://github.com/rizukirr"
     },
     "hooks": {
         "PreToolUse": [
