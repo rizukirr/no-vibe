@@ -100,13 +100,30 @@ const run = async () => {
   const noVibeEntry = marketplace.plugins.find((p) => p?.name === "no-vibe")
   assert.equal(
     noVibeEntry?.source?.path,
-    "./",
-    "no-vibe marketplace source.path must point to marketplace root ('./')",
+    "./plugins/no-vibe",
+    "no-vibe marketplace source.path must point to './plugins/no-vibe'",
   )
   assert.ok(noVibeEntry?.policy, "no-vibe marketplace entry must include policy")
   assert.ok(
     ["ON_INSTALL", "ON_USE"].includes(noVibeEntry.policy.authentication),
     "no-vibe marketplace entry policy.authentication must be ON_INSTALL or ON_USE",
+  )
+  const packagedManifestPath = path.join(
+    repoRoot,
+    "plugins",
+    "no-vibe",
+    ".codex-plugin",
+    "plugin.json",
+  )
+  assert.ok(
+    fs.existsSync(packagedManifestPath),
+    "plugins/no-vibe/.codex-plugin/plugin.json must exist for marketplace resolution",
+  )
+  const packagedManifest = JSON.parse(fs.readFileSync(packagedManifestPath, "utf8"))
+  assert.equal(
+    packagedManifest.version,
+    manifest.version,
+    "packaged plugin manifest version must match root .codex-plugin/plugin.json",
   )
 
   console.log("ok — codex plugin parity checks pass")
