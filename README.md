@@ -67,7 +67,7 @@ Restart Claude Code.
 
 ```bash
 codex plugin marketplace add rizukirr/no-vibe
-codex plugin install no-vibe
+codex plugin add no-vibe --marketplace no-vibe
 ```
 
 (Requires a Codex CLI build with plugin marketplace support. For older Codex builds, see `INSTALL.codex.md` for the manual symlink path — skills only, soft block.)
@@ -152,7 +152,7 @@ Voice modes control *how AI talks*. A separate axis, **disclosure modes** (guide
 | Commands | ✓ | ✓ | ✓ | ✓ | ✓ |
 | PROFILE.md + SUMMARY.md + user/ overrides | ✓ | ✓ | ✓ | ✓ | ✓ |
 
-\* Codex hooks fire under the marketplace install (`codex plugin install no-vibe`). The legacy manual-symlink install path is soft-only.
+\* Codex hooks fire under the marketplace install (`codex plugin add no-vibe --marketplace no-vibe`). The legacy manual-symlink install path is soft-only.
 
 "soft" = instruction-enforced (no hook surface available); the rule still binds.
 

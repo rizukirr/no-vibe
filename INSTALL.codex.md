@@ -6,7 +6,7 @@ Requires a Codex CLI build with plugin marketplace support (see https://develope
 
 ```bash
 codex plugin marketplace add rizukirr/no-vibe
-codex plugin install no-vibe
+codex plugin add no-vibe --marketplace no-vibe
 ```
 
 This installs skills, prompts, and the PreToolUse / SessionStart hooks declared in `.codex-plugin/plugin.json`. Hooks are non-managed by default — Codex will prompt you to review and trust them on first activation, giving you a **hard block** on writes (exit code 2) instead of the instruction-only soft block of the legacy install.

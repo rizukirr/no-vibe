@@ -79,6 +79,25 @@ const run = async () => {
     )
   }
 
+  // C8 — Codex plugin add resolves through an on-repo marketplace snapshot.
+  // Keep this in sync with docs (`codex plugin add no-vibe --marketplace no-vibe`).
+  const marketplacePath = path.join(repoRoot, ".agents", "plugins", "marketplace.json")
+  assert.ok(
+    fs.existsSync(marketplacePath),
+    ".agents/plugins/marketplace.json must exist for codex plugin add",
+  )
+  const marketplace = JSON.parse(fs.readFileSync(marketplacePath, "utf8"))
+  assert.equal(
+    marketplace.name,
+    "no-vibe",
+    "Codex marketplace snapshot name must be 'no-vibe'",
+  )
+  assert.ok(Array.isArray(marketplace.plugins), "marketplace.plugins must be an array")
+  assert.ok(
+    marketplace.plugins.some((p) => p?.name === "no-vibe"),
+    "marketplace must include plugin entry named 'no-vibe'",
+  )
+
   console.log("ok — codex plugin parity checks pass")
 }
 
