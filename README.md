@@ -75,10 +75,10 @@ codex plugin install no-vibe
 ### Pi
 
 ```bash
-pi install git:github.com/rizukirr/no-vibe
+pi install npm:no-vibe
 ```
 
-Or from npm once published: `pi install npm:no-vibe`. See `INSTALL.pi.md` for verification steps.
+Or pin to git: `pi install git:github.com/rizukirr/no-vibe`. See `INSTALL.pi.md` for verification steps.
 
 ### Gemini CLI
 
@@ -95,7 +95,7 @@ Add to `~/.config/opencode/opencode.json`:
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["no-vibe@git+https://github.com/rizukirr/no-vibe.git"]
+  "plugin": ["no-vibe"]
 }
 ```
 
