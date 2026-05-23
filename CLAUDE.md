@@ -35,6 +35,7 @@ bash tests/test_escape_hatch.sh
 bash tests/test_gemini_guard.sh
 bash tests/test_contract_injection.sh
 node tests/test_pi_plugin.mjs
+node tests/test_codex_plugin.mjs
 ```
 
 ## Architecture — parallel surfaces, one behavior
