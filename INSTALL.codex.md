@@ -1,16 +1,25 @@
 # no-vibe — Codex Installation
 
-## Install
+## Install (marketplace — recommended)
+
+Requires a Codex CLI build with plugin marketplace support (see https://developers.openai.com/codex/plugins/build).
 
 ```bash
-# Clone the repo
+codex plugin marketplace add rizukirr/no-vibe
+codex plugin install no-vibe
+```
+
+This installs skills, prompts, and the PreToolUse / SessionStart hooks declared in `.codex-plugin/plugin.json`. Hooks are non-managed by default — Codex will prompt you to review and trust them on first activation, giving you a **hard block** on writes (exit code 2) instead of the instruction-only soft block of the legacy install.
+
+## Install (legacy — manual symlink)
+
+Works on Codex builds that pre-date plugin marketplace support. Provides skills + prompts only; the write guard falls back to **soft block** (SKILL.md Iron Law, no PreToolUse hook).
+
+```bash
 git clone https://github.com/rizukirr/no-vibe.git ~/.codex/no-vibe
 
-# Symlink skills into Codex discovery path
 mkdir -p ~/.agents/skills
 ln -s ~/.codex/no-vibe/skills ~/.agents/skills/no-vibe
-
-# Restart Codex
 ```
 
 On Windows (PowerShell):
@@ -26,22 +35,22 @@ cmd /c mklink /J "$env:USERPROFILE\.agents\skills\no-vibe" "$env:USERPROFILE\.co
 1. Start a Codex session in any project
 2. Run `$no-vibe on` — should create `.no-vibe/active` marker. PROFILE.md is not created yet; it is created by the AI on its first reply.
 3. Send a topic. On the AI's first reply, confirm `~/.no-vibe/PROFILE.md` exists with the schema headings (`## Identity & expertise`, `## Learning style`, `## Disclosure mode`, `## Observed strengths`, `## Known gaps`) and empty bullets under each. `.no-vibe/SUMMARY.md` should NOT exist yet — it appears at the first layer close worth recording, with sections `## Current Focus`, `## Accomplishments`, `## Open Questions`.
-4. Ask the assistant to edit a project file — it should refuse with the no-vibe guard message (instruction-based soft block)
-5. Ask the assistant to `echo bad > someproj.py` or `sed -i …` on a project file — it should also refuse, citing the Iron Law's Bash list in `skills/no-vibe/SKILL.md`. If it complies, the model is drifting; remind it.
+4. Ask the assistant to edit a project file:
+   - **Marketplace install (hook-based):** Codex should reject the `apply_patch` call with the no-vibe guard message (hard block, exit code 2 from `hooks/block-writes.sh`).
+   - **Legacy install (instruction-based):** the assistant should refuse via SKILL.md's Iron Law (soft block).
+5. Ask the assistant to `echo bad > someproj.py` or `sed -i …` on a project file — same as above; hard block under marketplace install (via `hooks/block-bash-writes.sh`), soft block under legacy.
 6. Start a fresh session with an in-progress session JSON in `.no-vibe/data/sessions/` — the assistant should announce the resume hint (topic + `layer N/M, phaseX`) on the first turn (Phase 0 auto-resume).
 7. Run `$no-vibe off` — should remove marker
 
-## Caveat — soft block
+## Hook portability
 
-Codex has no PreToolUse hook equivalent to Claude Code's
-`hooks/block-writes.sh` / `hooks/block-bash-writes.sh`. Both the file
-write guard and the Bash write-guard are enforced by SKILL.md's Iron
-Law, not a process-level hook. If you need a hard block, use the
-Claude Code or OpenCode surface.
+The hooks in `hooks/*.sh` are shared with Claude Code. Codex's hook spec is near-identical: PreToolUse events, JSON on stdin, exit code 2 to block, and `${CLAUDE_PLUGIN_ROOT}` provided as a legacy alias for the native `${PLUGIN_ROOT}`. The hooks parse `.cwd`, `.tool_name`, and `.tool_input.file_path` from stdin — fields Codex documents as PreToolUse common payload. If a Codex release changes those field names, the hooks need updating in lockstep with the Claude versions.
+
+The legacy symlink install path has no PreToolUse hook surface, so both the file write guard and the Bash write-guard fall back to SKILL.md's Iron Law (soft block).
 
 ## Requirements
 
-- Codex CLI
+- Codex CLI (marketplace install requires plugin marketplace support; legacy install works on any version)
 
 ## Usage
 
@@ -80,7 +89,7 @@ EOF
 
 The filename is yours to choose; the AI loads every `.md` file in `user/` sorted by filename. Anything in `user/` is read-only for the AI.
 
-Codex has no SessionStart hook, so the AI is instructed (per `skills/no-vibe/SKILL.md`) to read `~/.no-vibe/PROFILE.md`, `.no-vibe/SUMMARY.md`, and every `user/*.md` at session start, and to create PROFILE.md on first activation if missing. SUMMARY.md absence is fine — it gets created later when there's a journey outcome to record.
+Under the marketplace install, the `SessionStart` hook (`hooks/status.sh`) injects the `no-vibe: ON|OFF` status and Background Memory block at session start, the same as on Claude Code / OpenCode / Pi. Under the legacy symlink install, no SessionStart hook fires, and the AI is instructed (per `skills/no-vibe/SKILL.md`) to read `~/.no-vibe/PROFILE.md`, `.no-vibe/SUMMARY.md`, and every `user/*.md` at session start, and to create PROFILE.md on first activation if missing. SUMMARY.md absence is fine — it gets created later when there's a journey outcome to record.
 
 ## Troubleshooting
 

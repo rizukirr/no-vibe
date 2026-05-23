@@ -1,10 +1,25 @@
 # no-vibe — Gemini CLI Installation
 
-## Install
+## Install (recommended)
 
-Gemini CLI loads extensions from `~/.gemini/extensions/<name>/` (user scope)
-or `<project>/.gemini/extensions/<name>/` (workspace scope). Clone the repo
-and symlink it in:
+Gemini CLI ships a native installer that clones the repo, registers it as an extension, and tracks updates:
+
+```bash
+gemini extensions install https://github.com/rizukirr/no-vibe
+```
+
+Pin to a specific release or branch with `--ref`:
+
+```bash
+gemini extensions install https://github.com/rizukirr/no-vibe --ref=v2.0.3-beta01
+gemini extensions install https://github.com/rizukirr/no-vibe --ref=main
+```
+
+Restart Gemini CLI. The extension's `GEMINI.md` context and TOML commands under `.gemini/commands/` are auto-discovered. Updates are detected via the GitHub Releases API (when pinned to a release tag) or `git ls-remote` (when pinned to a branch).
+
+## Install (legacy — manual symlink)
+
+For builds without `gemini extensions install`, or for local development against a checkout, symlink into the extensions directory:
 
 ```bash
 git clone https://github.com/rizukirr/no-vibe.git ~/.gemini/no-vibe
@@ -20,8 +35,7 @@ New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.gemini\extensions"
 cmd /c mklink /J "$env:USERPROFILE\.gemini\extensions\no-vibe" "$env:USERPROFILE\.gemini\no-vibe"
 ```
 
-Restart Gemini CLI. The extension's `GEMINI.md` context and TOML commands
-under `.gemini/commands/` are auto-discovered.
+Restart Gemini CLI.
 
 ## Verify
 

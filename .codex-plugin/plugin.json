@@ -1,0 +1,51 @@
+{
+    "name": "no-vibe",
+    "version": "2.0.3-beta01",
+    "description": "Tutor mode for AI coding assistants. AI shows code in chat and reviews your work, but never writes to your project files.",
+    "author": {
+        "name": "rizukirr",
+        "github": "https://github.com/rizkirr"
+    },
+    "skills": "./skills/",
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Edit|Write|NotebookEdit|MultiEdit|ApplyPatch|apply_patch",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "${PLUGIN_ROOT}/hooks/block-writes.sh"
+                    }
+                ]
+            },
+            {
+                "matcher": "Bash|shell",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "${PLUGIN_ROOT}/hooks/block-bash-writes.sh"
+                    }
+                ]
+            },
+            {
+                "matcher": "Write|apply_patch",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "${PLUGIN_ROOT}/hooks/validate-memory-write.sh"
+                    }
+                ]
+            }
+        ],
+        "SessionStart": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "${PLUGIN_ROOT}/hooks/status.sh"
+                    }
+                ]
+            }
+        ]
+    }
+}
