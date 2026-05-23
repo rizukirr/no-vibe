@@ -98,6 +98,11 @@ const run = async () => {
     "marketplace must include plugin entry named 'no-vibe'",
   )
   const noVibeEntry = marketplace.plugins.find((p) => p?.name === "no-vibe")
+  assert.equal(
+    noVibeEntry?.source?.path,
+    "./",
+    "no-vibe marketplace source.path must point to marketplace root ('./')",
+  )
   assert.ok(noVibeEntry?.policy, "no-vibe marketplace entry must include policy")
   assert.ok(
     ["ON_INSTALL", "ON_USE"].includes(noVibeEntry.policy.authentication),
