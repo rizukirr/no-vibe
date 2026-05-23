@@ -1,0 +1,20 @@
+{
+  "name": "no-vibe",
+  "interface": {
+    "displayName": "no-vibe"
+  },
+  "plugins": [
+    {
+      "name": "no-vibe",
+      "source": {
+        "source": "local",
+        "path": "../../"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "NONE"
+      },
+      "category": "Learning"
+    }
+  ]
+}
