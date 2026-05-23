@@ -150,9 +150,9 @@ Voice modes control *how AI talks*. A separate axis, **disclosure modes** (guide
 | Bash-write guard (hook) | ✓ | ✓ | ✓ | ✓ * | soft |
 | Status + resume hint | ✓ | ✓ | ✓ | ✓ * | soft |
 | Commands | ✓ | ✓ | ✓ | ✓ | ✓ |
+| PROFILE.md + SUMMARY.md + user/ overrides | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 \* Codex hooks fire under the marketplace install (`codex plugin install no-vibe`). The legacy manual-symlink install path is soft-only.
-| PROFILE.md + SUMMARY.md + user/ overrides | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 "soft" = instruction-enforced (no hook surface available); the rule still binds.
 
