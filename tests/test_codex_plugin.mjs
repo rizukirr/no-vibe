@@ -97,6 +97,12 @@ const run = async () => {
     marketplace.plugins.some((p) => p?.name === "no-vibe"),
     "marketplace must include plugin entry named 'no-vibe'",
   )
+  const noVibeEntry = marketplace.plugins.find((p) => p?.name === "no-vibe")
+  assert.ok(noVibeEntry?.policy, "no-vibe marketplace entry must include policy")
+  assert.ok(
+    ["ON_INSTALL", "ON_USE"].includes(noVibeEntry.policy.authentication),
+    "no-vibe marketplace entry policy.authentication must be ON_INSTALL or ON_USE",
+  )
 
   console.log("ok — codex plugin parity checks pass")
 }
