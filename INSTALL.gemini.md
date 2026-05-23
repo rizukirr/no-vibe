@@ -11,7 +11,7 @@ gemini extensions install https://github.com/rizukirr/no-vibe
 Pin to a specific release or branch with `--ref`:
 
 ```bash
-gemini extensions install https://github.com/rizukirr/no-vibe --ref=v2.0.3-beta01
+gemini extensions install https://github.com/rizukirr/no-vibe --ref=v2.0.3
 gemini extensions install https://github.com/rizukirr/no-vibe --ref=main
 ```
 

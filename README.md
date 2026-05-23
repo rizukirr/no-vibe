@@ -86,7 +86,7 @@ Or from npm once published: `pi install npm:no-vibe`. See `INSTALL.pi.md` for ve
 gemini extensions install https://github.com/rizukirr/no-vibe
 ```
 
-Pin a version with `--ref=v2.0.3-beta01`. See `INSTALL.gemini.md` for the legacy manual-symlink path.
+Pin a version with `--ref=v2.0.3`. See `INSTALL.gemini.md` for the legacy manual-symlink path.
 
 ### OpenCode
 
