@@ -1,6 +1,10 @@
 # no-vibe
 
-Turn your AI assistant into a tutor. It plans, hints, reviews and adapts with you.
+Turn your AI assistant into a tutor. It plans, hints, reviews and adapts while **you** write every line.
+
+- **Is:** a guide that works beside your real project in your editor
+- **Is not:** a chat only window you ask for answers
+- **Needs:** a project open and an editor where you type the code
 
 > Pair with [vibekit](https://github.com/rizukirr/vibekit): vibekit when you want speed, no-vibe when you want to learn.
 
