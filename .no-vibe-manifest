@@ -13,6 +13,8 @@
 .pi-plugin/prompts/no-vibe-btw.md
 .pi-plugin/prompts/no-vibe-challenge.md
 .pi-plugin/prompts/no-vibe.md
+AGENTS.md
+CLAUDE.md
 README.md
 commands/no-vibe-btw.md
 commands/no-vibe-btw.toml

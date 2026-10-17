@@ -49,5 +49,10 @@ export function commandTable(skills) {
 }
 
 export function regions(model) {
-  return { 'README.md': { commands: commandTable(model.skills) } }
+  const commands = commandTable(model.skills)
+  return {
+    'README.md': { commands },
+    'CLAUDE.md': { commands },
+    'AGENTS.md': { commands },
+  }
 }
