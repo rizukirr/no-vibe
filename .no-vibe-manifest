@@ -20,5 +20,8 @@ commands/no-vibe-challenge.md
 commands/no-vibe-challenge.toml
 commands/no-vibe.md
 commands/no-vibe.toml
+hooks.json
 hooks/hooks.json
 package.json
+plugin.json
+rules/AGENTS.md

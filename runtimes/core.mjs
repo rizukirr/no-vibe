@@ -14,10 +14,6 @@ const FILES = [
   'skills/',
   '.claude-plugin/',
   '.codex-plugin/',
-  'GEMINI.md',
-  'INSTALL.gemini.md',
-  'gemini-extension.json',
-  '.gemini/',
 ]
 
 export function emit(model) {

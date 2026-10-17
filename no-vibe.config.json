@@ -7,7 +7,7 @@
   "homepage": "https://github.com/rizukirr/no-vibe#readme",
   "repository": "https://github.com/rizukirr/no-vibe",
   "keywords": ["pi-package", "opencode-plugin", "claude-code-plugin", "codex-plugin", "antigravity-plugin", "ai-tutor", "no-vibe", "learning", "education"],
-  "runtimes": ["claude-code", "codex", "opencode", "pi"],
+  "runtimes": ["claude-code", "codex", "opencode", "pi", "antigravity"],
   "npm": {
     "type": "module",
     "engines": { "node": ">=24" },

@@ -88,6 +88,19 @@ async function pi(handlers, c, cwd) {
   return !result?.block
 }
 
+// Antigravity has no patch tool, so patch cases do not apply to it.
+function agy(c, cwd) {
+  if (c.kind === 'patch') return c.allow
+  const toolCall = c.kind === 'write'
+    ? { name: 'write_to_file', args: { TargetFile: path.join(cwd, c.rel), CodeContent: 'x' } }
+    : { name: 'run_command', args: { CommandLine: c.command, Cwd: cwd } }
+  const result = spawnSync('bash', [path.join(root, 'hooks/run-hook.cmd'), 'agy-guard.sh'], {
+    input: JSON.stringify({ toolCall, workspacePaths: [cwd] }),
+    encoding: 'utf8',
+  })
+  return JSON.parse(result.stdout).decision === 'allow'
+}
+
 const oc = await loadOpencode()
 const piHandlers = await loadPi()
 
@@ -97,6 +110,7 @@ for (const c of CASES) {
     claude: claude(c, cwd),
     opencode: await opencode(oc, c, cwd),
     pi: await pi(piHandlers, c, cwd),
+    agy: agy(c, cwd),
   }
   rmSync(cwd, { recursive: true, force: true })
   for (const [runtime, allowed] of Object.entries(decisions)) {
