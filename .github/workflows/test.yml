@@ -52,8 +52,5 @@ jobs:
       - name: test_guard_parity
         run: node tests/test_guard_parity.mjs
 
-      - name: test_pi_plugin
-        run: node tests/test_pi_plugin.mjs
-
       - name: test_manifests
         run: node tests/test_manifests.mjs

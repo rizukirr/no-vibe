@@ -8,6 +8,11 @@
 .opencode/commands/no-vibe-challenge.md
 .opencode/commands/no-vibe.md
 .opencode/plugins/no-vibe.js
+.pi-plugin/extensions/no-vibe/index.ts
+.pi-plugin/plugin.json
+.pi-plugin/prompts/no-vibe-btw.md
+.pi-plugin/prompts/no-vibe-challenge.md
+.pi-plugin/prompts/no-vibe.md
 README.md
 commands/no-vibe-btw.md
 commands/no-vibe-btw.toml

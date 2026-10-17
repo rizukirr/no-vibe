@@ -71,11 +71,33 @@ async function opencode(hooks, c, cwd) {
   }
 }
 
+async function loadPi() {
+  const { default: register } = await import(path.join(root, '.pi-plugin/extensions/no-vibe/index.ts'))
+  const handlers = {}
+  register({ on: (name, fn) => { handlers[name] = fn } })
+  return handlers
+}
+
+// Pi has no patch tool, so patch cases do not apply to it.
+async function pi(handlers, c, cwd) {
+  if (c.kind === 'patch') return c.allow
+  const event = c.kind === 'write'
+    ? { toolName: 'write', input: { path: path.join(cwd, c.rel), content: 'x' } }
+    : { toolName: 'bash', input: { command: c.command } }
+  const result = await handlers.tool_call(event, { cwd })
+  return !result?.block
+}
+
 const oc = await loadOpencode()
+const piHandlers = await loadPi()
 
 for (const c of CASES) {
   const cwd = project(true)
-  const decisions = { claude: claude(c, cwd), opencode: await opencode(oc, c, cwd) }
+  const decisions = {
+    claude: claude(c, cwd),
+    opencode: await opencode(oc, c, cwd),
+    pi: await pi(piHandlers, c, cwd),
+  }
   rmSync(cwd, { recursive: true, force: true })
   for (const [runtime, allowed] of Object.entries(decisions)) {
     assert.equal(allowed, c.allow, `${runtime}: ${c.name}`)
@@ -116,6 +138,21 @@ for (const c of CASES) {
   }
   rmSync(cwd, { recursive: true, force: true })
   assert.deepEqual(ev.system, [{ type: 'text', text: 'no-vibe: ON' }], 'opencode: status injected')
+}
+
+// Pi: no marker allows, PowerShell is refused while active, status is injected.
+{
+  const cwd = project(false)
+  assert.equal(await pi(piHandlers, CASES[0], cwd), true, 'pi: no marker allows')
+  rmSync(cwd, { recursive: true, force: true })
+}
+{
+  const cwd = project(true)
+  const result = await piHandlers.tool_call({ toolName: 'powershell', input: { command: 'ls' } }, { cwd })
+  assert.equal(result?.block, true, 'pi: powershell refused')
+  const started = await piHandlers.before_agent_start({ systemPrompt: 'base' }, { cwd })
+  assert.equal(started?.systemPrompt, 'base\n\nno-vibe: ON', 'pi: status injected')
+  rmSync(cwd, { recursive: true, force: true })
 }
 
 console.log('test_guard_parity: ok')
