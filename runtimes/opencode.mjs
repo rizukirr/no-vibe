@@ -37,8 +37,7 @@ function toClaude(ev, cwd) {
 
 // A guard that cannot run refuses while no-vibe is active: an unenforced
 // guard is worse than a blocked write.
-function guard(ev) {
-  const cwd = process.cwd()
+function guard(ev, cwd = process.cwd()) {
   if (!existsSync(path.join(cwd, '.no-vibe', 'active'))) return
   const call = toClaude(ev, cwd)
   if (!call) return
@@ -48,14 +47,16 @@ function guard(ev) {
   }
 }
 
-function status() {
-  const result = runHook('status.sh', { cwd: process.cwd() })
+function status(cwd = process.cwd()) {
+  const result = runHook('status.sh', { cwd })
   return result.status === 0 ? result.stdout.trim() : ''
 }
 
 export default {
   id: ${JSON.stringify(model.config.name)},
   setup: async ctx => {
+    // The background service runs from its own cwd, not the project's.
+    const dir = ctx.location?.directory
     await ctx.skill.transform(draft => {
       for (const { name, description } of LIST) {
         const file = path.join(SKILLS, name, 'SKILL.md')
@@ -63,12 +64,12 @@ export default {
         draft.add({ id: name, name, description, path: file, content })
       }
     })
-    await ctx.tool.hook('execute.before', ev => guard(ev))
+    await ctx.tool.hook('execute.before', ev => guard(ev, dir))
     // The context hook fires before every model request, so the status line
     // is computed once per session.
     const seen = new Map()
     await ctx.session.hook('context', ev => {
-      if (!seen.has(ev.sessionID)) seen.set(ev.sessionID, status())
+      if (!seen.has(ev.sessionID)) seen.set(ev.sessionID, status(dir))
       const text = seen.get(ev.sessionID)
       if (text) ev.system.push({ type: 'text', text })
     })

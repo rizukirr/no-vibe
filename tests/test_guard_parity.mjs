@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -43,10 +44,11 @@ function claude(c, cwd) {
   return result.status === 0
 }
 
-async function loadOpencode() {
+async function loadOpencode(location) {
   const { default: plugin } = await import(path.join(root, '.opencode/plugins/no-vibe.js'))
   const hooks = {}
   await plugin.setup({
+    location,
     skill: { transform: async fn => fn({ add: () => {} }) },
     tool: { hook: async (name, fn) => { hooks[`tool:${name}`] = fn } },
     session: { hook: async (name, fn) => { hooks[`session:${name}`] = fn } },
@@ -167,6 +169,43 @@ for (const c of CASES) {
   const started = await piHandlers.before_agent_start({ systemPrompt: 'base' }, { cwd })
   assert.equal(started?.systemPrompt, 'base\n\nno-vibe: ON', 'pi: status injected')
   rmSync(cwd, { recursive: true, force: true })
+}
+
+// opencode under the background service: process cwd is not the project, the
+// project comes from ctx.location.directory.
+{
+  const cwd = project(true)
+  const hooks = await loadOpencode({ directory: cwd })
+  const before = process.cwd()
+  process.chdir(os.homedir())
+  try {
+    const ev = { tool: 'write', input: { path: path.join(cwd, 'src/main.rs'), content: 'x' } }
+    await assert.rejects(async () => hooks['tool:execute.before'](ev), /no-vibe/, 'opencode: project dir from ctx.location')
+  } finally {
+    process.chdir(before)
+  }
+  rmSync(cwd, { recursive: true, force: true })
+}
+
+// Pi loaded through a symlinked extension dir, as in INSTALL.pi.md Option C.
+// Pi's loader keeps the symlink path in import.meta.url. Node realpaths
+// imports unless --preserve-symlinks, so the import runs in a child.
+{
+  const cwd = project(true)
+  const link = mkdtempSync(path.join(os.tmpdir(), 'no-vibe-pisym-'))
+  symlinkSync(path.join(root, '.pi-plugin/extensions/no-vibe'), path.join(link, 'no-vibe'))
+  const script = `
+    const { default: register } = await import(${JSON.stringify(path.join(link, 'no-vibe', 'index.ts'))})
+    const h = {}
+    register({ on: (name, fn) => { h[name] = fn } })
+    const cwd = ${JSON.stringify(cwd)}
+    const allowed = async rel => !(await h.tool_call({ toolName: 'write', input: { path: cwd + '/' + rel, content: 'x' } }, { cwd }))?.block
+    console.log(JSON.stringify([await allowed('.no-vibe/notes.md'), await allowed('src/main.rs')]))
+  `
+  const result = spawnSync(process.execPath, ['--preserve-symlinks', '--input-type=module', '-e', script], { encoding: 'utf8' })
+  rmSync(link, { recursive: true, force: true })
+  rmSync(cwd, { recursive: true, force: true })
+  assert.deepEqual(JSON.parse(result.stdout), [true, false], `pi symlink: allow .no-vibe, refuse project\n${result.stderr}`)
 }
 
 console.log('test_guard_parity: ok')
