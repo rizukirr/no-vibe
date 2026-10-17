@@ -1,50 +1,23 @@
 {
-    "name": "no-vibe",
-    "version": "2.0.3",
-    "description": "Tutor mode for AI coding assistants. AI shows code in chat and reviews your work, but never writes to your project files.",
-    "author": {
-        "name": "rizukirr",
-        "github": "https://github.com/rizukirr"
-    },
-    "hooks": {
-        "PreToolUse": [
-            {
-                "matcher": "Edit|Write|NotebookEdit|MultiEdit|ApplyPatch|apply_patch",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-writes.sh"
-                    }
-                ]
-            },
-            {
-                "matcher": "Bash",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-bash-writes.sh"
-                    }
-                ]
-            },
-            {
-                "matcher": "Write",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "${CLAUDE_PLUGIN_ROOT}/hooks/validate-memory-write.sh"
-                    }
-                ]
-            }
-        ],
-        "SessionStart": [
-            {
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "${CLAUDE_PLUGIN_ROOT}/hooks/status.sh"
-                    }
-                ]
-            }
-        ]
-    }
+  "name": "no-vibe",
+  "description": "Learning mode for AI coding assistants. The agent teaches and shows code in chat, and you type every line yourself.",
+  "version": "2.0.3",
+  "author": {
+    "name": "rizukirr",
+    "url": "https://github.com/rizukirr"
+  },
+  "homepage": "https://github.com/rizukirr/no-vibe#readme",
+  "repository": "https://github.com/rizukirr/no-vibe",
+  "license": "MIT",
+  "keywords": [
+    "pi-package",
+    "opencode-plugin",
+    "claude-code-plugin",
+    "codex-plugin",
+    "antigravity-plugin",
+    "ai-tutor",
+    "no-vibe",
+    "learning",
+    "education"
+  ]
 }

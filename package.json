@@ -35,6 +35,7 @@
     "check": "node bin/generate.mjs --check"
   },
   "files": [
+    ".agents/",
     ".claude-plugin/",
     ".codex-plugin/",
     ".gemini/",

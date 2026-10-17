@@ -8,7 +8,7 @@
       "name": "no-vibe",
       "source": {
         "source": "local",
-        "path": "./plugins/no-vibe"
+        "path": "./"
       },
       "policy": {
         "installation": "AVAILABLE",

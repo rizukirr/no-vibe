@@ -1,3 +1,14 @@
+.agents/plugins/marketplace.json
+.claude-plugin/marketplace.json
+.claude-plugin/plugin.json
+.codex-plugin/plugin.json
 .no-vibe-manifest
 README.md
+commands/no-vibe-btw.md
+commands/no-vibe-btw.toml
+commands/no-vibe-challenge.md
+commands/no-vibe-challenge.toml
+commands/no-vibe.md
+commands/no-vibe.toml
+hooks/hooks.json
 package.json
