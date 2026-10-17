@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# no-vibe PreToolUse hook: blocks Edit/Write/NotebookEdit/MultiEdit/ApplyPatch
+# no-vibe PreToolUse hook: blocks Edit/Write/NotebookEdit/MultiEdit/apply_patch
 # on paths outside .no-vibe/ when .no-vibe/active exists in cwd.
 #
 # Reads tool call as JSON on stdin. Exit 0 = allow, non-zero = deny.
@@ -8,7 +8,7 @@ set -u
 
 # Normalize Windows-style drive paths (`C:/foo`, `c:\foo`) to MSYS form
 # (`/c/foo`) so prefix comparisons stay consistent on Git Bash. See
-# block-bash-writes.sh for the full rationale — same fix, same reason.
+# block-bash-writes.sh for the full rationale. Same fix, same reason.
 normalize_path() {
     local p="$1"
     p=$(printf '%s' "$p" | tr '\\' '/')
@@ -27,10 +27,8 @@ normalize_path() {
     printf '%s' "$p"
 }
 
-# Read all of stdin
 input=$(cat)
 
-# Parse cwd from input (jq required)
 cwd=$(echo "$input" | jq -r '.cwd // empty')
 cwd=$(normalize_path "$cwd")
 
@@ -39,19 +37,26 @@ if [ -z "$cwd" ] || [ ! -f "$cwd/.no-vibe/active" ]; then
     exit 0
 fi
 
-# Parse tool name. Only the four write-style tools matter.
 tool_name=$(echo "$input" | jq -r '.tool_name // empty')
 case "$tool_name" in
     Edit|Write|NotebookEdit|MultiEdit|ApplyPatch|apply_patch) ;;
     *) exit 0 ;;
 esac
 
-# Extract the target path. Field name varies slightly by tool but
-# all four currently use file_path or notebook_path at the top level.
-target=$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.notebook_path // empty')
+# apply_patch carries the patch text in tool_input.command instead of a path,
+# so every file the patch adds, updates, deletes or moves to is checked.
+case "$tool_name" in
+    ApplyPatch|apply_patch)
+        targets=$(echo "$input" | jq -r '.tool_input.command // empty' |
+            sed -n -E -e 's/^\*\*\* (Add|Update|Delete) File: (.*)$/\2/p' -e 's/^\*\*\* Move to: (.*)$/\1/p')
+        ;;
+    *)
+        targets=$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.notebook_path // empty')
+        ;;
+esac
 
-# If we somehow can't find a target, fail closed (block).
-if [ -z "$target" ]; then
+# No target means nothing to check against the allowlist: fail closed.
+if [ -z "$targets" ]; then
     cat >&2 <<EOF
 no-vibe mode is active. Refusing '$tool_name' because no target path was provided.
 Show the code in chat and let the user type it into their project instead.
@@ -60,45 +65,47 @@ EOF
     exit 2
 fi
 
-# Normalize the target before path joining so a Windows-form target
-# combined with an MSYS-form cwd produces a coherent absolute path.
-target=$(normalize_path "$target")
-
-# Resolve target to absolute path. If it's relative, anchor to cwd.
-case "$target" in
-    /*) abs_target="$target" ;;
-    *)  abs_target="$cwd/$target" ;;
-esac
-
-# Resolve symlinks and .. — use realpath if available, else manual cleanup.
 home_dir=$(normalize_path "${HOME:-/root}")
 if command -v realpath >/dev/null 2>&1; then
-    # -m so it doesn't fail if the file doesn't exist yet
-    abs_target=$(normalize_path "$(realpath -m "$abs_target")")
     scratch_root=$(normalize_path "$(realpath -m "$cwd/.no-vibe")")
     home_scratch_root=$(normalize_path "$(realpath -m "$home_dir/.no-vibe")")
 else
-    abs_target=$(cd "$(dirname "$abs_target")" 2>/dev/null && pwd)/$(basename "$abs_target")
     scratch_root="$cwd/.no-vibe"
     home_scratch_root="$home_dir/.no-vibe"
 fi
 
-# Allow writes inside project-local .no-vibe/ (scratch escape hatch, plus
-# AI-managed PROFILE.md) and global ~/.no-vibe/ (cross-project state:
-# PROFILE.md). The user/ subdirectories are inside this guard's allowlist
-# but writes there are forbidden at the instruction level (SKILL.md).
-case "$abs_target" in
-    "$scratch_root"/*|"$scratch_root") exit 0 ;;
-    "$home_scratch_root"/*|"$home_scratch_root") exit 0 ;;
-esac
-
-# Otherwise — deny.
-cat >&2 <<EOF
-no-vibe mode is active. You cannot write to '$abs_target' while learning.
+deny() {
+    cat >&2 <<EOF
+no-vibe mode is active. You cannot write to '$1' while learning.
 Show the code in chat instead, and let the user type it into their project
-themselves. If you need to save a lesson note or summary, write it under
-\`.no-vibe/\`.
+themselves. If you need to save lesson state, write it under \`.no-vibe/\`.
 
 To exit no-vibe mode, the user can run \`/no-vibe off\`.
 EOF
-exit 2
+    exit 2
+}
+
+# Writes are allowed inside the project's .no-vibe/ and the global ~/.no-vibe/.
+while IFS= read -r target; do
+    [ -z "$target" ] && continue
+    target=$(normalize_path "$target")
+    case "$target" in
+        /*) abs_target="$target" ;;
+        *)  abs_target="$cwd/$target" ;;
+    esac
+    if command -v realpath >/dev/null 2>&1; then
+        # -m so it doesn't fail if the file doesn't exist yet
+        abs_target=$(normalize_path "$(realpath -m "$abs_target")")
+    else
+        abs_target=$(cd "$(dirname "$abs_target")" 2>/dev/null && pwd)/$(basename "$abs_target")
+    fi
+    case "$abs_target" in
+        "$scratch_root"/*|"$scratch_root") ;;
+        "$home_scratch_root"/*|"$home_scratch_root") ;;
+        *) deny "$abs_target" ;;
+    esac
+done <<EOF
+$targets
+EOF
+
+exit 0

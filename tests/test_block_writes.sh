@@ -297,4 +297,65 @@ EOF
 }
 
 test_marker_blocks_other_home_path
+# --- apply_patch: the patch text is the only source of target paths ---
+run_patch() {
+    local cwd="$1" patch="$2"
+    jq -cn --arg cwd "$cwd" --arg patch "$patch" \
+        '{tool_name:"apply_patch", tool_input:{command:$patch}, cwd:$cwd}' | "$HOOK" >/dev/null 2>&1
+}
+
+test_patch_inside_scratch_allows() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe" && touch "$cwd/.no-vibe/active"
+    run_patch "$cwd" $'*** Begin Patch\n*** Add File: .no-vibe/notes.md\n+hi\n*** End Patch'
+    local exit_code=$?
+    rm -rf "$cwd"
+    assert_eq "0" "$exit_code" "marker + apply_patch adding .no-vibe file → allow"
+}
+test_patch_inside_scratch_allows
+
+test_patch_outside_blocks() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe" && touch "$cwd/.no-vibe/active"
+    run_patch "$cwd" $'*** Begin Patch\n*** Update File: src/main.rs\n@@\n-a\n+b\n*** End Patch'
+    local exit_code=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$exit_code" "marker + apply_patch updating project file → deny"
+}
+test_patch_outside_blocks
+
+test_patch_mixed_blocks() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe" && touch "$cwd/.no-vibe/active"
+    run_patch "$cwd" $'*** Begin Patch\n*** Add File: .no-vibe/a.md\n+a\n*** Add File: b.txt\n+b\n*** End Patch'
+    local exit_code=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$exit_code" "marker + apply_patch touching .no-vibe and project → deny"
+}
+test_patch_mixed_blocks
+
+test_patch_move_out_blocks() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe" && touch "$cwd/.no-vibe/active"
+    run_patch "$cwd" $'*** Begin Patch\n*** Update File: .no-vibe/a.md\n*** Move to: src/a.md\n*** End Patch'
+    local exit_code=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$exit_code" "marker + apply_patch moving a file into the project → deny"
+}
+test_patch_move_out_blocks
+
+test_patch_without_paths_blocks() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe" && touch "$cwd/.no-vibe/active"
+    run_patch "$cwd" 'not a patch'
+    local exit_code=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$exit_code" "marker + apply_patch with no parseable path → deny"
+}
+test_patch_without_paths_blocks
 summary
