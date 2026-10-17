@@ -125,16 +125,13 @@ Codex uses `$` instead of `/`.
 
 ## Commands
 
+<!-- no-vibe:generated:commands -->
 | Command | Effect |
 |---|---|
-| `/no-vibe on` / `off` | persistent mode toggle |
-| `/no-vibe <topic>` | one-shot lesson |
-| `/no-vibe --ref <url> <topic>` | attach a reference project |
-| `/no-vibe --mode concept\|skill\|debug <topic>` | set voice mode |
-| `/no-vibe-btw <task>` | one-shot escape hatch — AI may write for this task only |
-| `/no-vibe-challenge [<focus>]` | get a coding challenge |
-
-Flags combine: `/no-vibe --ref pytorch --mode concept how does autograd work`.
+| `/no-vibe [on|off|<topic>]` | Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <level\|goal\|syllabus\|learn\|exercise> · Section: <n/total\|-> · Exercise: <k\|->`. |
+| `/no-vibe-btw <task>` | One-shot escape hatch to temporarily disable no-vibe write guard for a single scoped task, then restore the marker. |
+| `/no-vibe-challenge [focus]` | One coding challenge built from the current syllabus or the project. The user writes all the code. The agent gives the task, hints when asked, and reviews when asked. |
+<!-- /no-vibe:generated -->
 
 ## Voice modes
 

@@ -16,13 +16,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Verify jq is available
         run: jq --version
 
       - name: Make hooks and tests executable
         run: chmod +x hooks/*.sh tests/*.sh
+
+      - name: generated files are up to date
+        run: npm run check
+
+      - name: test_generate
+        run: node tests/test_generate.mjs
 
       # Each test runs as its own step so a failure is attributed cleanly
       # in the GitHub Actions UI. continue-on-error is intentionally OFF
