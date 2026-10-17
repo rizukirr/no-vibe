@@ -3,6 +3,11 @@
 .claude-plugin/plugin.json
 .codex-plugin/plugin.json
 .no-vibe-manifest
+.opencode/INSTALL.md
+.opencode/commands/no-vibe-btw.md
+.opencode/commands/no-vibe-challenge.md
+.opencode/commands/no-vibe.md
+.opencode/plugins/no-vibe.js
 README.md
 commands/no-vibe-btw.md
 commands/no-vibe-btw.toml

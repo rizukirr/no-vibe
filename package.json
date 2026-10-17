@@ -45,17 +45,15 @@
     "GEMINI.md",
     "INSTALL.codex.md",
     "INSTALL.gemini.md",
-    "INSTALL.opencode.md",
     "INSTALL.pi.md",
     "LICENSE",
     "README.md",
     "commands/",
     "gemini-extension.json",
     "hooks/",
-    "index.js",
     "skills/"
   ],
-  "main": "./index.js",
+  "main": "./.opencode/plugins/no-vibe.js",
   "pi": {
     "skills": [
       "./skills"

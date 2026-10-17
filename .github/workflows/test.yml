@@ -49,8 +49,8 @@ jobs:
       - name: test_contract_injection
         run: bash tests/test_contract_injection.sh
 
-      - name: test_opencode_plugin
-        run: node tests/test_opencode_plugin.mjs
+      - name: test_guard_parity
+        run: node tests/test_guard_parity.mjs
 
       - name: test_pi_plugin
         run: node tests/test_pi_plugin.mjs

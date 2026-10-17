@@ -6,7 +6,6 @@ export const id = 'core'
 const FILES = [
   'AGENTS.md',
   'INSTALL.codex.md',
-  'INSTALL.opencode.md',
   'INSTALL.pi.md',
   'LICENSE',
   'README.md',
