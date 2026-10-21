@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { build, fsReader } from '../lib/build.mjs'
+import { parseFrontmatter } from '../lib/frontmatter.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -32,5 +33,12 @@ for (const [file, text] of Object.entries(clean.files)) {
   const versions = [json.version, ...(json.plugins ?? []).map(p => p.version)].filter(Boolean)
   for (const v of versions) assert.equal(v, config.version, `${file} version`)
 }
+
+// Frontmatter written on Windows or with YAML quote escapes.
+const crlf = parseFrontmatter('---\r\nname: x\r\ndescription: y\r\n---\r\nbody\r\n')
+assert.deepEqual(crlf.data, { name: 'x', description: 'y' })
+assert.equal(crlf.body, 'body\r\n')
+assert.equal(parseFrontmatter("---\nd: 'it''s x: y'\n---\n").data.d, "it's x: y")
+assert.equal(parseFrontmatter('---\nd: "a \\"b\\": c"\n---\n').data.d, 'a "b": c')
 
 console.log('test_generate: ok')
