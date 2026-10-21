@@ -30,7 +30,7 @@ The hooks in `hooks/*.sh` are shared with Claude Code. Codex's hook spec is near
 ## Requirements
 
 - Codex CLI with plugin marketplace support
-- `bash` and `jq` on PATH
+- `bash` on PATH
 
 ## Usage
 

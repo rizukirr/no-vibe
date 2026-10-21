@@ -18,9 +18,6 @@ jobs:
         with:
           node-version: "24"
 
-      - name: Verify jq is available
-        run: jq --version
-
       - name: Make hooks and tests executable
         run: chmod +x hooks/*.sh hooks/run-hook.cmd tests/*.sh
 
@@ -39,6 +36,9 @@ jobs:
 
       - name: test_block_bash_writes
         run: bash tests/test_block_bash_writes.sh
+
+      - name: test_json
+        run: bash tests/test_json.sh
 
       - name: test_status
         run: bash tests/test_status.sh

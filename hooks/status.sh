@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # no-vibe SessionStart hook: prints the mode status, plus a resume hint when
 # .no-vibe/syllabus.md holds an approved syllabus. Reads JSON on stdin for
-# cwd and falls back to PWD. Needs no jq: cwd is pulled out with sed.
+# cwd and falls back to PWD.
 
 set -u
+. "$(dirname "$0")/json.sh"
 
 input=$(cat 2>/dev/null || true)
-cwd=$(printf '%s' "$input" | tr -d '\n' |
-    sed -n 's/.*"cwd"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | sed 's/\\\\/\\/g')
+cwd=$(json_get .cwd)
 [ -z "$cwd" ] && cwd="$PWD"
 
 # Silent in projects that never opted in.

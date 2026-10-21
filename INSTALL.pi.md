@@ -2,7 +2,7 @@
 
 Pi is the [pi-mono](https://github.com/badlogic/pi-mono) coding agent (`@mariozechner/pi-coding-agent`). no-vibe ships as a pi package. The bundled extension runs the shared write guard as a hard block and injects the status line, the bundled prompts expose `/no-vibe`, `/no-vibe-btw` and `/no-vibe-challenge`, and the `skills/` directory is shared with the other runtimes.
 
-Requires `bash` and `jq` on PATH.
+Requires `bash` on PATH.
 
 ## Avoiding skill collisions
 

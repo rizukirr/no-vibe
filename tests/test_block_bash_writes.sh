@@ -5,6 +5,13 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOOK="$SCRIPT_DIR/../hooks/block-bash-writes.sh"
 . "$SCRIPT_DIR/helpers.sh"
+. "$SCRIPT_DIR/../hooks/json.sh"
+
+# bash_call CWD CMD: the hook JSON for a Bash tool call.
+bash_call() {
+    printf '{"tool_name":"Bash","tool_input":{"command":%s},"cwd":%s}' \
+        "$(json_string "$2")" "$(json_string "$1")"
+}
 
 # Sandbox must live OUTSIDE /tmp because /tmp is on the allowlist —
 # otherwise every redirect would be classified safe.
@@ -21,23 +28,21 @@ make_sandbox() {
 run_hook() {
     # $1 = cwd, $2 = bash command
     local cwd="$1" cmd="$2"
-    jq -n --arg cwd "$cwd" --arg cmd "$cmd" \
-        '{tool_name:"Bash",tool_input:{command:$cmd},cwd:$cwd}' \
+    bash_call "$cwd" "$cmd" \
         | "$HOOK" 2>&1
 }
 
 run_hook_with_home() {
     # $1 = cwd, $2 = HOME override, $3 = bash command
     local cwd="$1" home="$2" cmd="$3"
-    jq -n --arg cwd "$cwd" --arg cmd "$cmd" \
-        '{tool_name:"Bash",tool_input:{command:$cmd},cwd:$cwd}' \
+    bash_call "$cwd" "$cmd" \
         | HOME="$home" "$HOOK" 2>&1
 }
 
 # --- Test 1: no marker → allow any command ---
 test_no_marker_allows() {
     local cwd; cwd=$(mktemp -d)
-    jq -n --arg cwd "$cwd" '{tool_name:"Bash",tool_input:{command:"echo hi > /etc/passwd"},cwd:$cwd}' \
+    bash_call "$cwd" "echo hi > /etc/passwd" \
         | "$HOOK" >/dev/null 2>&1
     local rc=$?
     rm -rf "$cwd"
@@ -193,7 +198,7 @@ test_relative_project_denied() {
 # --- Test 18: non-Bash tool → allow (out of scope) ---
 test_non_bash_allowed() {
     local cwd; cwd=$(make_sandbox)
-    jq -n --arg cwd "$cwd" '{tool_name:"Read",tool_input:{file_path:"x"},cwd:$cwd}' \
+    printf '{"tool_name":"Read","tool_input":{"file_path":"x"},"cwd":%s}' "$(json_string "$cwd")" \
         | "$HOOK" >/dev/null 2>&1
     local rc=$?
     rm -rf "$cwd"
@@ -255,7 +260,7 @@ test_redirect_into_home_scratch_allowed
 test_redirect_into_home_other_denied
 
 # --- Test 22: mixed Windows-form cwd vs MSYS-form target → allow ---
-# Regression for the path-form mismatch on Git Bash, where jq converts
+# Regression for the path-form mismatch on Git Bash, where MSYS converts
 # command-line --arg paths but leaves embedded path strings untouched,
 # producing a `C:/...` cwd alongside a `/c/...` target inside the same
 # tool call. Pure Linux runs are unaffected (no drive letters → the
@@ -268,8 +273,7 @@ test_mixed_path_form_allowed() {
             local rest="${cwd:2}"
             local win_cwd="${drive}:${rest}"
             local msys_target="$cwd/.no-vibe/notes.md"
-            local out; out=$(jq -n --arg cwd "$win_cwd" --arg cmd "echo hi > $msys_target" \
-                '{tool_name:"Bash",tool_input:{command:$cmd},cwd:$cwd}' | "$HOOK" 2>&1)
+            local out; out=$(bash_call "$win_cwd" "echo hi > $msys_target" | "$HOOK" 2>&1)
             local rc=$?
             rm -rf "$cwd"
             [ "$rc" = "0" ] && pass "mixed-form cwd vs target → allow" \

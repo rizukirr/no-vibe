@@ -51,6 +51,7 @@ npm run check
 node tests/test_generate.mjs
 bash tests/test_block_writes.sh
 bash tests/test_block_bash_writes.sh
+bash tests/test_json.sh
 bash tests/test_status.sh
 bash tests/test_escape_hatch.sh
 bash tests/test_contract_injection.sh

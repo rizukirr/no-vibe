@@ -27,9 +27,20 @@ normalize_path() {
     printf '%s' "$p"
 }
 
+. "$(dirname "$0")/json.sh"
+
 input=$(cat)
 
-cwd=$(echo "$input" | jq -r '.cwd // empty')
+cwd=$(json_get .cwd)
+# JSON this reader cannot parse is refused while no-vibe is active, never
+# waved through. The marker is then looked up from the hook's own cwd.
+if [ $? -eq 2 ]; then
+    if [ -f "$PWD/.no-vibe/active" ]; then
+        echo "no-vibe mode is active. Refusing a tool call whose JSON could not be parsed." >&2
+        exit 2
+    fi
+    exit 0
+fi
 cwd=$(normalize_path "$cwd")
 
 # If marker doesn't exist, allow everything.
@@ -37,7 +48,7 @@ if [ -z "$cwd" ] || [ ! -f "$cwd/.no-vibe/active" ]; then
     exit 0
 fi
 
-tool_name=$(echo "$input" | jq -r '.tool_name // empty')
+tool_name=$(json_get .tool_name)
 case "$tool_name" in
     Edit|Write|NotebookEdit|MultiEdit|ApplyPatch|apply_patch) ;;
     *) exit 0 ;;
@@ -47,11 +58,11 @@ esac
 # so every file the patch adds, updates, deletes or moves to is checked.
 case "$tool_name" in
     ApplyPatch|apply_patch)
-        targets=$(echo "$input" | jq -r '.tool_input.command // empty' |
+        targets=$(json_get .tool_input.command |
             sed -n -E -e 's/^\*\*\* (Add|Update|Delete) File: (.*)$/\2/p' -e 's/^\*\*\* Move to: (.*)$/\1/p')
         ;;
     *)
-        targets=$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.notebook_path // empty')
+        targets=$(json_get .tool_input.file_path || json_get .tool_input.notebook_path)
         ;;
 esac
 

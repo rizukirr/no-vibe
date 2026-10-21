@@ -16,7 +16,7 @@ set -u
 # (`/c/foo`) so prefix comparisons stay consistent on Git Bash. MSYS
 # converts paths automatically when crossing the bash/native-binary
 # boundary, which can produce mixed forms within a single hook run
-# (e.g. cwd received via jq becomes `C:/...` while paths embedded in
+# (e.g. cwd received from the host becomes `C:/...` while paths embedded in
 # command strings keep `/c/...`). Without this, the allowlist match
 # silently fails on Windows.
 normalize_path() {
@@ -39,8 +39,20 @@ normalize_path() {
     printf '%s' "$p"
 }
 
+. "$(dirname "$0")/json.sh"
+
 input=$(cat)
-cwd=$(echo "$input" | jq -r '.cwd // empty')
+
+cwd=$(json_get .cwd)
+# JSON this reader cannot parse is refused while no-vibe is active, never
+# waved through. The marker is then looked up from the hook's own cwd.
+if [ $? -eq 2 ]; then
+    if [ -f "$PWD/.no-vibe/active" ]; then
+        echo "no-vibe mode is active. Refusing a tool call whose JSON could not be parsed." >&2
+        exit 2
+    fi
+    exit 0
+fi
 cwd=$(normalize_path "$cwd")
 
 # If marker doesn't exist, allow everything.
@@ -48,10 +60,10 @@ if [ -z "$cwd" ] || [ ! -f "$cwd/.no-vibe/active" ]; then
     exit 0
 fi
 
-tool_name=$(echo "$input" | jq -r '.tool_name // empty')
+tool_name=$(json_get .tool_name)
 [ "$tool_name" = "Bash" ] || exit 0
 
-cmd=$(echo "$input" | jq -r '.tool_input.command // empty')
+cmd=$(json_get .tool_input.command)
 [ -z "$cmd" ] && exit 0
 
 deny() {

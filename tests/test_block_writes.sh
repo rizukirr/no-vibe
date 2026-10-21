@@ -5,6 +5,7 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOOK="$SCRIPT_DIR/../hooks/block-writes.sh"
 . "$SCRIPT_DIR/helpers.sh"
+. "$SCRIPT_DIR/../hooks/json.sh"
 
 # Each test runs in a fresh temp dir to isolate the .no-vibe/ marker.
 make_sandbox() {
@@ -300,8 +301,8 @@ test_marker_blocks_other_home_path
 # --- apply_patch: the patch text is the only source of target paths ---
 run_patch() {
     local cwd="$1" patch="$2"
-    jq -cn --arg cwd "$cwd" --arg patch "$patch" \
-        '{tool_name:"apply_patch", tool_input:{command:$patch}, cwd:$cwd}' | "$HOOK" >/dev/null 2>&1
+    printf '{"tool_name":"apply_patch","tool_input":{"command":%s},"cwd":%s}' \
+        "$(json_string "$patch")" "$(json_string "$cwd")" | "$HOOK" >/dev/null 2>&1
 }
 
 test_patch_inside_scratch_allows() {

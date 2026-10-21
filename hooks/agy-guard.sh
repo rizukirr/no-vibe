@@ -5,10 +5,21 @@
 
 set -u
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$HOOK_DIR/json.sh"
 
 input=$(cat)
-cwd=$(echo "$input" | jq -r '.workspacePaths[0] // empty')
-name=$(echo "$input" | jq -r '.toolCall.name // empty')
+
+name=$(json_get .toolCall.name)
+# JSON this reader cannot parse is refused while no-vibe is active.
+if [ $? -eq 2 ]; then
+    if [ -f "$PWD/.no-vibe/active" ]; then
+        echo '{"decision":"deny","reason":"no-vibe mode is active. The tool call could not be parsed."}'
+    else
+        echo '{"decision":"allow"}'
+    fi
+    exit 0
+fi
+cwd=$(json_get '.workspacePaths[0]')
 
 # no-vibe: run_command resolves relative paths against the workspace root, not
 # args.Cwd. A command run from a subdirectory can be misjudged. Upgrade path:
@@ -16,13 +27,13 @@ name=$(echo "$input" | jq -r '.toolCall.name // empty')
 case "$name" in
     write_to_file|replace_file_content|multi_replace_file_content)
         script=block-writes.sh
-        payload=$(echo "$input" | jq -c --arg cwd "$cwd" \
-            '{tool_name:"Write", tool_input:{file_path:.toolCall.args.TargetFile}, cwd:$cwd}')
+        target=$(json_get .toolCall.args.TargetFile)
+        payload="{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":$(json_string "$target")},\"cwd\":$(json_string "$cwd")}"
         ;;
     run_command)
         script=block-bash-writes.sh
-        payload=$(echo "$input" | jq -c --arg cwd "$cwd" \
-            '{tool_name:"Bash", tool_input:{command:.toolCall.args.CommandLine}, cwd:$cwd}')
+        command=$(json_get .toolCall.args.CommandLine)
+        payload="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":$(json_string "$command")},\"cwd\":$(json_string "$cwd")}"
         ;;
     *)
         echo '{"decision":"allow"}'
@@ -33,6 +44,6 @@ esac
 if reason=$(printf '%s' "$payload" | bash "$HOOK_DIR/$script" 2>&1 >/dev/null); then
     echo '{"decision":"allow"}'
 else
-    jq -cn --arg reason "$reason" '{decision:"deny", reason:$reason}'
+    printf '{"decision":"deny","reason":%s}\n' "$(json_string "$reason")"
 fi
 exit 0

@@ -62,7 +62,7 @@ Verify with `agy plugin list`.
 
 ### opencode
 
-Requires opencode v2 and `bash` and `jq` on PATH. Add the package to the `plugin` array in `opencode.json`:
+Requires opencode v2 and `bash` on PATH. Add the package to the `plugin` array in `opencode.json`:
 
 ```json
 {
