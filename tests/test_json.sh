@@ -30,6 +30,27 @@ get '{"a":"x"} trailing' .a >/dev/null; assert_eq "2" "$?" "trailing garbage →
 round=$(json_string $'q"x\\y\nz\tw')
 assert_eq $'q"x\\y\nz\tw' "$(get "{\"m\":$round}" .m)" "json_string round-trips through json_get"
 
+assert_eq '"a\\b\"c"' "$(json_string 'a\b"c')" "json_string doubles a backslash before a quote"
+if awk --version 2>/dev/null | grep -q 'GNU Awk'; then
+    assert_eq '"a\\b\"c"' "$(POSIXLY_CORRECT=1 json_string 'a\b"c')" "json_string doubles backslashes under POSIX gawk"
+fi
+ctl=$(json_string $'a\x01b\bc\x1bd')
+assert_eq '"a\u0001b\bc\u001bd"' "$ctl" "json_string escapes control characters"
+assert_eq $'a\x01b\bc\x1bd' "$(get "{\"m\":$ctl}" .m)" "escaped control characters decode back"
+assert_eq $'x\\' "$(get "{\"m\":$(json_string 'x\')}" .m)" "trailing backslash round-trips"
+
+assert_eq "b" "$(get $'\xef\xbb\xbf{"a":"b"}' .a)" "leading UTF-8 BOM is skipped"
+assert_eq "src/x" "$(get '{"tool_input":{"file_path":"src/x"},"tool_input.file_path":".no-vibe/x"}' .tool_input.file_path)" "dotted top-level key does not shadow the nested path"
+assert_eq "i" "$(get '{"a[0]":"k","a":["i"]}' '.a[0]')" "bracketed key does not shadow an array index"
+
+# Timing check: a 1 MB string value must decode in well under the 10 s hook
+# timeout on every awk.
+big=$(printf '%076924d' 0 | sed 's/0/ab\\"cd\\n\\\\ef /g')
+start=$(date +%s)
+len=$(get "{\"a\":\"$big\",\"b\":\"ok\"}" .a | wc -c)
+took=$(( $(date +%s) - start ))
+[ "$len" -gt 500000 ] && [ "$took" -lt 5 ] && pass "timing: 1 MB string read in ${took}s" || fail "timing: 1 MB string read" "bytes=$len seconds=$took"
+
 # The guards with only bash and the POSIX tools on PATH. Projects live
 # outside /tmp, which the Bash guard allow-lists.
 bin=$(mktemp -d)
