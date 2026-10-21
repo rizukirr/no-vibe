@@ -20,13 +20,22 @@ fi
 
 line="no-vibe: ON"
 syllabus="$cwd/.no-vibe/syllabus.md"
-field() { sed -n "s/^$1:[[:space:]]*//p" "$syllabus" | head -n 1; }
+
+# The frontmatter value of $1, without CR, trailing spaces or YAML quotes.
+field() {
+    tr -d '\r' < "$syllabus" | sed -n "s/^$1:[[:space:]]*//p" | head -n 1 |
+        sed -e 's/[[:space:]]*$//' -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'\$/\1/"
+}
+
+# Sections are the numbered checkbox lines the skill writes, `- [ ] 1. ...`.
+sections() { tr -d '\r' < "$syllabus" | grep -cE "^- \[$1\] [0-9]+\. "; }
+
 if [ -f "$syllabus" ] && [ "$(field status)" = "approved" ]; then
-    total=$(grep -cE '^- \[[ x]\] ' "$syllabus")
-    finished=$(grep -cE '^- \[x\] ' "$syllabus")
-    current=$((finished + 1))
-    [ "$current" -gt "$total" ] && current=$total
-    line="$line, resuming \"$(field topic)\" (section $current/$total)"
+    total=$(sections '[ xX]')
+    finished=$(sections '[xX]')
+    if [ "$total" -gt 0 ] && [ "$finished" -lt "$total" ]; then
+        line="$line, resuming \"$(field topic)\" (section $((finished + 1))/$total)"
+    fi
 fi
 
 echo "$line"
