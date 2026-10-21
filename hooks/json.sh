@@ -47,6 +47,14 @@ function segments(   i, j, nq, nb, Q, B) {
         }
     }
 }
+# An escape is valid when it is \" or \\ (empty segment: the cut is the
+# escaped character), one of \/ \b \f \n \r \t, or \u and four hex digits.
+function escape_ok(k,   c) {
+    if (P[k] == "") return 1
+    c = substr(P[k], 1, 1)
+    if (index("/bfnrt", c)) return 1
+    return c == "u" && substr(P[k], 2, 4) ~ /^[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]$/
+}
 # Walks a string whose text starts at segment k and returns the segment that
 # ends at its closing quote. An escape is the first character of the segment
 # after a backslash, or the next cut when that segment is empty.
@@ -55,6 +63,7 @@ function skip(k) {
         if (S[k] == "\"") return k
         if (S[k] == "") break
         k++
+        if (!escape_ok(k)) bad = 1
         if (P[k] == "") {
             if (S[k] == "") break
             k++

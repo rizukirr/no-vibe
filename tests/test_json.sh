@@ -51,6 +51,12 @@ len=$(get "{\"a\":\"$big\",\"b\":\"ok\"}" .a | wc -c)
 took=$(( $(date +%s) - start ))
 [ "$len" -gt 500000 ] && [ "$took" -lt 5 ] && pass "timing: 1 MB string read in ${took}s" || fail "timing: 1 MB string read" "bytes=$len seconds=$took"
 
+# Escapes are validated in every string, including ones the reader skips.
+for doc in '{"a":"\u12"}' '{"a":"\u"}' '{"a":"\u12zz"}' '{"a":"\q"}' '{"b":"\u12","a":"y"}' '{"a":"y","b":["\u12"]}' '{"\u12":"x","a":"y"}'; do
+    get "$doc" .a >/dev/null; assert_eq "2" "$?" "malformed escape → exit 2: $doc"
+done
+assert_eq '"\/' "$(get '{"b":"\\\"","a":"\"\\\/"}' .a)" "valid escapes after a skipped escaped quote"
+
 # The guards with only bash and the POSIX tools on PATH. Projects live
 # outside /tmp, which the Bash guard allow-lists.
 bin=$(mktemp -d)
