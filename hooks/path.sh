@@ -31,15 +31,23 @@ normalize_path() {
 # resolve_path ABS: prints the absolute path ABS names, with symlinks resolved
 # and `.` and `..` removed, whether or not it exists. The deepest existing
 # directory is resolved with `cd -P`, which every bash has, and the rest is
-# applied lexically, so it needs no GNU-only flags. Prints nothing for a
-# relative path, or when the last component is a symlink: where a write
-# through it lands is not known, so callers refuse.
+# applied lexically, so it needs no GNU-only flags. Prints nothing, so callers
+# refuse, for a relative path, an overlong path, or a path that crosses a
+# symlink or uses a file as a directory after that point: where a write
+# through it lands is not known.
 resolve_path() {
-    local dir="$1" rest="" part
+    local dir="$1" rest="" part slashes
     case "$dir" in
         /*) ;;
         *) return 0 ;;
     esac
+    # Bounded input keeps every check below under PATH_MAX and the loops
+    # short. Real targets are far smaller.
+    slashes=${dir//[!\/]/}
+    [ "${#dir}" -gt 1024 ] && return 0
+    [ "${#slashes}" -gt 128 ] && return 0
+    # `//x` is `/x`, and `pwd -P` would keep the double slash.
+    while [ "${dir#//}" != "$dir" ]; do dir="${dir#/}"; done
     while [ "${#dir}" -gt 1 ] && [ "${dir%/}" != "$dir" ]; do dir="${dir%/}"; done
     while [ ! -d "$dir" ]; do
         rest="/${dir##*/}$rest"
@@ -55,11 +63,14 @@ resolve_path() {
             *) rest="" ;;
         esac
         case "$part" in
-            ""|.) ;;
-            ..) dir="${dir%/*}"; [ -z "$dir" ] && dir=/ ;;
-            *) if [ "$dir" = / ]; then dir="/$part"; else dir="$dir/$part"; fi ;;
+            ""|.) continue ;;
+            ..) dir="${dir%/*}"; [ -z "$dir" ] && dir=/; continue ;;
         esac
+        if [ "$dir" = / ]; then dir="/$part"; else dir="$dir/$part"; fi
+        # A symlink, dangling or not, hides the real target, and so does a
+        # file used as a directory: refuse both.
+        [ -L "$dir" ] && return 0
+        [ -n "$rest" ] && [ -e "$dir" ] && [ ! -d "$dir" ] && return 0
     done
-    [ -L "$dir" ] && return 0
     printf '%s' "$dir"
 }

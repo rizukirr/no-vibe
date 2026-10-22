@@ -386,4 +386,35 @@ test_symlink_escape_denied() {
     assert_eq "2" "$rc" "redirect through a symlinked dir out of .no-vibe → deny"
 }
 test_symlink_escape_denied
+# --- Paths the resolver cannot pin down are refused ---
+test_unresolvable_targets_denied() {
+    local cwd; cwd=$(make_sandbox)
+    mkdir -p "$cwd/src"
+    ln -s ../src "$cwd/.no-vibe/link"
+    ln -s ../src/new "$cwd/.no-vibe/dang"
+    local long; long=".no-vibe/$(printf './%.0s' $(seq 600))link/main.rs"
+    run_hook "$cwd" "echo pwn > .no-vibe/dang/x" >/dev/null; assert_eq "2" "$?" "dangling symlink mid-path → deny"
+    run_hook "$cwd" "echo pwn > .no-vibe/missing/../link/x" >/dev/null; assert_eq "2" "$?" "symlink after a missing dir and .. → deny"
+    run_hook "$cwd" "echo pwn > $long" >/dev/null; assert_eq "2" "$?" "overlong target → deny"
+    local deep; deep=".no-vibe/$(printf 'd/%.0s' $(seq 2000))x"
+    local start end
+    start=$(date +%s)
+    run_hook "$cwd" "echo pwn > $deep" >/dev/null; assert_eq "2" "$?" "2000-component target → deny"
+    end=$(date +%s)
+    [ $((end - start)) -lt 3 ] && pass "2000-component target decided in under 3 s" \
+        || fail "2000-component target decided in under 3 s" "took $((end - start)) s"
+    rm -rf "$cwd"
+}
+test_unresolvable_targets_denied
+
+test_double_slash_root_denied() {
+    local cwd; cwd=$(make_sandbox)
+    local fake_home; fake_home=$(mktemp -d -p "$SANDBOX_ROOT")
+    ln -s / "$fake_home/.no-vibe"
+    run_hook_with_home "$cwd" "$fake_home" "echo pwn > //${cwd#/}/src/x" >/dev/null
+    local rc=$?
+    rm -rf "$cwd" "$fake_home"
+    assert_eq "2" "$rc" "// target with a root resolving to / → deny"
+}
+test_double_slash_root_denied
 summary

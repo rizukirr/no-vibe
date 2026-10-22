@@ -414,4 +414,24 @@ test_symlink_escape_blocks() {
 }
 test_symlink_escape_blocks
 rm -rf "$fake_realpath_bin"
+# --- Paths the resolver cannot pin down are refused ---
+test_unresolvable_targets_block() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe" "$cwd/src" && touch "$cwd/.no-vibe/active"
+    ln -s ../src "$cwd/.no-vibe/link"
+    ln -s ../src/new "$cwd/.no-vibe/dang"
+    local long; long=".no-vibe/$(printf './%.0s' $(seq 600))link/main.rs"
+    local rc
+    for target in "$cwd/.no-vibe/dang/x" "$cwd/.no-vibe/missing/../link/x" "$cwd/$long"; do
+        rc=$(printf '{"tool_name":"Write","tool_input":{"file_path":%s},"cwd":%s}' \
+            "$(json_string "$target")" "$(json_string "$cwd")" | "$HOOK" >/dev/null 2>&1; echo $?)
+        assert_eq "2" "$rc" "unresolvable target → deny: ${target#$cwd/}"
+    done
+    rc=$(printf '{"tool_name":"Write","tool_input":{"file_path":%s},"cwd":%s}' \
+        "$(json_string "//${cwd#/}/.no-vibe/notes.md")" "$(json_string "$cwd")" | "$HOOK" >/dev/null 2>&1; echo $?)
+    assert_eq "0" "$rc" "leading // inside .no-vibe → allow"
+    rm -rf "$cwd"
+}
+test_unresolvable_targets_block
 summary
