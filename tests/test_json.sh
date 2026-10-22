@@ -57,6 +57,12 @@ for doc in '{"a":"\u12"}' '{"a":"\u"}' '{"a":"\u12zz"}' '{"a":"\q"}' '{"b":"\u12
 done
 assert_eq '"\/' "$(get '{"b":"\\\"","a":"\"\\\/"}' .a)" "valid escapes after a skipped escaped quote"
 
+# A surrogate escape is valid only as a high half followed by a low half.
+for doc in '{"a":"\ud83d"}' '{"a":"\ud83dx"}' '{"a":"\ud83d\u0041"}' '{"a":"\ud83d\ud83d"}' '{"a":"\ude00"}' '{"a":"\ud83d\n"}' '{"b":"\ud83d\u0041","a":"y"}'; do
+    get "$doc" .a >/dev/null; assert_eq "2" "$?" "unpaired surrogate → exit 2: $doc"
+done
+assert_eq "😀z" "$(get '{"a":"\uD83D\uDE00z"}' .a)" "surrogate pair still decodes"
+
 # The guards with only bash and the POSIX tools on PATH. Projects live
 # outside /tmp, which the Bash guard allow-lists.
 bin=$(mktemp -d)

@@ -57,13 +57,24 @@ function escape_ok(k,   c) {
 }
 # Walks a string whose text starts at segment k and returns the segment that
 # ends at its closing quote. An escape is the first character of the segment
-# after a backslash, or the next cut when that segment is empty.
-function skip(k) {
+# after a backslash, or the next cut when that segment is empty. A \u
+# surrogate is valid only as a high half directly followed by a low half.
+function skip(k,   code, mate) {
+    mate = 0
     while (k <= M) {
         if (S[k] == "\"") return k
         if (S[k] == "") break
         k++
         if (!escape_ok(k)) bad = 1
+        else if (substr(P[k], 1, 1) == "u") {
+            code = hex(substr(P[k], 2, 4))
+            if (code >= 56320 && code < 57344 && k != mate) bad = 1
+            if (code >= 55296 && code < 56320) {
+                code = hex(substr(P[k + 1], 2, 4))
+                if (substr(P[k], 6) != "" || S[k] != "\\" || substr(P[k + 1], 1, 1) != "u" || code < 56320 || code >= 57344) bad = 1
+                mate = k + 1
+            }
+        }
         if (P[k] == "") {
             if (S[k] == "") break
             k++
