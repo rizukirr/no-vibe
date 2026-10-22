@@ -23,11 +23,15 @@ syllabus="$cwd/.no-vibe/syllabus.md"
 
 # The frontmatter value of $1, without CR, trailing spaces or YAML quotes.
 # Inside quotes, '' becomes ' and \" or \\ lose their backslash, as in YAML.
+# Only the outer quote style is undone, once.
 field() {
-    tr -d '\r' < "$syllabus" | sed -n "s/^$1:[[:space:]]*//p" | head -n 1 |
-        sed -e 's/[[:space:]]*$//' \
-            -e "/^'.*'\$/{s/^'\\(.*\\)'\$/\\1/;s/''/'/g;}" \
-            -e '/^".*"$/{s/^"\(.*\)"$/\1/;s/\\\(["\\]\)/\1/g;}'
+    local v
+    v=$(tr -d '\r' < "$syllabus" | sed -n "s/^$1:[[:space:]]*//p" | head -n 1 | sed 's/[[:space:]]*$//')
+    case "$v" in
+        \'*\') v=${v#\'}; v=${v%\'}; v=$(printf '%s' "$v" | sed "s/''/'/g") ;;
+        \"*\") v=${v#\"}; v=${v%\"}; v=$(printf '%s' "$v" | sed 's/\\\(["\\]\)/\1/g') ;;
+    esac
+    printf '%s\n' "$v"
 }
 
 # Sections are the numbered checkbox lines the skill writes, `- [ ] 1. ...`.

@@ -99,5 +99,9 @@ assert_eq 'no-vibe: ON, resuming "say "hi"" (section 1/1)' \
     "$(resume '---\nstatus: approved\ntopic: "say \\"hi\\""\n---\n- [ ] 1. a\n')" "double-quoted topic unescapes \\\""
 assert_eq 'no-vibe: ON, resuming "T" (section 2/3)' \
     "$(resume '---\nstatus: approved\ntopic: T\n---\n- [x]  1. a\n- [ ] 2. b\n- [ ]\t3. c\n')" "extra spacing after the box still counts"
+assert_eq 'no-vibe: ON, resuming ""x"" (section 1/1)' \
+    "$(resume "---\nstatus: approved\ntopic: '\"x\"'\n---\n- [ ] 1. a\n")" "single-quoted value keeps inner double quotes"
+assert_eq "no-vibe: ON, resuming \"'x'\" (section 1/1)" \
+    "$(resume '---\nstatus: approved\ntopic: "'"'"'x'"'"'"\n---\n- [ ] 1. a\n')" "double-quoted value keeps inner single quotes"
 rm -rf "$fake_home"
 summary
