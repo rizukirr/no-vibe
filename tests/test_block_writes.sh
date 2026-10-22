@@ -359,4 +359,24 @@ test_patch_without_paths_blocks() {
     assert_eq "2" "$exit_code" "marker + apply_patch with no parseable path → deny"
 }
 test_patch_without_paths_blocks
+# --- On Linux and macOS a backslash is part of a name, not a separator ---
+test_backslash_name_escape_blocks() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe" && touch "$cwd/.no-vibe/active"
+    case "${OSTYPE:-}" in
+        msys*|cygwin*|win32*)
+            rm -rf "$cwd"
+            pass "backslash name escape → deny (skipped on Windows)"
+            return
+            ;;
+    esac
+    printf '{"tool_name":"Write","tool_input":{"file_path":%s},"cwd":%s}' \
+        "$(json_string '.no-vibe/a\b/../../src/c')" "$(json_string "$cwd")" | "$HOOK" >/dev/null 2>&1
+    local exit_code=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$exit_code" "marker + Write .no-vibe/a\\b/../../src/c → deny"
+}
+test_backslash_name_escape_blocks
+
 summary

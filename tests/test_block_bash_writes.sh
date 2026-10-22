@@ -317,4 +317,21 @@ test_tmp_inner_dotdot_allowed() {
 }
 test_tmp_inner_dotdot_allowed
 
+# --- On Linux and macOS a backslash is part of a name, not a separator ---
+test_backslash_name_escape_denied() {
+    local cwd; cwd=$(make_sandbox)
+    case "${OSTYPE:-}" in
+        msys*|cygwin*|win32*)
+            rm -rf "$cwd"
+            pass "backslash name escape → deny (skipped on Windows)"
+            return
+            ;;
+    esac
+    run_hook "$cwd" "echo hi > '.no-vibe/a\\b/../../src/c'" >/dev/null
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "redirect to '.no-vibe/a\\b/../../src/c' → deny"
+}
+test_backslash_name_escape_denied
+
 summary

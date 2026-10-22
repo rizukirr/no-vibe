@@ -11,7 +11,12 @@ set -u
 # block-bash-writes.sh for the full rationale. Same fix, same reason.
 normalize_path() {
     local p="$1"
-    p=$(printf '%s' "$p" | tr '\\' '/')
+        # Backslashes are separators only on Windows. Elsewhere `\` is a legal
+        # filename character, and translating it would let `.no-vibe/a\b/../../x`
+        # pass for a path inside .no-vibe/.
+        case "${OSTYPE:-}" in
+            msys*|cygwin*|win32*) p=$(printf '%s' "$p" | tr '\\' '/') ;;
+        esac
     case "$p" in
         [A-Za-z]:/*)
             local drive

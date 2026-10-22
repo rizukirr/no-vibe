@@ -21,8 +21,12 @@ set -u
 # silently fails on Windows.
 normalize_path() {
     local p="$1"
-    # Backslashes → forward slashes.
-    p=$(printf '%s' "$p" | tr '\\' '/')
+        # Backslashes are separators only on Windows. Elsewhere `\` is a legal
+        # filename character, and translating it would let `.no-vibe/a\b/../../x`
+        # pass for a path inside .no-vibe/.
+        case "${OSTYPE:-}" in
+            msys*|cygwin*|win32*) p=$(printf '%s' "$p" | tr '\\' '/') ;;
+        esac
     # `C:/foo` or `c:/foo` → `/c/foo` (portable, no bash 4 lowercase op).
     case "$p" in
         [A-Za-z]:/*)
