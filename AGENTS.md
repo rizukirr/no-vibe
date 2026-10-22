@@ -20,9 +20,9 @@ The version lives only in `no-vibe.config.json`.
 
 `hooks/block-writes.sh` and `hooks/block-bash-writes.sh` are the only guard implementation. Claude Code, Codex and Antigravity call them as hooks, and opencode and Pi call them from their generated plugins.
 
-The Write-tool guard allows writes only under `.no-vibe/**` and `$HOME/.no-vibe/**`. The Bash guard also allows `/tmp/**`, `/var/tmp/**`, `/dev/null`, `/dev/stdout`, `/dev/stderr`, `/dev/tty` and `/dev/fd/*`. Both refuse a target they cannot pin down: a variable, a glob or brace, a backslash, an overlong path, or a path through a symlink.
+The Write-tool guard allows writes only under `.no-vibe/**` and `$HOME/.no-vibe/**`, and refuses a path through a symlink or longer than 4000 bytes. The Bash guard reads each command's text and also allows `/tmp/**`, `/var/tmp/**`, `/dev/null`, `/dev/stdout`, `/dev/stderr`, `/dev/tty` and `/dev/fd/*`. It refuses a target that starts with `$` or uses `$(`, `${` or backticks, a glob, a brace or a backslash, an overlong path, a path through a symlink, and any command over 64 KB.
 
-The guards read each tool call before it runs. They stop an agent that drifts into writing project files, and they are not a sandbox: a command that creates a symlink and writes through it in the same call, or a script or build tool that writes files itself, can still write outside `.no-vibe/`.
+The guards are a guardrail against drift, not a sandbox. The Bash guard matches common write forms with patterns, so shell it does not parse gets through: a variable in the middle of a path (`.no-vibe/$X`), `>|` and `>&` redirects, a second `cp`, `tee` or `sed -i` in one command, a quoted space inside a path, writes through `/dev/fd`, a symlink created and used in the same call, and any script or build tool that writes files itself. no-vibe relies on the skill keeping the agent in chat, and the guard catches it when it slips.
 
 ## State
 

@@ -110,7 +110,7 @@ Claude Code was not checked in a live session. Its guard and status hooks are co
 
 ## What the guard covers
 
-The guard checks each file write and each shell command before it runs, and refuses writes outside `.no-vibe/` (the shell guard also allows `/tmp`). It stops an agent that drifts into writing your project files. It is not a sandbox: a command that creates a symlink and writes through it in the same call, or a script or build tool that writes files itself, can still get past it. no-vibe relies on the agent following the skill, and the guard catches it when it slips.
+The guard checks each file write and each shell command before it runs, and refuses writes outside `.no-vibe/` (the shell guard also allows `/tmp`). It catches the ways an agent usually writes files when it slips. It is not a sandbox. The shell guard reads command text with patterns, so some shell gets past it: a variable inside a path, `>|` or `>&` redirects, a second `cp`, `tee` or `sed -i` in one command, a quoted space in a path, writes through `/dev/fd`, a symlink created and used in the same command, and scripts or build tools that write files themselves. no-vibe relies on the agent following the skill, and the guard catches it when it slips.
 
 ## License
 
