@@ -2,8 +2,6 @@
 
 Turn your AI assistant into a teacher. It finds your level, plans what you will learn and shows you code in chat, and **you** type every line into your project.
 
-> Pair with [vibekit](https://github.com/rizukirr/vibekit): vibekit when you want speed, no-vibe when you want to learn.
-
 ## Why no-vibe
 
 Vibe-coding produces output without producing understanding. What transfers is the thinking and the typing: deciding what you want, reading code until it makes sense, and writing it with your own hands until the patterns stick.
