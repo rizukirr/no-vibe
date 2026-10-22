@@ -41,4 +41,9 @@ assert.equal(crlf.body, 'body\r\n')
 assert.equal(parseFrontmatter("---\nd: 'it''s x: y'\n---\n").data.d, "it's x: y")
 assert.equal(parseFrontmatter('---\nd: "a \\"b\\": c"\n---\n').data.d, 'a "b": c')
 
+// Quoting the restricted subset does not support is an error, not a misparse.
+assert.throws(() => parseFrontmatter('---\nd: "x" and "y"\n---\n'), /unsupported escape or an unescaped quote/)
+assert.throws(() => parseFrontmatter('---\nd: "x\\ny"\n---\n'), /unsupported escape or an unescaped quote/)
+assert.throws(() => parseFrontmatter("---\nd: 'it's'\n---\n"), /unsupported escape or an unescaped quote/)
+
 console.log('test_generate: ok')
