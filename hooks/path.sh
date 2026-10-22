@@ -31,7 +31,7 @@ normalize_path() {
 # resolve_path ABS: prints the absolute path ABS names, with symlinks resolved
 # and `.` and `..` removed, whether or not it exists. The deepest existing
 # directory is resolved with `cd -P`, which every bash has, and the rest is
-# applied lexically, so no `realpath -m` is needed. Prints nothing for a
+# applied lexically, so it needs no GNU-only flags. Prints nothing for a
 # relative path, or when the last component is a symlink: where a write
 # through it lands is not known, so callers refuse.
 resolve_path() {
