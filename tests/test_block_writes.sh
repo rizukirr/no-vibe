@@ -434,4 +434,22 @@ test_unresolvable_targets_block() {
     rm -rf "$cwd"
 }
 test_unresolvable_targets_block
+# --- A long project path still allows its .no-vibe state file ---
+test_long_project_path_allows() {
+    local cwd
+    cwd=$(make_sandbox)
+    local seg; seg=$(printf 'p%.0s' $(seq 200))
+    local deep="$cwd/$seg/$seg/$seg/$seg/$seg"
+    mkdir -p "$deep/.no-vibe" && touch "$deep/.no-vibe/active"
+    local rc
+    rc=$(printf '{"tool_name":"Write","tool_input":{"file_path":".no-vibe/syllabus.md"},"cwd":%s}' \
+        "$(json_string "$deep")" | "$HOOK" >/dev/null 2>&1; echo $?)
+    assert_eq "0" "$rc" "1000+ byte project path: .no-vibe/syllabus.md → allow"
+    rc=$(printf '{"tool_name":"Write","tool_input":{"file_path":"src/main.rs"},"cwd":%s}' \
+        "$(json_string "$deep")" | "$HOOK" >/dev/null 2>&1; echo $?)
+    assert_eq "2" "$rc" "1000+ byte project path: src/main.rs → deny"
+    rm -rf "$cwd"
+}
+test_long_project_path_allows
+
 summary

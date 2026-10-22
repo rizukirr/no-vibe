@@ -44,6 +44,12 @@ if [ $? -ne 0 ]; then
     exit 2
 fi
 [ -z "$cmd" ] && exit 0
+# A huge command makes the checks below slow enough to hit a host timeout:
+# refuse it rather than risk the hook being killed.
+if [ "${#cmd}" -gt 65536 ]; then
+    echo "no-vibe mode is active. Refusing a Bash command longer than 64 KB." >&2
+    exit 2
+fi
 
 deny() {
     cat >&2 <<EOF

@@ -41,11 +41,12 @@ resolve_path() {
         /*) ;;
         *) return 0 ;;
     esac
-    # Bounded input keeps every check below under PATH_MAX and the loops
-    # short. Real targets are far smaller.
+    # Bounded input keeps every check below under PATH_MAX (4096) and the
+    # loops short. The length check runs first, so the count after it only
+    # ever scans a short string.
+    [ "${#dir}" -gt 4000 ] && return 0
     slashes=${dir//[!\/]/}
-    [ "${#dir}" -gt 1024 ] && return 0
-    [ "${#slashes}" -gt 128 ] && return 0
+    [ "${#slashes}" -gt 512 ] && return 0
     # `//x` is `/x`, and `pwd -P` would keep the double slash.
     while [ "${dir#//}" != "$dir" ]; do dir="${dir#/}"; done
     while [ "${#dir}" -gt 1 ] && [ "${dir%/}" != "$dir" ]; do dir="${dir%/}"; done

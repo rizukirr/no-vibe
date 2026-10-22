@@ -429,4 +429,20 @@ test_expanding_targets_denied() {
     rm -rf "$cwd"
 }
 test_expanding_targets_denied
+# --- A huge command is refused before parsing, and quickly ---
+test_huge_command_denied() {
+    local cwd; cwd=$(make_sandbox)
+    local pad; pad=$(head -c 70000 /dev/zero | tr '\0' 'a')
+    local start end
+    start=$(date +%s)
+    run_hook "$cwd" "echo $pad > .no-vibe/x" >/dev/null
+    local rc=$?
+    end=$(date +%s)
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "command over 64 KB → deny"
+    [ $((end - start)) -lt 3 ] && pass "command over 64 KB decided in under 3 s" \
+        || fail "command over 64 KB decided in under 3 s" "took $((end - start)) s"
+}
+test_huge_command_denied
+
 summary
