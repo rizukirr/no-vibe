@@ -108,6 +108,10 @@ These runtimes were checked live:
 
 Claude Code was not checked in a live session. Its guard and status hooks are covered by the shell tests and by `tests/test_manifests.mjs`, which runs them through `run-hook.cmd`. Antigravity was not run live and is covered by `tests/test_guard_parity.mjs` only.
 
+## What the guard covers
+
+The guard checks each file write and each shell command before it runs, and refuses writes outside `.no-vibe/` (the shell guard also allows `/tmp`). It stops an agent that drifts into writing your project files. It is not a sandbox: a command that creates a symlink and writes through it in the same call, or a script or build tool that writes files itself, can still get past it. no-vibe relies on the agent following the skill, and the guard catches it when it slips.
+
 ## License
 
 MIT. Issues and PRs welcome at [github.com/rizukirr/no-vibe/issues](https://github.com/rizukirr/no-vibe/issues).

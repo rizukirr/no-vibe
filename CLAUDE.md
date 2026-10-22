@@ -22,13 +22,9 @@ The version lives only in `no-vibe.config.json`.
 
 `hooks/block-writes.sh` and `hooks/block-bash-writes.sh` are the only guard implementation. Claude Code, Codex and Antigravity call them as hooks, and opencode and Pi call them from their generated plugins.
 
-The guard allows writes only to these targets:
+The Write-tool guard allows writes only under `.no-vibe/**` and `$HOME/.no-vibe/**`. The Bash guard also allows `/tmp/**`, `/var/tmp/**`, `/dev/null`, `/dev/stdout`, `/dev/stderr`, `/dev/tty` and `/dev/fd/*`. Both refuse a target they cannot pin down: a variable, a glob or brace, a backslash, an overlong path, or a path through a symlink.
 
-- `.no-vibe/**`
-- `$HOME/.no-vibe/**`
-- `/tmp/**`
-- `/var/tmp/**`
-- `/dev/null`, `/dev/stdout`, `/dev/stderr`, `/dev/tty` and `/dev/fd/*`
+The guards read each tool call before it runs. They stop an agent that drifts into writing project files, and they are not a sandbox: a command that creates a symlink and writes through it in the same call, or a script or build tool that writes files itself, can still write outside `.no-vibe/`.
 
 ## State
 
