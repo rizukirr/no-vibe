@@ -1,7 +1,7 @@
 // runtimes/antigravity.mjs
 export const id = 'antigravity'
 
-const json = value => `${JSON.stringify(value, null, 2)}\n`
+import { json } from '../lib/emit.mjs'
 
 // Antigravity has no session-start event. rules/ is the only always-on
 // channel, so it carries the instruction to check for the marker.

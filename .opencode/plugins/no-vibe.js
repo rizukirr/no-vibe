@@ -59,7 +59,9 @@ export default {
     })
     await ctx.tool.hook('execute.before', ev => guard(ev, dir))
     // The context hook fires before every model request, so the status line
-    // is computed once per session.
+    // is computed once per session. no-vibe: the map keeps one short string
+    // per session for the life of the service. Prune it on session end if
+    // long-lived services ever make that matter.
     const seen = new Map()
     await ctx.session.hook('context', ev => {
       if (!seen.has(ev.sessionID)) seen.set(ev.sessionID, status(dir))

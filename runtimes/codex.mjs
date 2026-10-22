@@ -1,7 +1,7 @@
 // runtimes/codex.mjs
 export const id = 'codex'
 
-const json = value => `${JSON.stringify(value, null, 2)}\n`
+import { json } from '../lib/emit.mjs'
 
 function commandFile(skill) {
   const description = skill.description.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
@@ -53,5 +53,5 @@ export function emit(model) {
 }
 
 export function ships() {
-  return ['.agents/']
+  return ['.agents/', '.codex-plugin/']
 }

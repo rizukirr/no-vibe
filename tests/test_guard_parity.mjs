@@ -21,9 +21,17 @@ const CASES = [
 
 const patchText = rel => `*** Begin Patch\n*** Add File: ${rel}\n+hello\n*** End Patch`
 
+// Every project dir is removed on exit too, so a failed assertion leaves
+// no .parity-* dir in the repo.
+const made = []
+process.on('exit', () => {
+  for (const dir of made) rmSync(dir, { recursive: true, force: true })
+})
+
 function project(active) {
   // Not under /tmp: the shell guard allows every path below it.
   const dir = mkdtempSync(path.join(root, '.parity-'))
+  made.push(dir)
   if (active) {
     mkdirSync(path.join(dir, '.no-vibe'))
     writeFileSync(path.join(dir, '.no-vibe', 'active'), '')

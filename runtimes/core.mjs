@@ -12,8 +12,6 @@ const FILES = [
   'commands/',
   'hooks/',
   'skills/',
-  '.claude-plugin/',
-  '.codex-plugin/',
 ]
 
 export function emit(model) {
@@ -44,7 +42,7 @@ export function commandTable(skills) {
     '|---|---|',
     ...skills
       .filter(skill => skill.command)
-      .map(skill => `| \`/${skill.name}${skill.hint ? ` ${skill.hint}` : ''}\` | ${skill.description.replace(/\|/g, '\\|')} |`),
+      .map(skill => `| \`/${skill.name}${skill.hint ? ` ${skill.hint.replace(/\|/g, '\\|')}` : ''}\` | ${skill.description.replace(/\|/g, '\\|')} |`),
   ].join('\n')
 }
 
