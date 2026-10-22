@@ -64,6 +64,11 @@ tool_name=$(json_get .tool_name)
 [ "$tool_name" = "Bash" ] || exit 0
 
 cmd=$(json_get .tool_input.command)
+# A command that is missing or not a string cannot be checked: refuse it.
+if [ $? -ne 0 ]; then
+    echo "no-vibe mode is active. Refusing a Bash call whose command could not be read." >&2
+    exit 2
+fi
 [ -z "$cmd" ] && exit 0
 
 deny() {
@@ -112,7 +117,6 @@ is_safe_path() {
     esac
     case "$p" in
         /dev/null|/dev/stdout|/dev/stderr|/dev/fd/*|/dev/tty) return 0 ;;
-        /tmp|/tmp/*|/var/tmp|/var/tmp/*) return 0 ;;
     esac
     p=$(normalize_path "$p")
     local abs
@@ -124,10 +128,15 @@ is_safe_path() {
         abs=$(realpath -m "$abs" 2>/dev/null || echo "$abs")
     fi
     abs=$(normalize_path "$abs")
+    # A `..` left unresolved (no realpath, or a BSD realpath without -m)
+    # hides the real target: refuse it.
+    case "$abs/" in */../*) return 1 ;; esac
     case "$abs" in
         "$scratch_root"|"$scratch_root"/*) return 0 ;;
         "$home_scratch_root"|"$home_scratch_root"/*) return 0 ;;
         /tmp|/tmp/*|/var/tmp|/var/tmp/*) return 0 ;;
+        # macOS resolves /tmp and /var/tmp through /private.
+        /private/tmp|/private/tmp/*|/private/var/tmp|/private/var/tmp/*) return 0 ;;
     esac
     return 1
 }

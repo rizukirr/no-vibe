@@ -287,4 +287,34 @@ test_mixed_path_form_allowed() {
 }
 test_mixed_path_form_allowed
 
+# --- A command that is not a string cannot be checked ---
+test_non_string_command_denied() {
+    local cwd; cwd=$(make_sandbox)
+    printf '{"tool_name":"Bash","tool_input":{"command":["echo hi > src/a"]},"cwd":%s}' "$(json_string "$cwd")" \
+        | "$HOOK" >/dev/null 2>&1
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "array command → deny"
+}
+test_non_string_command_denied
+
+# --- /tmp only counts after .. is resolved ---
+test_tmp_dotdot_escape_denied() {
+    local cwd; cwd=$(make_sandbox)
+    run_hook "$cwd" "echo hi > /tmp/..$cwd/src/a" >/dev/null
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "/tmp/.. into the project → deny"
+}
+test_tmp_dotdot_escape_denied
+
+test_tmp_inner_dotdot_allowed() {
+    local cwd; cwd=$(make_sandbox)
+    run_hook "$cwd" "echo hi > /tmp/no-vibe-a/../no-vibe-b" >/dev/null
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "0" "$rc" "/tmp/a/../b stays in /tmp → allow"
+}
+test_tmp_inner_dotdot_allowed
+
 summary
