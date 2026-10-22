@@ -22,13 +22,16 @@ line="no-vibe: ON"
 syllabus="$cwd/.no-vibe/syllabus.md"
 
 # The frontmatter value of $1, without CR, trailing spaces or YAML quotes.
+# Inside quotes, '' becomes ' and \" or \\ lose their backslash, as in YAML.
 field() {
     tr -d '\r' < "$syllabus" | sed -n "s/^$1:[[:space:]]*//p" | head -n 1 |
-        sed -e 's/[[:space:]]*$//' -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'\$/\1/"
+        sed -e 's/[[:space:]]*$//' \
+            -e "/^'.*'\$/{s/^'\\(.*\\)'\$/\\1/;s/''/'/g;}" \
+            -e '/^".*"$/{s/^"\(.*\)"$/\1/;s/\\\(["\\]\)/\1/g;}'
 }
 
 # Sections are the numbered checkbox lines the skill writes, `- [ ] 1. ...`.
-sections() { tr -d '\r' < "$syllabus" | grep -cE "^- \[$1\] [0-9]+\. "; }
+sections() { tr -d '\r' < "$syllabus" | grep -cE "^- \[$1\][[:space:]]+[0-9]+\. "; }
 
 if [ -f "$syllabus" ] && [ "$(field status)" = "approved" ]; then
     total=$(sections '[ xX]')

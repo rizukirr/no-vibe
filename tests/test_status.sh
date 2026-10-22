@@ -93,5 +93,11 @@ assert_eq 'no-vibe: ON' \
 cwd=$(mktemp -d -p "$fake_home"); mkdir -p "$cwd/a\"b/.no-vibe"
 assert_eq "no-vibe: OFF" "$(printf '{"cwd":"%s/a\\"b"}' "$cwd" | HOME="$fake_home" "$HOOK")" "escaped quote in cwd is decoded"
 rm -rf "$cwd"
+assert_eq "no-vibe: ON, resuming \"it's\" (section 1/1)" \
+    "$(resume "---\nstatus: approved\ntopic: 'it''s'\n---\n- [ ] 1. a\n")" "single-quoted topic unescapes ''"
+assert_eq 'no-vibe: ON, resuming "say "hi"" (section 1/1)' \
+    "$(resume '---\nstatus: approved\ntopic: "say \\"hi\\""\n---\n- [ ] 1. a\n')" "double-quoted topic unescapes \\\""
+assert_eq 'no-vibe: ON, resuming "T" (section 2/3)' \
+    "$(resume '---\nstatus: approved\ntopic: T\n---\n- [x]  1. a\n- [ ] 2. b\n- [ ]\t3. c\n')" "extra spacing after the box still counts"
 rm -rf "$fake_home"
 summary
