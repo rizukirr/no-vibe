@@ -1,60 +1,28 @@
 # no-vibe
 
-Turn your AI assistant into a tutor. It plans, hints, reviews and adapts while **you** write every line.
-
-- **Is:** a guide that works beside your real project in your editor
-- **Is not:** a chat only window you ask for answers
-- **Needs:** a project open and an editor where you type the code
+Turn your AI assistant into a teacher. It finds your level, plans what you will learn and shows you code in chat, and **you** type every line into your project.
 
 > Pair with [vibekit](https://github.com/rizukirr/vibekit): vibekit when you want speed, no-vibe when you want to learn.
 
 ## Why no-vibe
 
-Vibe-coding produces output without producing understanding and *copy-typing what the AI shows you* produces the same hollow result one keystroke at a time. The thing that actually transfers is the **thought process** and **manual code writing**: deciding what to do, predicting what will happen and naming what broke, no-vibe is built so you contribute that, not just keystrokes.
+Vibe-coding produces output without producing understanding. What transfers is the thinking and the typing: deciding what you want, reading code until it makes sense, and writing it with your own hands until the patterns stick.
 
-- **You write every line of project code.** AI refuses to. Hard-guarded by hooks across all five surfaces.
-- **You think before you type.** Guided write is the default — AI walks you toward the code in English with graded hints (`hint` / `analogy` / `pseudo` / `show` / `less`), so the code you write comes from a decision you made, not a block you transcribed.
-- **You predict before you run.** Every layer ends with a one-question prediction gate: name the edge case, the failing branch, or the intermediate value *before* the program runs. The run becomes a self-test, not passive verification.
-- **AI is a Socratic guide, not a generator.** It asks, hints, reviews, and explains *when you're ready to integrate the explanation*.
-- **You learn from the project you're actually building** — not contrived exercises. Real code, real bugs, real decisions in your repo. Bottom-up and incremental: six phases, small layers, your diff is the proof of progress.
+While no-vibe is on, the agent refuses to write your project files. A hook blocks file tools and shell writes on every supported runtime. The agent teaches in chat, and you type the code.
 
 ## How it works
 
-- **Top-down, one layer at a time.** Minimal runnable skeleton first; each layer runs and shows output before the next.
-- **Where → code → why → run + verify.** Each step says exactly which file and line, then what runs and what should print.
-- **Real code, not hallucinations.** Attach `--ref <url>` and the AI quotes actual source with `file:line` citations.
-- **Adapts to you.** The AI keeps a `PROFILE.md` (global, stable identity) and a `SUMMARY.md` (per-project, running journey) it writes itself — observed strengths, known gaps, style notes, current focus, open questions. You can edit either, or layer explicit overrides via `user/*.md`.
-- **Your files stay yours.** Hard write-guards on Claude Code, OpenCode, and Pi block writes (file *and* Bash) outside `.no-vibe/**`. Codex/Gemini enforce the same rule via instruction.
+A lesson moves through five steps, and every reply starts with a header that names the current step, section and exercise.
 
-## How adaptation works
+1. Level. The agent asks multiple-choice questions whose options are concrete statements about the topic, such as "I can write small programs but fight the borrow checker". It stops once it knows where to start, which terms you already know and how you like to learn.
+2. Goal. It offers concrete outcomes of different scope, in words you understand, and narrows them down with you until the goal fits in one sentence you confirm.
+3. Syllabus. It writes `.no-vibe/syllabus.md`, one line per section saying what you can do after it, and revises it until you approve.
+4. Learn. Each section starts with a short lesson, concept first or code first depending on what the section needs.
+5. Exercise. Each section has at least 3 exercises with the full code shown in chat: the core pattern, a variation, and the pattern combined with an earlier section. You type and run each one.
 
-no-vibe uses a four-layer stack, split by *write cadence* and *scope*:
+Later sections reuse earlier material, so you repeat it without a separate recap.
 
-| Layer | Owner | What lives in it |
-|---|---|---|
-| **Default teaching style** | **Plugin** — defined in `skills/no-vibe/SKILL.md` | Plain words first, concrete-before-abstract, hint-before-answer, run + verify after every layer. The floor. |
-| `~/.no-vibe/PROFILE.md` (global, stable identity) | **AI** — created on first `/no-vibe`, rewritten *rarely* when cross-project identity / style shifts | Identity & expertise, learning style, disclosure mode, observed strengths, known gaps |
-| `.no-vibe/SUMMARY.md` (project, running journey) | **AI** — created at the first layer close worth recording, rewritten *often* (every closed layer is a candidate) | Current Focus, Accomplishments, Open Questions in *this* project |
-| `~/.no-vibe/user/*.md` and `.no-vibe/user/*.md` | **You** — AI never creates, edits, or deletes anything inside | Explicit overrides: instructions you want the AI to follow without inferring them |
-
-**Why the split.** Stable identity (the things that wouldn't change if you opened a different project tomorrow) and running journey (the things that only make sense inside *this* project) update on totally different cadences. Keeping them in one file forces the AI to decide on every rewrite whether *this* fact is stable or transient — and gets it wrong. PROFILE only holds cross-project-durable facts; SUMMARY only holds project-bound state.
-
-**PROFILE.md is the AI's global progression file.** On your first `/no-vibe` activation, the AI creates it with empty section headings (Identity & expertise, Learning style, Disclosure mode, Observed strengths, Known gaps). It's rewritten only when something durable about how you learn shifts — most layers produce no PROFILE update.
-
-**SUMMARY.md is the AI's per-project journey file.** It's not seeded on activation — the AI creates it the first time a layer close produces an outcome worth recording, then keeps it tight by pruning resolved Open Questions and old Accomplishments. The most valuable section is `Open Questions` — things you dodged with a workaround or didn't fully integrate, surfaced so the next session can revisit them.
-
-**The silent-default + NO_CHANGE rule.** Both files follow two disciplines: *most layer-closes produce no write* (silent default), and *the AI never rewrites a file with content equivalent to what's already there* (NO_CHANGE). A no-op write is treated as a bug. Read either file any time to see what the AI has learned; edit them yourself if something looks wrong.
-
-**`user/*.md` is your override layer.** Drop any `.md` file into `~/.no-vibe/user/` (global) or `.no-vibe/user/` (project) and the AI loads it sorted by filename. Anything in `user/` wins on conflict with PROFILE.md or the default style. The AI is forbidden from writing to `user/` — when it notices a pattern that belongs there, it shows you the exact line and lets you add it.
-
-Practical examples — anything in this style works in `user/*.md`:
-
-- *"Use Rust analogies when you explain memory or ownership."* → global, applies everywhere
-- *"I'm already solid on async/await — skip the basics."* → global, AI stops explaining what you know
-- *"This project uses tabs not spaces; don't comment on it."* → project, kills repeated nudges
-- *"Always show the failing run before the fix."* → global, changes how reviews happen
-
-Per-session cycle state (current phase, layer, resume hints) lives separately in `.no-vibe/data/sessions/<slug>.json` — you generally don't touch that.
+`.no-vibe/syllabus.md` is the only state file. It holds your level, the goal, the sections with a checkbox each, and where you are. Run `/no-vibe on` in a later session and the agent resumes from it.
 
 ## Quick start
 
@@ -74,7 +42,7 @@ codex plugin marketplace add rizukirr/no-vibe
 codex plugin add no-vibe --marketplace no-vibe
 ```
 
-(Requires a Codex CLI build with plugin marketplace support. For older Codex builds, see `INSTALL.codex.md` for the manual symlink path — skills only, soft block.)
+Plugin hooks must be trusted once before they run. Codex asks on first use. Requires a Codex CLI build with plugin marketplace support. See `INSTALL.codex.md` for verification steps.
 
 ### Pi
 
@@ -84,36 +52,25 @@ pi install npm:no-vibe
 
 Or pin to git: `pi install git:github.com/rizukirr/no-vibe`. See `INSTALL.pi.md` for verification steps.
 
-### Gemini CLI
+### Antigravity
 
 ```bash
-gemini extensions install https://github.com/rizukirr/no-vibe
+agy plugin install https://github.com/rizukirr/no-vibe
 ```
 
-Pin a version with `--ref=v2.0.3`. See `INSTALL.gemini.md` for the legacy manual-symlink path.
+Verify with `agy plugin list`.
 
-### OpenCode
+### opencode
 
-Add to `~/.config/opencode/opencode.json`:
+Requires opencode v2 and `bash` on PATH. Add the package to the `plugin` array in `opencode.json`:
 
 ```json
 {
-  "$schema": "https://opencode.ai/config.json",
-  "plugin": ["no-vibe"]
+  "plugin": ["no-vibe@git+https://github.com/rizukirr/no-vibe.git"]
 }
 ```
 
-OpenCode has no `plugin install` CLI, so commands also need to be fetched once:
-
-```bash
-mkdir -p ~/.config/opencode/commands
-for c in no-vibe no-vibe-challenge no-vibe-btw; do
-  curl -fsSL "https://raw.githubusercontent.com/rizukirr/no-vibe/refs/heads/main/.opencode/commands/$c.md" \
-    -o "$HOME/.config/opencode/commands/$c.md"
-done
-```
-
-See `INSTALL.opencode.md` for verification steps and the cache-refresh tip.
+Run `opencode reload`. See `.opencode/INSTALL.md` for verification steps.
 
 ### Your first lesson
 
@@ -125,40 +82,35 @@ Codex uses `$` instead of `/`.
 
 ## Commands
 
+<!-- no-vibe:generated:commands -->
 | Command | Effect |
 |---|---|
-| `/no-vibe on` / `off` | persistent mode toggle |
-| `/no-vibe <topic>` | one-shot lesson |
-| `/no-vibe --ref <url> <topic>` | attach a reference project |
-| `/no-vibe --mode concept\|skill\|debug <topic>` | set voice mode |
-| `/no-vibe-btw <task>` | one-shot escape hatch — AI may write for this task only |
-| `/no-vibe-challenge [<focus>]` | get a coding challenge |
-
-Flags combine: `/no-vibe --ref pytorch --mode concept how does autograd work`.
-
-## Voice modes
-
-| Mode | Best for | Style |
-|------|----------|-------|
-| **concept** (default) | "teach me how X works" | more prose, deeper check-ins |
-| **skill** | "I want to practice writing Y" | muscle-memory repetition |
-| **debug** | "why does Z behave like this" | start from symptom, descend |
-
-Voice modes control *how AI talks*. A separate axis, **disclosure modes** (guided write vs. showcase), controls *how much AI reveals before the user writes code in a Phase 3 layer* — guided is the default and walks the user toward the code with English + graded hints on request; showcase shows the full code block upfront. Both default to running a one-question **prediction gate** before the user runs the code each layer, so the run becomes a self-test rather than passive verification. See `skills/no-vibe/SKILL.md` for the full disclosure-mode contract and the help verbs (`hint` / `analogy` / `pseudo` / `show` / `less`).
+| `/no-vibe [on\|off\|<topic>]` | Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <level\|goal\|syllabus\|learn\|exercise> · Section: <n/total\|-> · Exercise: <k\|->`. |
+| `/no-vibe-btw <task>` | One-shot escape hatch to temporarily disable no-vibe write guard for a single scoped task, then restore the marker. |
+| `/no-vibe-challenge [focus]` | One coding challenge built from the current syllabus or the project. The user writes all the code. The agent gives the task, hints when asked, and reviews when asked. |
+<!-- /no-vibe:generated -->
 
 ## Platform support
 
-| Feature | Claude Code | OpenCode | Pi | Codex | Gemini CLI |
+| Feature | Claude Code | Codex | opencode | Pi | Antigravity |
 |---|:-:|:-:|:-:|:-:|:-:|
-| File-write guard (hook) | ✓ | ✓ | ✓ | ✓ * | soft |
-| Bash-write guard (hook) | ✓ | ✓ | ✓ | ✓ * | soft |
-| Status + resume hint | ✓ | ✓ | ✓ | ✓ * | soft |
-| Commands | ✓ | ✓ | ✓ | ✓ | ✓ |
-| PROFILE.md + SUMMARY.md + user/ overrides | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Write guard | hook | hook | plugin | extension | hook |
+| Status and resume line | hook | hook | plugin | extension | `rules/AGENTS.md` |
+| Commands | yes | yes | yes | yes | yes |
 
-\* Codex hooks fire under the marketplace install (`codex plugin add no-vibe --marketplace no-vibe`). The legacy manual-symlink install path is soft-only.
+Every runtime runs the same guard scripts, `hooks/block-writes.sh` and `hooks/block-bash-writes.sh`. Antigravity has no session-start event, so its always-on rule file tells the agent to check for `.no-vibe/active` and resume the syllabus.
 
-"soft" = instruction-enforced (no hook surface available); the rule still binds.
+These runtimes were checked live:
+
+- Codex (codex-cli 0.163.0): marketplace discovery confirmed. An earlier probe confirmed that the PreToolUse hook blocks writes with exit 2, that SessionStart injects the status line, and that plugin hooks must be trusted once.
+- opencode (2.0.32): the plugin loaded and injected the skill and the status line. The guard was not exercised live and is covered by `tests/test_guard_parity.mjs`. The slash command listing was not confirmed live.
+- Pi (1.3.0): the guard blocked a live `write` tool call.
+
+Claude Code was not checked in a live session. Its guard and status hooks are covered by the shell tests and by `tests/test_manifests.mjs`, which runs them through `run-hook.cmd`. Antigravity was not run live and is covered by `tests/test_guard_parity.mjs` only.
+
+## What the guard covers
+
+The guard checks each file write and each shell command before it runs, and refuses writes outside `.no-vibe/` (the shell guard also allows `/tmp`). It catches the ways an agent usually writes files when it slips. It is not a sandbox. The shell guard reads command text with patterns, so some shell gets past it: a variable inside a path, `>|` or `>&` redirects, a second `cp`, `tee` or `sed -i` in one command, a quoted space in a path, writes through `/dev/fd`, a symlink created and used in the same command, and scripts or build tools that write files themselves. no-vibe relies on the agent following the skill, and the guard catches it when it slips.
 
 ## License
 

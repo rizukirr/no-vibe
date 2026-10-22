@@ -5,6 +5,13 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOOK="$SCRIPT_DIR/../hooks/block-bash-writes.sh"
 . "$SCRIPT_DIR/helpers.sh"
+. "$SCRIPT_DIR/../hooks/json.sh"
+
+# bash_call CWD CMD: the hook JSON for a Bash tool call.
+bash_call() {
+    printf '{"tool_name":"Bash","tool_input":{"command":%s},"cwd":%s}' \
+        "$(json_string "$2")" "$(json_string "$1")"
+}
 
 # Sandbox must live OUTSIDE /tmp because /tmp is on the allowlist —
 # otherwise every redirect would be classified safe.
@@ -21,23 +28,21 @@ make_sandbox() {
 run_hook() {
     # $1 = cwd, $2 = bash command
     local cwd="$1" cmd="$2"
-    jq -n --arg cwd "$cwd" --arg cmd "$cmd" \
-        '{tool_name:"Bash",tool_input:{command:$cmd},cwd:$cwd}' \
+    bash_call "$cwd" "$cmd" \
         | "$HOOK" 2>&1
 }
 
 run_hook_with_home() {
     # $1 = cwd, $2 = HOME override, $3 = bash command
     local cwd="$1" home="$2" cmd="$3"
-    jq -n --arg cwd "$cwd" --arg cmd "$cmd" \
-        '{tool_name:"Bash",tool_input:{command:$cmd},cwd:$cwd}' \
+    bash_call "$cwd" "$cmd" \
         | HOME="$home" "$HOOK" 2>&1
 }
 
 # --- Test 1: no marker → allow any command ---
 test_no_marker_allows() {
     local cwd; cwd=$(mktemp -d)
-    jq -n --arg cwd "$cwd" '{tool_name:"Bash",tool_input:{command:"echo hi > /etc/passwd"},cwd:$cwd}' \
+    bash_call "$cwd" "echo hi > /etc/passwd" \
         | "$HOOK" >/dev/null 2>&1
     local rc=$?
     rm -rf "$cwd"
@@ -193,7 +198,7 @@ test_relative_project_denied() {
 # --- Test 18: non-Bash tool → allow (out of scope) ---
 test_non_bash_allowed() {
     local cwd; cwd=$(make_sandbox)
-    jq -n --arg cwd "$cwd" '{tool_name:"Read",tool_input:{file_path:"x"},cwd:$cwd}' \
+    printf '{"tool_name":"Read","tool_input":{"file_path":"x"},"cwd":%s}' "$(json_string "$cwd")" \
         | "$HOOK" >/dev/null 2>&1
     local rc=$?
     rm -rf "$cwd"
@@ -255,7 +260,7 @@ test_redirect_into_home_scratch_allowed
 test_redirect_into_home_other_denied
 
 # --- Test 22: mixed Windows-form cwd vs MSYS-form target → allow ---
-# Regression for the path-form mismatch on Git Bash, where jq converts
+# Regression for the path-form mismatch on Git Bash, where MSYS converts
 # command-line --arg paths but leaves embedded path strings untouched,
 # producing a `C:/...` cwd alongside a `/c/...` target inside the same
 # tool call. Pure Linux runs are unaffected (no drive letters → the
@@ -268,8 +273,7 @@ test_mixed_path_form_allowed() {
             local rest="${cwd:2}"
             local win_cwd="${drive}:${rest}"
             local msys_target="$cwd/.no-vibe/notes.md"
-            local out; out=$(jq -n --arg cwd "$win_cwd" --arg cmd "echo hi > $msys_target" \
-                '{tool_name:"Bash",tool_input:{command:$cmd},cwd:$cwd}' | "$HOOK" 2>&1)
+            local out; out=$(bash_call "$win_cwd" "echo hi > $msys_target" | "$HOOK" 2>&1)
             local rc=$?
             rm -rf "$cwd"
             [ "$rc" = "0" ] && pass "mixed-form cwd vs target → allow" \
@@ -282,5 +286,163 @@ test_mixed_path_form_allowed() {
     esac
 }
 test_mixed_path_form_allowed
+
+# --- A command that is not a string cannot be checked ---
+test_non_string_command_denied() {
+    local cwd; cwd=$(make_sandbox)
+    printf '{"tool_name":"Bash","tool_input":{"command":["echo hi > src/a"]},"cwd":%s}' "$(json_string "$cwd")" \
+        | "$HOOK" >/dev/null 2>&1
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "array command → deny"
+}
+test_non_string_command_denied
+
+# --- /tmp only counts after .. is resolved ---
+test_tmp_dotdot_escape_denied() {
+    local cwd; cwd=$(make_sandbox)
+    run_hook "$cwd" "echo hi > /tmp/..$cwd/src/a" >/dev/null
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "/tmp/.. into the project → deny"
+}
+test_tmp_dotdot_escape_denied
+
+test_tmp_inner_dotdot_allowed() {
+    local cwd; cwd=$(make_sandbox)
+    run_hook "$cwd" "echo hi > /tmp/no-vibe-a/../no-vibe-b" >/dev/null
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "0" "$rc" "/tmp/a/../b stays in /tmp → allow"
+}
+test_tmp_inner_dotdot_allowed
+
+# --- On Linux and macOS a backslash is part of a name, not a separator ---
+test_backslash_name_escape_denied() {
+    local cwd; cwd=$(make_sandbox)
+    case "${OSTYPE:-}" in
+        msys*|cygwin*|win32*)
+            rm -rf "$cwd"
+            pass "backslash name escape → deny (skipped on Windows)"
+            return
+            ;;
+    esac
+    run_hook "$cwd" "echo hi > '.no-vibe/a\\b/../../src/c'" >/dev/null
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "redirect to '.no-vibe/a\\b/../../src/c' → deny"
+}
+test_backslash_name_escape_denied
+
+# --- The guard needs no realpath ---
+test_no_realpath_needed() {
+    local cwd; cwd=$(make_sandbox)
+    local bin; bin=$(mktemp -d)
+    printf '#!/bin/sh\necho "realpath: unsupported" >&2\nexit 1\n' > "$bin/realpath"
+    chmod +x "$bin/realpath"
+    bash_call "$cwd" "echo hi > src/x" | PATH="$bin:$PATH" "$HOOK" >/dev/null 2>&1
+    local deny_rc=$?
+    bash_call "$cwd" "echo hi > .no-vibe/x" | PATH="$bin:$PATH" "$HOOK" >/dev/null 2>&1
+    local allow_rc=$?
+    rm -rf "$cwd" "$bin"
+    assert_eq "2" "$deny_rc" "broken realpath: redirect into project → deny"
+    assert_eq "0" "$allow_rc" "broken realpath: redirect into .no-vibe → allow"
+}
+test_no_realpath_needed
+
+# --- /private/tmp is allowed only where /tmp resolves there ---
+test_private_tmp_off_macos_denied() {
+    local cwd; cwd=$(make_sandbox)
+    if [ "$(cd -P /tmp && pwd -P)" = /private/tmp ]; then
+        rm -rf "$cwd"
+        pass "/private/tmp off macOS → deny (skipped: /tmp is /private/tmp here)"
+        return
+    fi
+    run_hook "$cwd" "echo hi > /private/tmp/x" >/dev/null
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "/private/tmp where /tmp is not /private/tmp → deny"
+}
+test_private_tmp_off_macos_denied
+
+# --- A backslash in a target is refused: bash may drop it ---
+test_backslash_target_denied() {
+    local cwd; cwd=$(make_sandbox)
+    run_hook "$cwd" 'echo hi > .no-vibe\notes.md' >/dev/null
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "redirect to .no-vibe\\notes.md → deny"
+}
+test_backslash_target_denied
+
+# --- Symlinks are followed before a target is allowed ---
+test_symlink_escape_denied() {
+    local cwd; cwd=$(make_sandbox)
+    mkdir -p "$cwd/src"
+    ln -s ../src "$cwd/.no-vibe/out"
+    run_hook "$cwd" "echo hi > .no-vibe/out/x" >/dev/null
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "redirect through a symlinked dir out of .no-vibe → deny"
+}
+test_symlink_escape_denied
+# --- Paths the resolver cannot pin down are refused ---
+test_unresolvable_targets_denied() {
+    local cwd; cwd=$(make_sandbox)
+    mkdir -p "$cwd/src"
+    ln -s ../src "$cwd/.no-vibe/link"
+    ln -s ../src/new "$cwd/.no-vibe/dang"
+    local long; long=".no-vibe/$(printf './%.0s' $(seq 600))link/main.rs"
+    run_hook "$cwd" "echo pwn > .no-vibe/dang/x" >/dev/null; assert_eq "2" "$?" "dangling symlink mid-path → deny"
+    run_hook "$cwd" "echo pwn > .no-vibe/missing/../link/x" >/dev/null; assert_eq "2" "$?" "symlink after a missing dir and .. → deny"
+    run_hook "$cwd" "echo pwn > $long" >/dev/null; assert_eq "2" "$?" "overlong target → deny"
+    local deep; deep=".no-vibe/$(printf 'd/%.0s' $(seq 2000))x"
+    local start end
+    start=$(date +%s)
+    run_hook "$cwd" "echo pwn > $deep" >/dev/null; assert_eq "2" "$?" "2000-component target → deny"
+    end=$(date +%s)
+    [ $((end - start)) -lt 3 ] && pass "2000-component target decided in under 3 s" \
+        || fail "2000-component target decided in under 3 s" "took $((end - start)) s"
+    rm -rf "$cwd"
+}
+test_unresolvable_targets_denied
+
+test_double_slash_root_denied() {
+    local cwd; cwd=$(make_sandbox)
+    local fake_home; fake_home=$(mktemp -d -p "$SANDBOX_ROOT")
+    ln -s / "$fake_home/.no-vibe"
+    run_hook_with_home "$cwd" "$fake_home" "echo pwn > //${cwd#/}/src/x" >/dev/null
+    local rc=$?
+    rm -rf "$cwd" "$fake_home"
+    assert_eq "2" "$rc" "// target with a root resolving to / → deny"
+}
+test_double_slash_root_denied
+# --- Targets bash expands, or that walk out of /dev/fd, are refused ---
+test_expanding_targets_denied() {
+    local cwd; cwd=$(make_sandbox)
+    mkdir -p "$cwd/src"
+    ln -s ../src "$cwd/.no-vibe/link"
+    run_hook "$cwd" "echo pwn > .no-vibe/l*/main.rs" >/dev/null; assert_eq "2" "$?" "glob target → deny"
+    run_hook "$cwd" "echo pwn > .no-vibe/{x,../src/y}" >/dev/null; assert_eq "2" "$?" "brace target → deny"
+    run_hook "$cwd" "echo pwn > /dev/fd/../../..$cwd/src/fd" >/dev/null; assert_eq "2" "$?" "/dev/fd/.. → deny"
+    run_hook "$cwd" "echo hi > /dev/fd/1" >/dev/null; assert_eq "0" "$?" "/dev/fd/1 → allow"
+    rm -rf "$cwd"
+}
+test_expanding_targets_denied
+# --- A huge command is refused before parsing, and quickly ---
+test_huge_command_denied() {
+    local cwd; cwd=$(make_sandbox)
+    local pad; pad=$(head -c 70000 /dev/zero | tr '\0' 'a')
+    local start end
+    start=$(date +%s)
+    run_hook "$cwd" "echo $pad > .no-vibe/x" >/dev/null
+    local rc=$?
+    end=$(date +%s)
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "command over 64 KB → deny"
+    [ $((end - start)) -lt 3 ] && pass "command over 64 KB decided in under 3 s" \
+        || fail "command over 64 KB decided in under 3 s" "took $((end - start)) s"
+}
+test_huge_command_denied
 
 summary

@@ -1,113 +1,53 @@
 ---
 name: no-vibe-challenge
-description: Generate a one-shot coding challenge based on current no-vibe session or project context. User writes all code; AI only gives constraints, hints, and review.
+description: "One coding challenge built from the current syllabus or the project. The user writes all the code. The agent gives the task, hints when asked, and reviews when asked."
+argument-hint: "[focus]"
+command: true
 ---
 
 # no-vibe-challenge
 
-Generate a hands-on coding challenge. The user writes everything.
+Give the user one hands-on challenge. The user writes every line.
 
-## Inputs
+## 1. Turn on the guard
 
-Treat text after `$no-vibe-challenge` as an optional focus area.
-
-Examples:
-- `$no-vibe-challenge`
-- `$no-vibe-challenge error handling`
-- `$no-vibe-challenge recursion`
-
-## Workflow
-
-### 1. Activate no-vibe mode
-
-Run:
+Remember whether `.no-vibe/active` exists, then run:
 
 ```bash
-mkdir -p .no-vibe/notes .no-vibe/refs .no-vibe/data/sessions && touch .no-vibe/active
+mkdir -p .no-vibe && touch .no-vibe/active
 ```
 
-Verify:
+## 2. Pick the challenge
 
-```bash
-test -f .no-vibe/active
-```
+- If `.no-vibe/syllabus.md` exists, build the challenge from sections already ticked, at its `level`, explained in its `teaching` style.
+- Otherwise look at the project to infer the stack and pick something relevant to it.
+- A focus argument narrows the topic.
 
-If verified, state: `no-vibe is active (.no-vibe/active exists)`.
-
-### 2. Determine challenge context
-
-Check for in-progress sessions:
-
-```bash
-grep -rl '"status": "in_progress"' .no-vibe/data/sessions/ 2>/dev/null
-```
-
-- If an active session exists: read session JSON and generate a challenge that reinforces what the user just learned.
-- If no active session exists: inspect the project to infer stack/domain and generate a relevant challenge.
-- If a focus area was provided: narrow challenge scope to that area while keeping project/session relevance.
-
-### 3. Read the adaptation stack
-
-Read (when present):
-- `~/.no-vibe/PROFILE.md` — global stable identity. The AI's record of how this user learns across every project.
-- `.no-vibe/SUMMARY.md` — project running journey. Current focus, accomplishments, and open questions in this codebase.
-- Every `*.md` under `~/.no-vibe/user/` and `.no-vibe/user/` — user-only overrides; authoritative on conflict, AI never writes here.
-
-Calibrate challenge difficulty:
-- PROFILE.md `## Identity & expertise` or `## Observed strengths` flags topic competence ("solid on Go", `(seen 4×)`) → tune scope upward.
-- PROFILE.md `## Known gaps` flags weak areas → tune scope downward, more scaffolding.
-- PROFILE.md `## Disclosure mode` records the user's default disclosure preference (`guided` vs. `showcase`) — apply the same default when sketching the challenge prompt; `prediction_gate: off` skips the predict-before-run micro-check.
-- SUMMARY.md `## Open Questions` flags concepts the user dodged in prior layers → reinforce them in the challenge.
-- SUMMARY.md `## Accomplishments` shows what the user has already built → build on a recent success or revisit a recent Block area.
-- Any `user/*.md` file naming an explicit constraint → respect it without re-asking.
-
-### 4. Present the challenge
-
-Use this structure:
+## 3. Present it
 
 > **Challenge: {title}**
 >
-> {1-3 sentence description}
+> {1 to 3 sentences}
 >
-> **Acceptance criteria:**
-> - {specific, testable criterion}
-> - {specific, testable criterion}
+> **Done when:**
+> - {observable criterion}
+> - {observable criterion}
 >
-> **Run command:** `{exact command to test}`
+> **Run:** `{exact command}`
 >
-> Ready? Start coding. Ask for hints anytime, or say "review" when done.
+> Ask for a hint anytime, or say review when you are done.
 
-Rules:
-- No code output for the user to copy.
-- Acceptance criteria must be observable/testable.
-- Scope should fit 5-20 minutes.
+- Show no solution code.
+- Every criterion is something the user can run and observe.
+- The scope fits 5 to 20 minutes.
+- A hint narrows the problem without giving code.
+- Review only when asked: read the user's code and give short feedback anchored to lines.
 
-### 5. Guide and review
+## 4. Finish
 
-After presenting:
-- Provide hints, not full solutions.
-- When user says "review", read their code and provide feedback.
-- On completion, log a challenge session to `.no-vibe/data/sessions/challenge-<slug>.json` with mode `"skill"`.
-
-### 6. Deactivate (one-shot)
-
-When challenge flow is finished:
-
-```bash
-rm -f .no-vibe/active
-```
-
-Verify:
-
-```bash
-test ! -f .no-vibe/active
-```
-
-If verified, state: `no-vibe is off (.no-vibe/active removed)`.
+If `.no-vibe/active` did not exist before step 1, run `rm -f .no-vibe/active`.
 
 ## Hard rules
 
-- Never write code to project files.
-- Challenge must stay in 5-20 minute scope.
-- Always calibrate difficulty using learner data when available.
-- In active mode, `.no-vibe/**` is the only write-allowed area.
+- Never write to project files. While active, `.no-vibe/**` is the only write-allowed area.
+- Keep the scope to 5 to 20 minutes.

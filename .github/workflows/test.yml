@@ -16,13 +16,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-
-      - name: Verify jq is available
-        run: jq --version
+          node-version: "24"
 
       - name: Make hooks and tests executable
-        run: chmod +x hooks/*.sh tests/*.sh
+        run: chmod +x hooks/*.sh hooks/run-hook.cmd tests/*.sh
+
+      - name: generated files are up to date
+        run: npm run check
+
+      - name: test_generate
+        run: node tests/test_generate.mjs
 
       # Each test runs as its own step so a failure is attributed cleanly
       # in the GitHub Actions UI. continue-on-error is intentionally OFF
@@ -34,8 +37,8 @@ jobs:
       - name: test_block_bash_writes
         run: bash tests/test_block_bash_writes.sh
 
-      - name: test_validate_memory_write
-        run: bash tests/test_validate_memory_write.sh
+      - name: test_json
+        run: bash tests/test_json.sh
 
       - name: test_status
         run: bash tests/test_status.sh
@@ -43,17 +46,11 @@ jobs:
       - name: test_escape_hatch
         run: bash tests/test_escape_hatch.sh
 
-      - name: test_gemini_guard
-        run: bash tests/test_gemini_guard.sh
-
       - name: test_contract_injection
         run: bash tests/test_contract_injection.sh
 
-      - name: test_opencode_plugin
-        run: node tests/test_opencode_plugin.mjs
+      - name: test_guard_parity
+        run: node tests/test_guard_parity.mjs
 
-      - name: test_pi_plugin
-        run: node tests/test_pi_plugin.mjs
-
-      - name: test_codex_plugin
-        run: node tests/test_codex_plugin.mjs
+      - name: test_manifests
+        run: node tests/test_manifests.mjs

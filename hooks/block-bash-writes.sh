@@ -12,35 +12,21 @@
 
 set -u
 
-# Normalize Windows-style drive paths (`C:/foo`, `c:\foo`) to MSYS form
-# (`/c/foo`) so prefix comparisons stay consistent on Git Bash. MSYS
-# converts paths automatically when crossing the bash/native-binary
-# boundary, which can produce mixed forms within a single hook run
-# (e.g. cwd received via jq becomes `C:/...` while paths embedded in
-# command strings keep `/c/...`). Without this, the allowlist match
-# silently fails on Windows.
-normalize_path() {
-    local p="$1"
-    # Backslashes → forward slashes.
-    p=$(printf '%s' "$p" | tr '\\' '/')
-    # `C:/foo` or `c:/foo` → `/c/foo` (portable, no bash 4 lowercase op).
-    case "$p" in
-        [A-Za-z]:/*)
-            local drive
-            drive=$(printf '%s' "${p%%:*}" | tr '[:upper:]' '[:lower:]')
-            p="/$drive${p#?:}"
-            ;;
-        [A-Za-z]:)
-            local drive
-            drive=$(printf '%s' "${p%%:*}" | tr '[:upper:]' '[:lower:]')
-            p="/$drive"
-            ;;
-    esac
-    printf '%s' "$p"
-}
+. "$(dirname "$0")/path.sh"
+. "$(dirname "$0")/json.sh"
 
 input=$(cat)
-cwd=$(echo "$input" | jq -r '.cwd // empty')
+
+cwd=$(json_get .cwd)
+# JSON this reader cannot parse is refused while no-vibe is active, never
+# waved through. The marker is then looked up from the hook's own cwd.
+if [ $? -eq 2 ]; then
+    if [ -f "$PWD/.no-vibe/active" ]; then
+        echo "no-vibe mode is active. Refusing a tool call whose JSON could not be parsed." >&2
+        exit 2
+    fi
+    exit 0
+fi
 cwd=$(normalize_path "$cwd")
 
 # If marker doesn't exist, allow everything.
@@ -48,11 +34,22 @@ if [ -z "$cwd" ] || [ ! -f "$cwd/.no-vibe/active" ]; then
     exit 0
 fi
 
-tool_name=$(echo "$input" | jq -r '.tool_name // empty')
+tool_name=$(json_get .tool_name)
 [ "$tool_name" = "Bash" ] || exit 0
 
-cmd=$(echo "$input" | jq -r '.tool_input.command // empty')
+cmd=$(json_get .tool_input.command)
+# A command that is missing or not a string cannot be checked: refuse it.
+if [ $? -ne 0 ]; then
+    echo "no-vibe mode is active. Refusing a Bash call whose command could not be read." >&2
+    exit 2
+fi
 [ -z "$cmd" ] && exit 0
+# A huge command makes the checks below slow enough to hit a host timeout:
+# refuse it rather than risk the hook being killed.
+if [ "${#cmd}" -gt 65536 ]; then
+    echo "no-vibe mode is active. Refusing a Bash command longer than 64 KB." >&2
+    exit 2
+fi
 
 deny() {
     cat >&2 <<EOF
@@ -75,15 +72,14 @@ EOF
     exit 2
 }
 
-# Resolve canonical .no-vibe roots once: project-local + global learner state.
+# Resolve the allowed roots once. An empty result falls back to the literal
+# path, so an empty pattern can never allow everything. macOS resolves /tmp
+# and /var/tmp through /private, and the resolved roots follow that.
 home_dir=$(normalize_path "${HOME:-/root}")
-if command -v realpath >/dev/null 2>&1; then
-    scratch_root=$(normalize_path "$(realpath -m "$cwd/.no-vibe")")
-    home_scratch_root=$(normalize_path "$(realpath -m "$home_dir/.no-vibe")")
-else
-    scratch_root="$cwd/.no-vibe"
-    home_scratch_root="$home_dir/.no-vibe"
-fi
+scratch_root=$(resolve_path "$cwd/.no-vibe"); : "${scratch_root:=$cwd/.no-vibe}"
+home_scratch_root=$(resolve_path "$home_dir/.no-vibe"); : "${home_scratch_root:=$home_dir/.no-vibe}"
+tmp_root=$(resolve_path /tmp); : "${tmp_root:=/tmp}"
+var_tmp_root=$(resolve_path /var/tmp); : "${var_tmp_root:=/var/tmp}"
 
 is_safe_path() {
     local p="$1"
@@ -93,14 +89,22 @@ is_safe_path() {
         \'*\') p=${p#\'}; p=${p%\'} ;;
     esac
     [ -z "$p" ] && return 1
+    # Bash drops or keeps a backslash depending on quoting, and expands globs
+    # and braces, so the path a command writes cannot be known from its text:
+    # refuse all of them.
+    case "$p" in *\\*|*[*?[{]*) return 1 ;; esac
     # Reject env-var or command-substitution destinations — we can't
     # statically reason about them, so fail closed.
     case "$p" in
         *\$\(*|*\`*|*\$\{*|\$*) return 1 ;;
     esac
     case "$p" in
-        /dev/null|/dev/stdout|/dev/stderr|/dev/fd/*|/dev/tty) return 0 ;;
-        /tmp|/tmp/*|/var/tmp|/var/tmp/*) return 0 ;;
+        /dev/null|/dev/stdout|/dev/stderr|/dev/tty) return 0 ;;
+        /dev/fd/*)
+            # /dev/fd/N is a descriptor. A `..` after it walks back out.
+            case "$p/" in */../*) return 1 ;; esac
+            return 0
+            ;;
     esac
     p=$(normalize_path "$p")
     local abs
@@ -108,14 +112,12 @@ is_safe_path() {
         /*) abs="$p" ;;
         *)  abs="$cwd/$p" ;;
     esac
-    if command -v realpath >/dev/null 2>&1; then
-        abs=$(realpath -m "$abs" 2>/dev/null || echo "$abs")
-    fi
-    abs=$(normalize_path "$abs")
+    abs=$(resolve_path "$abs")
+    [ -z "$abs" ] && return 1
     case "$abs" in
         "$scratch_root"|"$scratch_root"/*) return 0 ;;
         "$home_scratch_root"|"$home_scratch_root"/*) return 0 ;;
-        /tmp|/tmp/*|/var/tmp|/var/tmp/*) return 0 ;;
+        "$tmp_root"|"$tmp_root"/*|"$var_tmp_root"|"$var_tmp_root"/*) return 0 ;;
     esac
     return 1
 }

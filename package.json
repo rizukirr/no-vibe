@@ -1,20 +1,18 @@
 {
   "name": "no-vibe",
   "version": "2.0.3",
-  "description": "Tutor mode for AI coding assistants. AI shows code in chat and reviews your work, but never writes to your project files. Ships across Claude Code, OpenCode, Codex, Gemini CLI, and Pi.",
+  "description": "Learning mode for AI coding assistants. The agent teaches and shows code in chat, and you type every line yourself.",
   "type": "module",
-  "exports": "./index.js",
-  "main": "./index.js",
   "license": "MIT",
   "author": {
     "name": "rizukirr",
     "url": "https://github.com/rizukirr"
   },
+  "homepage": "https://github.com/rizukirr/no-vibe#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rizukirr/no-vibe.git"
   },
-  "homepage": "https://github.com/rizukirr/no-vibe#readme",
   "bugs": {
     "url": "https://github.com/rizukirr/no-vibe/issues"
   },
@@ -23,35 +21,47 @@
     "opencode-plugin",
     "claude-code-plugin",
     "codex-plugin",
-    "gemini-extension",
+    "antigravity-plugin",
     "ai-tutor",
     "no-vibe",
     "learning",
     "education"
   ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "generate": "node bin/generate.mjs",
+    "check": "node bin/generate.mjs --check"
+  },
   "files": [
-    "index.js",
-    "README.md",
-    "LICENSE",
-    "AGENTS.md",
-    "GEMINI.md",
-    "INSTALL.codex.md",
-    "INSTALL.gemini.md",
-    "INSTALL.opencode.md",
-    "INSTALL.pi.md",
-    "gemini-extension.json",
+    ".agents/",
     ".claude-plugin/",
     ".codex-plugin/",
-    ".gemini/",
     ".opencode/",
     ".pi-plugin/",
+    "AGENTS.md",
+    "INSTALL.codex.md",
+    "INSTALL.pi.md",
+    "LICENSE",
+    "README.md",
     "commands/",
+    "hooks.json",
     "hooks/",
+    "plugin.json",
+    "rules/",
     "skills/"
   ],
+  "main": "./.opencode/plugins/no-vibe.js",
   "pi": {
-    "skills": ["./skills"],
-    "prompts": ["./.pi-plugin/prompts"],
-    "extensions": ["./.pi-plugin/extensions"]
+    "skills": [
+      "./skills"
+    ],
+    "prompts": [
+      "./.pi-plugin/prompts"
+    ],
+    "extensions": [
+      "./.pi-plugin/extensions"
+    ]
   }
 }

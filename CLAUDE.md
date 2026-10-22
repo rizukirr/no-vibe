@@ -4,112 +4,55 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repo purpose
 
-This repo **is** the `no-vibe` plugin itself — not a consumer of it. It ships tutor-style coding mode across five AI CLIs (Claude Code, OpenCode, Codex, Gemini CLI, Pi). When users install it, AI stops writing their project files and walks them through writing code themselves.
+This repo is the no-vibe plugin for Claude Code, Codex, opencode, Pi and Antigravity. Developing the plugin is normal editing. The write guard applies only when `.no-vibe/active` exists at the repo root.
 
-Do **not** confuse "developing this plugin" with "being in no-vibe mode". Editing files inside this repo is normal plugin development — the no-vibe write guard does not apply here unless `.no-vibe/active` exists at the repo root.
+## What no-vibe is for
 
-## What no-vibe is for (read before changing teaching behavior)
+People learn by doing the thinking and by typing code by hand. The agent finds the user's level with concrete multiple-choice questions, agrees a goal with them, and writes a high-level syllabus they approve. It teaches each section briefly, concept first or code first, chosen per section. Each section gets at least 3 exercises with the full code shown, so the user builds muscle memory by typing it. Later sections reuse earlier material.
 
-**no-vibe is pure for learning.** It is a productive constraint, not a feature limitation. The plugin exists because vibe-coding — letting AI write code while the user watches — produces output without producing understanding, and *copy-typing what the AI shows* reproduces the same hollow outcome one keystroke at a time. The thing that actually transfers is the **user's thought process**: deciding what to do, predicting what will happen, naming what broke. no-vibe is built so the user contributes that, not just keystrokes.
+Test every teaching change against one question: does the user still think and still type every line?
 
-- **The user writes every line of project code.** AI refuses to. That's the hard guard, enforced by hooks across all five surfaces.
-- **The user thinks before they type.** Guided write is the default disclosure mode — AI walks the user toward the code in English with graded help verbs (`hint` / `analogy` / `pseudo` / `show` / `less`) so the code they write comes from a decision they made, not a block they transcribed. Showcase exists as a fallback but is not the path that produces learning.
-- **The user predicts before they run.** Every Phase 3 layer ends with a one-question prediction gate targeting an edge case, intermediate value, branch, or failure mode — never a value already named in the expected-output signature. The run becomes a self-test, not passive verification.
-- **The user learns from the project they are actually building.** Not contrived exercises, not toy examples — the real codebase, the real bugs, the real architectural decisions in front of them. Teaching is *in situ*.
-- **AI is a Socratic guide, not a code generator.** It asks questions, gives hints scaled to the learner's level, reviews what the user wrote, and explains how things work *when the user is ready to integrate the explanation*.
-- **Learning is bottom-up and incremental.** Six phases (0–6), broken into layers, each layer a small unit the user can write themselves. Progress is observable in the user's actual diff *and* in the prediction-gate answers logged across the session.
+## Sources and generated files
 
-When making teaching-related changes (skills, prompts, the cycle, memory), test them against this frame: *does this make the user contribute more of the thought process, or does it just make typing the code easier?* If the latter, you are designing for vibe-coding and against no-vibe's purpose. A change that lets the user type more code with less thinking is a regression, not a feature.
+The hand-edited sources are `no-vibe.config.json`, `skills/*/SKILL.md`, `hooks/*.sh`, `hooks/run-hook.cmd`, `bin/`, `lib/`, `runtimes/`, `tests/` and the prose docs. Everything listed in `.no-vibe-manifest` is generated. Edit the source, run `npm run generate`, and never hand-edit a generated file. `npm run check` fails when a generated file is stale.
+
+The version lives only in `no-vibe.config.json`.
+
+## Write guard
+
+`hooks/block-writes.sh` and `hooks/block-bash-writes.sh` are the only guard implementation. Claude Code, Codex and Antigravity call them as hooks, and opencode and Pi call them from their generated plugins.
+
+The Write-tool guard allows writes only under `.no-vibe/**` and `$HOME/.no-vibe/**`, and refuses a path through a symlink or longer than 4000 bytes. The Bash guard reads each command's text and also allows `/tmp/**`, `/var/tmp/**`, `/dev/null`, `/dev/stdout`, `/dev/stderr`, `/dev/tty` and `/dev/fd/*`. It refuses a target that starts with `$` or uses `$(`, `${` or backticks, a glob, a brace or a backslash, an overlong path, a path through a symlink, and any command over 64 KB.
+
+The guards are a guardrail against drift, not a sandbox. The Bash guard matches common write forms with patterns, so shell it does not parse gets through: a variable in the middle of a path (`.no-vibe/$X`), `>|` and `>&` redirects, a second `cp`, `tee` or `sed -i` in one command, a quoted space inside a path, writes through `/dev/fd`, a symlink created and used in the same call, and any script or build tool that writes files itself. no-vibe relies on the skill keeping the agent in chat, and the guard catches it when it slips.
+
+## State
+
+`.no-vibe/syllabus.md` is the only state file. `hooks/status.sh` reads it for the resume line.
+
+## Commands
+
+<!-- no-vibe:generated:commands -->
+| Command | Effect |
+|---|---|
+| `/no-vibe [on\|off\|<topic>]` | Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <level\|goal\|syllabus\|learn\|exercise> · Section: <n/total\|-> · Exercise: <k\|->`. |
+| `/no-vibe-btw <task>` | One-shot escape hatch to temporarily disable no-vibe write guard for a single scoped task, then restore the marker. |
+| `/no-vibe-challenge [focus]` | One coding challenge built from the current syllabus or the project. The user writes all the code. The agent gives the task, hints when asked, and reviews when asked. |
+<!-- /no-vibe:generated -->
 
 ## Verification
 
-No root npm script runner. Run all test suites before finishing plugin changes:
+Run these before finishing a change:
 
 ```bash
+npm run check
+node tests/test_generate.mjs
 bash tests/test_block_writes.sh
 bash tests/test_block_bash_writes.sh
-bash tests/test_validate_memory_write.sh
+bash tests/test_json.sh
 bash tests/test_status.sh
-node tests/test_opencode_plugin.mjs
 bash tests/test_escape_hatch.sh
-bash tests/test_gemini_guard.sh
 bash tests/test_contract_injection.sh
-node tests/test_pi_plugin.mjs
-node tests/test_codex_plugin.mjs
+node tests/test_guard_parity.mjs
+node tests/test_manifests.mjs
 ```
-
-## Architecture — parallel surfaces, one behavior
-
-The same no-vibe behavior is implemented five times, once per host CLI. A change to one surface almost always needs mirrored changes on the others.
-
-**Write-guard enforcement** (hard stop when `.no-vibe/active` exists, allow writes inside `.no-vibe/` and `$HOME/.no-vibe/`):
-- Claude Code: `hooks/block-writes.sh` — PreToolUse hook for Edit/Write/NotebookEdit/MultiEdit/ApplyPatch; `hooks/block-bash-writes.sh` — PreToolUse hook for Bash that rejects `>`, `>>`, `&>`, `&>>`, `tee`, `sed -i` / `--in-place`, `cp`, `mv`, `install`, `dd of=`, and `cat <<EOF >` targeting paths outside the safe-target allowlist below. Variable / command-substitution destinations (`$VAR`, `$(…)`, backticks) fail closed.
-- OpenCode: `.opencode/plugins/no-vibe.js` — in-process guard for both write tools and Bash commands (mirror of the two Claude hooks).
-- Pi: `.pi-plugin/extensions/no-vibe/index.ts` — TS extension using `pi.on("tool_call", ...)` for `write`/`edit` and dangerous `bash`; mirror of the OpenCode plugin (hard block).
-- Codex: **two install paths.** Marketplace install (`.codex-plugin/plugin.json`) reuses the Claude PreToolUse hooks for `apply_patch` + Bash (hard block; Codex provides `${CLAUDE_PLUGIN_ROOT}` as legacy alias for `${PLUGIN_ROOT}`). Legacy symlink install falls back to instruction-based soft block via `skills/no-vibe/SKILL.md` (Iron Law enumerates the Bash patterns).
-- Gemini CLI: **instruction-based** soft block via `GEMINI.md` (write_file/replace + run_shell_command rules) and `.gemini/tool-mapping.md`; no hook surface available.
-
-Path-handling, Bash-parsing rules, and the safe-target allowlist (`.no-vibe/**`, `$HOME/.no-vibe/**`, `/tmp/**`, `/var/tmp/**`, `/dev/{null,stdout,stderr,tty,fd/*}`) must stay in lockstep across all five surfaces:
-- `hooks/block-writes.sh` + `hooks/block-bash-writes.sh` (Claude)
-- `.opencode/plugins/no-vibe.js` (OpenCode)
-- `.pi-plugin/extensions/no-vibe/index.ts` (Pi)
-- `GEMINI.md` + `.gemini/tool-mapping.md` (Gemini)
-- `skills/no-vibe/SKILL.md` Iron Law (Codex + shared)
-
-If one changes, update the others.
-
-**Memory heading-validation** (DeepTutor port — blocks Write calls to `~/.no-vibe/PROFILE.md` or `.no-vibe/SUMMARY.md` when the proposed content has no canonical section heading):
-- Claude Code: `hooks/validate-memory-write.sh` — PreToolUse hook on `Write` only.
-- OpenCode: folded into `.opencode/plugins/no-vibe.js` `tool.execute.before` (Write tool, when target is the safe-zone PROFILE/SUMMARY paths).
-- Pi: folded into `.pi-plugin/extensions/no-vibe/index.ts` `pi.on("tool_call", ...)` (same conditions).
-- Codex / Gemini: instruction-only enforcement via SKILL.md "Heading validation — write integrity check".
-
-The canonical heading sets are duplicated across all four runtime surfaces and the SKILL.md instruction. If one changes, update the others. Edit / MultiEdit / NotebookEdit are intentionally NOT validated — they are for incremental updates and existing files should already carry canonical headings.
-
-**Status line** (`no-vibe: ON|OFF`, silent when no `.no-vibe/` dir exists to avoid noise in unrelated projects):
-- Claude: `hooks/status.sh` (SessionStart)
-- OpenCode: bootstrap inject in `.opencode/plugins/no-vibe.js`
-- Pi: `before_agent_start` injection in `.pi-plugin/extensions/no-vibe/index.ts`
-- Codex (marketplace install): `hooks/status.sh` reused via the SessionStart entry in `.codex-plugin/plugin.json`
-
-**Command specs** — one logical command, five physical copies:
-- `commands/no-vibe*.md` (Claude)
-- `.opencode/commands/no-vibe*.md` (OpenCode)
-- `.pi-plugin/prompts/no-vibe*.md` (Pi)
-- `.gemini/commands/no-vibe*.toml` (Gemini)
-- Codex reuses Claude's `commands/` (via `INSTALL.codex.md` for legacy installs, and via the `skills` pointer in `.codex-plugin/plugin.json` for marketplace installs)
-
-**Teaching logic** lives in `skills/no-vibe/SKILL.md` (six-phase cycle) and is shared across all surfaces.
-
-**Entrypoints:** `index.js` re-exports `.opencode/plugins/no-vibe.js` for OpenCode's plugin loader. Claude discovers via `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`. Gemini via `gemini-extension.json` + `GEMINI.md`. Pi via `.pi-plugin/plugin.json` and the `pi` key in `package.json` (`skills`, `prompts`, `extensions`).
-
-## Two data layers (easy to confuse)
-
-- **Adaptation memory — four-layer stack** (split by write cadence and scope):
-  - **Default teaching style (the floor):** lives in `skills/no-vibe/SKILL.md` "Default teaching style" section. Ships with the plugin, versioned with the plugin, never templated.
-  - **`~/.no-vibe/PROFILE.md` (AI-managed, global, stable identity):** identity, expertise, learning style, disclosure mode (guided vs. showcase default + prediction-gate setting), observed strengths, known gaps. AI creates on first `/no-vibe` activation per the schema in SKILL.md "PROFILE.md and SUMMARY.md — the progression files". Rewrites are rare — only when something cross-project durable shifts. AI **may** write.
-  - **`.no-vibe/SUMMARY.md` (AI-managed, project, running journey):** current focus, accomplishments, open questions for *this* project. AI creates the first time a layer close produces an outcome worth recording (not seeded on activation). Rewrites are frequent — every layer close is a candidate. Pruning is aggressive, especially on `Open Questions`. AI **may** write.
-  - **`user/*.md` (user-managed overrides):** `~/.no-vibe/user/*.md` and `.no-vibe/user/*.md`. AI loads every `.md` file in either directory sorted by filename and treats their contents as authoritative on conflict with PROFILE.md, SUMMARY.md, or the floor. AI **must never** create, edit, or delete files inside `user/`.
-  - All of these are injected into the system prompt at session start by the runtime hooks (`hooks/status.sh`, `.opencode/plugins/no-vibe.js`, `.pi-plugin/extensions/no-vibe/index.ts`) under a `## Background Memory` block prefaced with *"Use this memory sparingly — only when directly relevant"*, and re-read every turn on Codex/Gemini per the "Adaptation Iron Law" in `skills/no-vibe/SKILL.md`. The runtime never creates PROFILE.md, SUMMARY.md, or `user/` — AI handles PROFILE/SUMMARY creation; user handles `user/`.
-  - Both AI-managed files share two write disciplines borrowed from DeepTutor's memory service: the **silent default** ("most layer-closes produce no write") and the **NO_CHANGE rule** ("never rewrite a file with content equivalent to what's already there — silence is the right outcome when nothing changed"). Heading-validation hook (Phase 2) enforces canonical section presence on Claude/OpenCode/Pi.
-- **Cycle state — per-session JSON.** `.no-vibe/data/sessions/<slug>.json` tracks `current_phase`, `current_layer`, `revision_id`, `status`, `layers_total`, `layers_completed`. This is the state machine for the six-phase cycle, not adaptation memory.
-
-Adaptation belongs in PROFILE.md (global stable) / SUMMARY.md (project running) / `user/` (user overrides); cycle progress belongs in session JSON. Mixing them is the anti-pattern this design avoids — and the PROFILE/SUMMARY split itself enforces a second discipline: stable identity (rare-write) and running journey (frequent-write) live in different files because they have different cadences.
-
-## Versioning
-
-Version numbers are duplicated in:
-- `package.json`
-- `.claude-plugin/plugin.json`
-- `.claude-plugin/marketplace.json`
-- `gemini-extension.json`
-- `.pi-plugin/plugin.json`
-- `.codex-plugin/plugin.json`
-
-Bump all six by hand and confirm parity with:
-
-```bash
-grep -E '"version"' package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json gemini-extension.json .pi-plugin/plugin.json .codex-plugin/plugin.json
-```
-
-(A `scripts/bump-version.sh` helper used to live in this repo; it was removed in commit `7f8afda`. If a release ever drifts the five files apart, restore the helper rather than papering over with hand-edits.) The pi parity test (`tests/test_pi_plugin.mjs`) also asserts that `package.json` and `.pi-plugin/plugin.json` versions match.

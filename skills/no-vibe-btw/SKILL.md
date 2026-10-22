@@ -1,6 +1,8 @@
 ---
 name: no-vibe-btw
 description: One-shot escape hatch to temporarily disable no-vibe write guard for a single scoped task, then restore the marker.
+argument-hint: "<task>"
+command: true
 ---
 
 # no-vibe-btw

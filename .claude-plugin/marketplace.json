@@ -1,28 +1,27 @@
 {
-    "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-    "name": "no-vibe",
-    "description": "Forces you to write code yourself. AI shows and reviews, never writes to your files.",
-    "owner": {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "no-vibe",
+  "description": "Learning mode for AI coding assistants. The agent teaches and shows code in chat, and you type every line yourself.",
+  "owner": {
+    "name": "rizukirr"
+  },
+  "plugins": [
+    {
+      "name": "no-vibe",
+      "description": "Learning mode for AI coding assistants. The agent teaches and shows code in chat, and you type every line yourself.",
+      "version": "2.0.3",
+      "author": {
         "name": "rizukirr"
-    },
-    "plugins": [
-        {
-            "name": "no-vibe",
-            "description": "Tutor mode for AI coding assistants. AI shows code in chat and reviews your work, but never writes to your project files.",
-            "version": "2.0.3",
-            "author": {
-                "name": "rizukirr"
-            },
-            "source": "./",
-            "category": "learning",
-            "homepage": "https://github.com/rizukirr/no-vibe",
-            "tags": [
-                "learning",
-                "tutor",
-                "no-vibe-coding",
-                "education"
-            ]
-        }
-    ],
-    "version": "2.0.3"
+      },
+      "source": "./",
+      "category": "learning",
+      "homepage": "https://github.com/rizukirr/no-vibe#readme",
+      "tags": [
+        "learning",
+        "tutor",
+        "no-vibe-coding",
+        "education"
+      ]
+    }
+  ]
 }
