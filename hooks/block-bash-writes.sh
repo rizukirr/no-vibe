@@ -12,37 +12,7 @@
 
 set -u
 
-# Normalize Windows-style drive paths (`C:/foo`, `c:\foo`) to MSYS form
-# (`/c/foo`) so prefix comparisons stay consistent on Git Bash. MSYS
-# converts paths automatically when crossing the bash/native-binary
-# boundary, which can produce mixed forms within a single hook run
-# (e.g. cwd received from the host becomes `C:/...` while paths embedded in
-# command strings keep `/c/...`). Without this, the allowlist match
-# silently fails on Windows.
-normalize_path() {
-    local p="$1"
-        # Backslashes are separators only on Windows. Elsewhere `\` is a legal
-        # filename character, and translating it would let `.no-vibe/a\b/../../x`
-        # pass for a path inside .no-vibe/.
-        case "${OSTYPE:-}" in
-            msys*|cygwin*|win32*) p=$(printf '%s' "$p" | tr '\\' '/') ;;
-        esac
-    # `C:/foo` or `c:/foo` → `/c/foo` (portable, no bash 4 lowercase op).
-    case "$p" in
-        [A-Za-z]:/*)
-            local drive
-            drive=$(printf '%s' "${p%%:*}" | tr '[:upper:]' '[:lower:]')
-            p="/$drive${p#?:}"
-            ;;
-        [A-Za-z]:)
-            local drive
-            drive=$(printf '%s' "${p%%:*}" | tr '[:upper:]' '[:lower:]')
-            p="/$drive"
-            ;;
-    esac
-    printf '%s' "$p"
-}
-
+. "$(dirname "$0")/path.sh"
 . "$(dirname "$0")/json.sh"
 
 input=$(cat)
@@ -96,15 +66,14 @@ EOF
     exit 2
 }
 
-# Resolve canonical .no-vibe roots once: project-local + global learner state.
+# Resolve the allowed roots once. An empty result falls back to the literal
+# path, so an empty pattern can never allow everything. macOS resolves /tmp
+# and /var/tmp through /private, and the resolved roots follow that.
 home_dir=$(normalize_path "${HOME:-/root}")
-if command -v realpath >/dev/null 2>&1; then
-    scratch_root=$(normalize_path "$(realpath -m "$cwd/.no-vibe")")
-    home_scratch_root=$(normalize_path "$(realpath -m "$home_dir/.no-vibe")")
-else
-    scratch_root="$cwd/.no-vibe"
-    home_scratch_root="$home_dir/.no-vibe"
-fi
+scratch_root=$(resolve_path "$cwd/.no-vibe"); : "${scratch_root:=$cwd/.no-vibe}"
+home_scratch_root=$(resolve_path "$home_dir/.no-vibe"); : "${home_scratch_root:=$home_dir/.no-vibe}"
+tmp_root=$(resolve_path /tmp); : "${tmp_root:=/tmp}"
+var_tmp_root=$(resolve_path /var/tmp); : "${var_tmp_root:=/var/tmp}"
 
 is_safe_path() {
     local p="$1"
@@ -114,6 +83,9 @@ is_safe_path() {
         \'*\') p=${p#\'}; p=${p%\'} ;;
     esac
     [ -z "$p" ] && return 1
+    # Bash drops or keeps a backslash depending on quoting, so the path a
+    # command writes cannot be known from its text: refuse it.
+    case "$p" in *\\*) return 1 ;; esac
     # Reject env-var or command-substitution destinations — we can't
     # statically reason about them, so fail closed.
     case "$p" in
@@ -128,19 +100,12 @@ is_safe_path() {
         /*) abs="$p" ;;
         *)  abs="$cwd/$p" ;;
     esac
-    if command -v realpath >/dev/null 2>&1; then
-        abs=$(realpath -m "$abs" 2>/dev/null || echo "$abs")
-    fi
-    abs=$(normalize_path "$abs")
-    # A `..` left unresolved (no realpath, or a BSD realpath without -m)
-    # hides the real target: refuse it.
-    case "$abs/" in */../*) return 1 ;; esac
+    abs=$(resolve_path "$abs")
+    [ -z "$abs" ] && return 1
     case "$abs" in
         "$scratch_root"|"$scratch_root"/*) return 0 ;;
         "$home_scratch_root"|"$home_scratch_root"/*) return 0 ;;
-        /tmp|/tmp/*|/var/tmp|/var/tmp/*) return 0 ;;
-        # macOS resolves /tmp and /var/tmp through /private.
-        /private/tmp|/private/tmp/*|/private/var/tmp|/private/var/tmp/*) return 0 ;;
+        "$tmp_root"|"$tmp_root"/*|"$var_tmp_root"|"$var_tmp_root"/*) return 0 ;;
     esac
     return 1
 }

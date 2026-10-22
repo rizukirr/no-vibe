@@ -334,4 +334,56 @@ test_backslash_name_escape_denied() {
 }
 test_backslash_name_escape_denied
 
+# --- The guard needs no realpath ---
+test_no_realpath_needed() {
+    local cwd; cwd=$(make_sandbox)
+    local bin; bin=$(mktemp -d)
+    printf '#!/bin/sh\necho "realpath: unsupported" >&2\nexit 1\n' > "$bin/realpath"
+    chmod +x "$bin/realpath"
+    bash_call "$cwd" "echo hi > src/x" | PATH="$bin:$PATH" "$HOOK" >/dev/null 2>&1
+    local deny_rc=$?
+    bash_call "$cwd" "echo hi > .no-vibe/x" | PATH="$bin:$PATH" "$HOOK" >/dev/null 2>&1
+    local allow_rc=$?
+    rm -rf "$cwd" "$bin"
+    assert_eq "2" "$deny_rc" "broken realpath: redirect into project → deny"
+    assert_eq "0" "$allow_rc" "broken realpath: redirect into .no-vibe → allow"
+}
+test_no_realpath_needed
+
+# --- /private/tmp is allowed only where /tmp resolves there ---
+test_private_tmp_off_macos_denied() {
+    local cwd; cwd=$(make_sandbox)
+    if [ "$(cd -P /tmp && pwd -P)" = /private/tmp ]; then
+        rm -rf "$cwd"
+        pass "/private/tmp off macOS → deny (skipped: /tmp is /private/tmp here)"
+        return
+    fi
+    run_hook "$cwd" "echo hi > /private/tmp/x" >/dev/null
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "/private/tmp where /tmp is not /private/tmp → deny"
+}
+test_private_tmp_off_macos_denied
+
+# --- A backslash in a target is refused: bash may drop it ---
+test_backslash_target_denied() {
+    local cwd; cwd=$(make_sandbox)
+    run_hook "$cwd" 'echo hi > .no-vibe\notes.md' >/dev/null
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "redirect to .no-vibe\\notes.md → deny"
+}
+test_backslash_target_denied
+
+# --- Symlinks are followed before a target is allowed ---
+test_symlink_escape_denied() {
+    local cwd; cwd=$(make_sandbox)
+    mkdir -p "$cwd/src"
+    ln -s ../src "$cwd/.no-vibe/out"
+    run_hook "$cwd" "echo hi > .no-vibe/out/x" >/dev/null
+    local rc=$?
+    rm -rf "$cwd"
+    assert_eq "2" "$rc" "redirect through a symlinked dir out of .no-vibe → deny"
+}
+test_symlink_escape_denied
 summary

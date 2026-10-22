@@ -379,4 +379,39 @@ test_backslash_name_escape_blocks() {
 }
 test_backslash_name_escape_blocks
 
+# --- The guard needs no realpath, and follows symlinks before allowing ---
+fake_realpath_bin=$(mktemp -d)
+printf '#!/bin/sh\necho "realpath: unsupported" >&2\nexit 1\n' > "$fake_realpath_bin/realpath"
+chmod +x "$fake_realpath_bin/realpath"
+
+write_rc() {
+    # $1 = cwd, $2 = file_path; runs with a realpath that always fails.
+    printf '{"tool_name":"Write","tool_input":{"file_path":%s},"cwd":%s}' \
+        "$(json_string "$2")" "$(json_string "$1")" | PATH="$fake_realpath_bin:$PATH" "$HOOK" >/dev/null 2>&1
+    echo $?
+}
+
+test_no_realpath_needed() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe" && touch "$cwd/.no-vibe/active"
+    assert_eq "2" "$(write_rc "$cwd" "$cwd/src/main.rs")" "broken realpath: project write → deny"
+    assert_eq "0" "$(write_rc "$cwd" "$cwd/.no-vibe/notes.md")" "broken realpath: .no-vibe write → allow"
+    assert_eq "0" "$(write_rc "$cwd" "$cwd/.no-vibe/new/../notes.md")" "broken realpath: .. inside .no-vibe → allow"
+    rm -rf "$cwd"
+}
+test_no_realpath_needed
+
+test_symlink_escape_blocks() {
+    local cwd
+    cwd=$(make_sandbox)
+    mkdir -p "$cwd/.no-vibe" "$cwd/src" && touch "$cwd/.no-vibe/active"
+    ln -s ../src "$cwd/.no-vibe/out"
+    ln -s ../src/main.rs "$cwd/.no-vibe/f"
+    assert_eq "2" "$(write_rc "$cwd" "$cwd/.no-vibe/out/x.rs")" "write through a symlinked dir out of .no-vibe → deny"
+    assert_eq "2" "$(write_rc "$cwd" "$cwd/.no-vibe/f")" "write to a symlink out of .no-vibe → deny"
+    rm -rf "$cwd"
+}
+test_symlink_escape_blocks
+rm -rf "$fake_realpath_bin"
 summary

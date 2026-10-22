@@ -6,32 +6,7 @@
 
 set -u
 
-# Normalize Windows-style drive paths (`C:/foo`, `c:\foo`) to MSYS form
-# (`/c/foo`) so prefix comparisons stay consistent on Git Bash. See
-# block-bash-writes.sh for the full rationale. Same fix, same reason.
-normalize_path() {
-    local p="$1"
-        # Backslashes are separators only on Windows. Elsewhere `\` is a legal
-        # filename character, and translating it would let `.no-vibe/a\b/../../x`
-        # pass for a path inside .no-vibe/.
-        case "${OSTYPE:-}" in
-            msys*|cygwin*|win32*) p=$(printf '%s' "$p" | tr '\\' '/') ;;
-        esac
-    case "$p" in
-        [A-Za-z]:/*)
-            local drive
-            drive=$(printf '%s' "${p%%:*}" | tr '[:upper:]' '[:lower:]')
-            p="/$drive${p#?:}"
-            ;;
-        [A-Za-z]:)
-            local drive
-            drive=$(printf '%s' "${p%%:*}" | tr '[:upper:]' '[:lower:]')
-            p="/$drive"
-            ;;
-    esac
-    printf '%s' "$p"
-}
-
+. "$(dirname "$0")/path.sh"
 . "$(dirname "$0")/json.sh"
 
 input=$(cat)
@@ -81,14 +56,11 @@ EOF
     exit 2
 fi
 
+# Resolve the allowed roots once. An empty result falls back to the literal
+# path, so an empty pattern can never allow everything.
 home_dir=$(normalize_path "${HOME:-/root}")
-if command -v realpath >/dev/null 2>&1; then
-    scratch_root=$(normalize_path "$(realpath -m "$cwd/.no-vibe")")
-    home_scratch_root=$(normalize_path "$(realpath -m "$home_dir/.no-vibe")")
-else
-    scratch_root="$cwd/.no-vibe"
-    home_scratch_root="$home_dir/.no-vibe"
-fi
+scratch_root=$(resolve_path "$cwd/.no-vibe"); : "${scratch_root:=$cwd/.no-vibe}"
+home_scratch_root=$(resolve_path "$home_dir/.no-vibe"); : "${home_scratch_root:=$home_dir/.no-vibe}"
 
 deny() {
     cat >&2 <<EOF
@@ -109,12 +81,8 @@ while IFS= read -r target; do
         /*) abs_target="$target" ;;
         *)  abs_target="$cwd/$target" ;;
     esac
-    if command -v realpath >/dev/null 2>&1; then
-        # -m so it doesn't fail if the file doesn't exist yet
-        abs_target=$(normalize_path "$(realpath -m "$abs_target")")
-    else
-        abs_target=$(cd "$(dirname "$abs_target")" 2>/dev/null && pwd)/$(basename "$abs_target")
-    fi
+    abs_target=$(resolve_path "$abs_target")
+    [ -n "$abs_target" ] || deny "$target"
     case "$abs_target" in
         "$scratch_root"/*|"$scratch_root") ;;
         "$home_scratch_root"/*|"$home_scratch_root") ;;
