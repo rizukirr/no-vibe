@@ -83,16 +83,22 @@ is_safe_path() {
         \'*\') p=${p#\'}; p=${p%\'} ;;
     esac
     [ -z "$p" ] && return 1
-    # Bash drops or keeps a backslash depending on quoting, so the path a
-    # command writes cannot be known from its text: refuse it.
-    case "$p" in *\\*) return 1 ;; esac
+    # Bash drops or keeps a backslash depending on quoting, and expands globs
+    # and braces, so the path a command writes cannot be known from its text:
+    # refuse all of them.
+    case "$p" in *\\*|*[*?[{]*) return 1 ;; esac
     # Reject env-var or command-substitution destinations — we can't
     # statically reason about them, so fail closed.
     case "$p" in
         *\$\(*|*\`*|*\$\{*|\$*) return 1 ;;
     esac
     case "$p" in
-        /dev/null|/dev/stdout|/dev/stderr|/dev/fd/*|/dev/tty) return 0 ;;
+        /dev/null|/dev/stdout|/dev/stderr|/dev/tty) return 0 ;;
+        /dev/fd/*)
+            # /dev/fd/N is a descriptor. A `..` after it walks back out.
+            case "$p/" in */../*) return 1 ;; esac
+            return 0
+            ;;
     esac
     p=$(normalize_path "$p")
     local abs

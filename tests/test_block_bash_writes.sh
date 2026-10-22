@@ -417,4 +417,16 @@ test_double_slash_root_denied() {
     assert_eq "2" "$rc" "// target with a root resolving to / → deny"
 }
 test_double_slash_root_denied
+# --- Targets bash expands, or that walk out of /dev/fd, are refused ---
+test_expanding_targets_denied() {
+    local cwd; cwd=$(make_sandbox)
+    mkdir -p "$cwd/src"
+    ln -s ../src "$cwd/.no-vibe/link"
+    run_hook "$cwd" "echo pwn > .no-vibe/l*/main.rs" >/dev/null; assert_eq "2" "$?" "glob target → deny"
+    run_hook "$cwd" "echo pwn > .no-vibe/{x,../src/y}" >/dev/null; assert_eq "2" "$?" "brace target → deny"
+    run_hook "$cwd" "echo pwn > /dev/fd/../../..$cwd/src/fd" >/dev/null; assert_eq "2" "$?" "/dev/fd/.. → deny"
+    run_hook "$cwd" "echo hi > /dev/fd/1" >/dev/null; assert_eq "0" "$?" "/dev/fd/1 → allow"
+    rm -rf "$cwd"
+}
+test_expanding_targets_denied
 summary
