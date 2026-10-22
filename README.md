@@ -10,7 +10,9 @@ While no-vibe is on, the agent refuses to write your project files. A hook block
 
 ## How it works
 
-A lesson moves through five steps, and every reply starts with a header that names the current step, section and exercise.
+In an existing project, the agent first reads it: stack and exact versions, layout, conventions, what already works and what is in progress. It saves a short summary to `.no-vibe/project.md`, confirms it with you, and reuses it for later topics. The questions, goal options and syllabus then fit your project, and nothing it teaches asks you to break what already works. With no project, or a topic unrelated to it, it skips this.
+
+A lesson then moves through five steps, and every reply starts with a header that names the current step, section and exercise.
 
 1. Level. The agent asks multiple-choice questions whose options are concrete statements about the topic, such as "I can write small programs but fight the borrow checker". It stops once it knows where to start, which terms you already know and how you like to learn.
 2. Goal. It offers concrete outcomes of different scope, in words you understand, and narrows them down with you until the goal fits in one sentence you confirm.
@@ -20,7 +22,7 @@ A lesson moves through five steps, and every reply starts with a header that nam
 
 Later sections reuse earlier material, so you repeat it without a separate recap.
 
-`.no-vibe/syllabus.md` is the only state file. It holds your level, the goal, the sections with a checkbox each, and where you are. Run `/no-vibe on` in a later session and the agent resumes from it.
+`.no-vibe/syllabus.md` holds the lesson: your level, the goal, the sections with a checkbox each, and where you are. Run `/no-vibe on` in a later session and the agent resumes from it.
 
 ## Quick start
 
@@ -83,7 +85,7 @@ Codex uses `$` instead of `/`.
 <!-- no-vibe:generated:commands -->
 | Command | Effect |
 |---|---|
-| `/no-vibe [on\|off\|<topic>]` | Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <level\|goal\|syllabus\|learn\|exercise> · Section: <n/total\|-> · Exercise: <k\|->`. |
+| `/no-vibe [on\|off\|<topic>]` | Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <context\|level\|goal\|syllabus\|learn\|exercise> · Section: <n/total\|-> · Exercise: <k\|->`. |
 | `/no-vibe-btw <task>` | One-shot escape hatch to temporarily disable no-vibe write guard for a single scoped task, then restore the marker. |
 | `/no-vibe-challenge [focus]` | One coding challenge built from the current syllabus or the project. The user writes all the code. The agent gives the task, hints when asked, and reviews when asked. |
 <!-- /no-vibe:generated -->

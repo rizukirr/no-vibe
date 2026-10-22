@@ -30,6 +30,19 @@ for gone in phases.md curriculum.md reference-grounding.md; do
     fi
 done
 
+# The context step, project.md and the do-no-harm rule.
+case "$desc_line" in
+    *"<context|level|goal|syllabus|learn|exercise>"*) pass "SKILL.md description lists the context step" ;;
+    *) fail "SKILL.md description lists the context step" "$desc_line" ;;
+esac
+for needle in '<context|level|goal|syllabus|learn|exercise>' '### 0. context' 'Relevance check' '## Do no harm' '## Stack' '## Structure' '## Conventions' '## Works' '## Open'; do
+    if grep -qF -- "$needle" "$skill"; then
+        pass "SKILL.md contains '$needle'"
+    else
+        fail "SKILL.md contains '$needle'"
+    fi
+done
+
 lines=$(wc -l < "$skill")
 if [ "$lines" -le 200 ]; then
     pass "SKILL.md is at most 200 lines"
