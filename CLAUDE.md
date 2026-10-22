@@ -8,7 +8,7 @@ This repo is the no-vibe plugin for Claude Code, Codex, opencode, Pi and Antigra
 
 ## What no-vibe is for
 
-People learn by doing the thinking and by typing code by hand. The agent finds the user's level with concrete multiple-choice questions, agrees a goal with them, and writes a high-level syllabus they approve. It teaches each section briefly, concept first or code first, chosen per section. Each section gets at least 3 exercises with the full code shown, so the user builds muscle memory by typing it. Later sections reuse earlier material.
+People learn by doing the thinking and by typing code by hand. In an existing project the agent first reads it and saves what it learns to `.no-vibe/project.md`, so its questions, goal options and syllabus fit the project and nothing it teaches breaks what already works. It finds the user's level with concrete multiple-choice questions, agrees a goal with them, and writes a high-level syllabus they approve. It teaches each section briefly, concept first or code first, chosen per section. Each section gets at least 3 standalone exercises with the full code shown, so the user builds muscle memory by typing it. Later sections reuse earlier material.
 
 Test every teaching change against one question: does the user still think and still type every line?
 
@@ -28,7 +28,7 @@ The guards are a guardrail against drift, not a sandbox. The Bash guard matches 
 
 ## State
 
-`.no-vibe/syllabus.md` is the only state file. `hooks/status.sh` reads it for the resume line.
+`.no-vibe/syllabus.md` holds the current lesson, and `hooks/status.sh` reads it for the resume line. `.no-vibe/project.md` holds what the agent learned about an existing project, and is reused across topics.
 
 ## Commands
 
