@@ -1,10 +1,10 @@
 # no-vibe
 
-<img width="1312" height="1199" alt="Anime AI Tutor Character Sheet(1)" src="https://github.com/user-attachments/assets/9acb3be4-72ae-4f6a-bd9c-408558a7fd8c" />
-
 Turn your AI coding agent into a tutor. It teaches you, learns your level and adapts to you.
 
 Works with Claude Code, Codex, opencode, Pi and Antigravity.
+
+<img width="1312" height="1199" alt="Anime AI Tutor Character Sheet(1)" src="https://github.com/user-attachments/assets/9acb3be4-72ae-4f6a-bd9c-408558a7fd8c" />
 
 ## A lesson
 
