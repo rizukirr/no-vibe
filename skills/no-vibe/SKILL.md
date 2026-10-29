@@ -80,6 +80,9 @@ Find out what the user already knows about this topic. Ask multiple-choice quest
 - I have never written Rust
 - I can write small programs but fight the borrow checker
 - I have built an API with axum
+- None of these (describe your experience)
+
+Always end with that last option, so a user whose experience fits no statement can say it in their own words. When they pick it, read their answer and ask the next question from it.
 
 With a `project.md`, point the questions at the real project, such as "Which of these could you explain without looking: the auth middleware in `src/auth.rs`, the sqlx queries in `src/db/`, the Docker setup?" Existing code is never proof that the user knows it: it may be generated or copied.
 
