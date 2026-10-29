@@ -12,17 +12,18 @@ While no-vibe is on, the agent refuses to write your project files. A hook block
 
 In an existing project, the agent first reads it: stack and exact versions, layout, conventions, what already works and what is in progress. It saves a short summary to `.no-vibe/project.md`, confirms it with you, and reuses it for later topics. The questions, goal options and syllabus then fit your project, and nothing it teaches asks you to break what already works. With no project, or a topic unrelated to it, it skips this.
 
-A lesson then moves through five steps, and every reply starts with a header that names the current step, section and exercise.
+A lesson is a book. Your goal is the book's goal, chapters lead to it one step at a time, and sections lead to each chapter's goal. Every reply starts with a header that names the current step, chapter, section and exercise.
 
-1. Level. The agent asks multiple-choice questions whose options are concrete statements about the topic, such as "I can write small programs but fight the borrow checker". It stops once it knows where to start, which terms you already know and how you like to learn.
-2. Goal. It offers concrete outcomes of different scope, in words you understand, and narrows them down with you until the goal fits in one sentence you confirm.
-3. Syllabus. It writes `.no-vibe/syllabus.md`, one line per section saying what you can do after it, and revises it until you approve.
-4. Learn. Each section starts with a short lesson, concept first or code first depending on what the section needs.
-5. Exercise. Each section has at least 3 exercises with the full code shown in chat: the core pattern, a variation, and the pattern combined with an earlier section. You type and run each one.
+1. Level. The agent asks multiple-choice questions whose options are concrete statements about the topic, such as "I can write small programs but fight the borrow checker". Every question ends with an option to answer in your own words. It stops once it knows where to start, which terms you already know and how you like to learn.
+2. Goal. It offers concrete outcomes of different scope, in words you understand, and narrows them down with you until the goal fits in one sentence you confirm. In a project, the goal can be building something real in it.
+3. Syllabus. It writes `.no-vibe/syllabus.md`, one line per chapter with a title and what you can do at its end, and revises it until you approve.
+4. Chapters. Each chapter starts with its goal. The agent plans one section at a time, says its goal, teaches it briefly, and gives at least 3 exercises with the full code shown, which you type and run in a practice folder you choose once. From how you do, it picks the next section: more practice, another explanation, or the next step.
+5. Build. For a project goal, the last chapters are build chapters in your project. The agent reads the code the feature touches, reuses what exists, follows the project's style, and shows each piece for you to type into your own files.
+6. Check. Each chapter ends with a check on its core ideas, such as finding a bug, predicting output or fixing broken code. The agent re-explains what you miss until you get it, then asks whether anything is still unclear.
 
-Later sections reuse earlier material, so you repeat it without a separate recap.
+Later sections and chapters reuse earlier material, so you repeat it without a separate recap.
 
-`.no-vibe/syllabus.md` holds the lesson: your level, the goal, the sections with a checkbox each, and where you are. Run `/no-vibe on` in a later session and the agent resumes from it.
+`.no-vibe/syllabus.md` holds the book: your level, the goal, the chapters with a checkbox each, where you are, and the agent's notes on each section. Run `/no-vibe on` in a later session and the agent resumes from it.
 
 ## Quick start
 

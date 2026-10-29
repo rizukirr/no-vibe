@@ -19,7 +19,7 @@ mkdir -p .no-vibe && touch .no-vibe/active
 
 ## 2. Pick the challenge
 
-- If `.no-vibe/syllabus.md` exists, build the challenge from sections already ticked, at its `level`, explained in its `teaching` style.
+- If `.no-vibe/syllabus.md` exists, build the challenge from chapters already ticked and the sections in its `## Notes`, at its `level`, explained in its `teaching` style.
 - Otherwise look at the project to infer the stack and pick something relevant to it.
 - If `.no-vibe/project.md` exists, use its stack and versions. The challenge stays a separate exercise outside the project.
 - A focus argument narrows the topic.
