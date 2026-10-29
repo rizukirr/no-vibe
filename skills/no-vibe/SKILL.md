@@ -102,6 +102,9 @@ The user may not know the right words for what they want, so help them find it. 
 - The same, plus packaging and running it with Docker
 - The async foundations first (tokio, `Send`, traits) so any Rust backend makes sense later
 - Just the axum framework
+- Something else: tell me what you want to build
+
+End with an open option here too, worded for the round, so the user can name an outcome none of the others cover.
 
 For a user who already knows axum, the options move up: auth and middleware design, database layers with sqlx, async internals, deployment.
 
