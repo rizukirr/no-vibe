@@ -8,7 +8,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const SKILLS = path.join(ROOT, 'skills')
 const HOOKS = path.join(ROOT, 'hooks')
 const LIST = [
-  {"name":"no-vibe","description":"Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <context|level|goal|syllabus|learn|exercise> · Section: <n/total|-> · Exercise: <k|->`."},
+  {"name":"no-vibe","description":"Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <context|level|goal|syllabus|learn|exercise|check> · Chapter: <n/total|-> · Section: <k|-> · Exercise: <k|->`."},
   {"name":"no-vibe-btw","description":"One-shot escape hatch to temporarily disable no-vibe write guard for a single scoped task, then restore the marker."},
   {"name":"no-vibe-challenge","description":"One coding challenge built from the current syllabus or the project. The user writes all the code. The agent gives the task, hints when asked, and reviews when asked."},
 ]

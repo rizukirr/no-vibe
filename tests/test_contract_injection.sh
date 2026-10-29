@@ -30,12 +30,13 @@ for gone in phases.md curriculum.md reference-grounding.md; do
     fi
 done
 
-# The context step, project.md and the do-no-harm rule.
+# The book model, the context step, project.md and the do-no-harm rule.
+BOOK_HEADER='<context|level|goal|syllabus|learn|exercise|check> · Chapter: <n/total|-> · Section: <k|-> · Exercise: <k|->'
 case "$desc_line" in
-    *"<context|level|goal|syllabus|learn|exercise>"*) pass "SKILL.md description lists the context step" ;;
-    *) fail "SKILL.md description lists the context step" "$desc_line" ;;
+    *"$BOOK_HEADER"*) pass "SKILL.md description carries the book header" ;;
+    *) fail "SKILL.md description carries the book header" "$desc_line" ;;
 esac
-for needle in '<context|level|goal|syllabus|learn|exercise>' '### 0. context' 'Relevance check' '## Do no harm' '## Stack' '## Structure' '## Conventions' '## Works' '## Open'; do
+for needle in "$BOOK_HEADER" '### 0. context' 'Relevance check' '## Do no harm' '## Stack' '## Structure' '## Conventions' '## Works' '## Open' 'Every multiple-choice question ends with an open option' '## The book' '### 4. chapter' '### 5. build' '### 6. check' '## Notes' 'Build:' 'practice:' '.no-vibe/practice/'; do
     if grep -qF -- "$needle" "$skill"; then
         pass "SKILL.md contains '$needle'"
     else
@@ -44,10 +45,10 @@ for needle in '<context|level|goal|syllabus|learn|exercise>' '### 0. context' 'R
 done
 
 lines=$(wc -l < "$skill")
-if [ "$lines" -le 200 ]; then
-    pass "SKILL.md is at most 200 lines"
+if [ "$lines" -le 260 ]; then
+    pass "SKILL.md is at most 260 lines"
 else
-    fail "SKILL.md is at most 200 lines" "$lines lines"
+    fail "SKILL.md is at most 260 lines" "$lines lines"
 fi
 
 summary

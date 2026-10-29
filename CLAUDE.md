@@ -8,7 +8,7 @@ This repo is the no-vibe plugin for Claude Code, Codex, opencode, Pi and Antigra
 
 ## What no-vibe is for
 
-People learn by doing the thinking and by typing code by hand. In an existing project the agent first reads it and saves what it learns to `.no-vibe/project.md`, so its questions, goal options and syllabus fit the project and nothing it teaches breaks what already works. It finds the user's level with concrete multiple-choice questions, agrees a goal with them, and writes a high-level syllabus they approve. It teaches each section briefly, concept first or code first, chosen per section. Each section gets at least 3 standalone exercises with the full code shown, so the user builds muscle memory by typing it. Later sections reuse earlier material.
+People learn by doing the thinking and by typing code by hand. In an existing project the agent first reads it and saves what it learns to `.no-vibe/project.md`, so its questions, goal options and syllabus fit the project and nothing it teaches breaks what already works. It finds the user's level with concrete multiple-choice questions, agrees a goal with them, and plans a book: chapters the user approves, each with a goal that builds on the last. Inside a chapter it plans one section at a time, says its goal, teaches it briefly, gives at least 3 exercises with the full code shown so the user builds muscle memory by typing it, and picks the next section from how the user did. Each chapter ends with a check on its core ideas. For a goal in the user's project, the last chapters are build chapters where the user types the feature into the project, reusing what exists and following its style.
 
 Test every teaching change against one question: does the user still think and still type every line?
 
@@ -35,7 +35,7 @@ The guards are a guardrail against drift, not a sandbox. The Bash guard matches 
 <!-- no-vibe:generated:commands -->
 | Command | Effect |
 |---|---|
-| `/no-vibe [on\|off\|<topic>]` | Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <context\|level\|goal\|syllabus\|learn\|exercise> · Section: <n/total\|-> · Exercise: <k\|->`. |
+| `/no-vibe [on\|off\|<topic>]` | Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <context\|level\|goal\|syllabus\|learn\|exercise\|check> · Chapter: <n/total\|-> · Section: <k\|-> · Exercise: <k\|->`. |
 | `/no-vibe-btw <task>` | One-shot escape hatch to temporarily disable no-vibe write guard for a single scoped task, then restore the marker. |
 | `/no-vibe-challenge [focus]` | One coding challenge built from the current syllabus or the project. The user writes all the code. The agent gives the task, hints when asked, and reviews when asked. |
 <!-- /no-vibe:generated -->
