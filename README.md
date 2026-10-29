@@ -1,12 +1,8 @@
 # no-vibe
 
-A tutor mode for AI coding agents. The agent teaches, and **you** type every line of code.
+Turn your AI coding agent into a tutor. It teaches you, learns your level and adapts to you.
 
 Works with Claude Code, Codex, opencode, Pi and Antigravity.
-
-## Why
-
-When an AI writes your code, the work gets done but you learn little. You learn by thinking it through and typing it yourself. no-vibe turns your agent into a teacher and stops it from writing your project files.
 
 ## A lesson
 
