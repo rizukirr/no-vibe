@@ -20,7 +20,7 @@ This installs the skills and the PreToolUse and SessionStart hooks declared in `
 3. Send a topic. The agent should start with multiple-choice questions about your level, and every reply should start with the `[no-vibe] Step: ...` header.
 4. Ask the assistant to edit a project file. Codex should reject the `apply_patch` call with the no-vibe guard message from `hooks/block-writes.sh`.
 5. Ask the assistant to run `echo bad > someproj.py` or `sed -i` on a project file. `hooks/block-bash-writes.sh` should block it the same way.
-6. Once a syllabus is approved, start a fresh session. The status line should read `no-vibe: ON, resuming "<topic>" (section n/total)`.
+6. Once a syllabus is approved, start a fresh session. The status line should read `no-vibe: ON, resuming "<topic>" (chapter n/total)`.
 7. Run `$no-vibe off`. It should remove the marker.
 
 ## Hook portability

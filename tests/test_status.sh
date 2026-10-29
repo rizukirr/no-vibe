@@ -22,7 +22,7 @@ teaching: code first
 goal: build a CRUD API in axum
 ---
 
-current: section 2, exercise 1
+current: chapter 2, section 1, exercise 1
 
 - [x] 1. Write small Rust programs
 - [ ] 2. Handle errors with Result
@@ -45,7 +45,7 @@ assert_eq "no-vibe: ON" "$(run_status "$cwd" "$fake_home")" "marker, no syllabus
 rm -rf "$cwd"
 
 cwd=$(mktemp -d); mkdir -p "$cwd/.no-vibe"; touch "$cwd/.no-vibe/active"; syllabus "$cwd" approved
-assert_eq 'no-vibe: ON, resuming "Rust backend" (section 2/3)' "$(run_status "$cwd" "$fake_home")" "approved syllabus → resume hint"
+assert_eq 'no-vibe: ON, resuming "Rust backend" (chapter 2/3)' "$(run_status "$cwd" "$fake_home")" "approved syllabus → resume hint"
 rm -rf "$cwd"
 
 cwd=$(mktemp -d); mkdir -p "$cwd/.no-vibe"; touch "$cwd/.no-vibe/active"; syllabus "$cwd" draft
@@ -74,17 +74,17 @@ resume() {
     run_status "$cwd" "$fake_home"
     rm -rf "$cwd"
 }
-assert_eq 'no-vibe: ON, resuming "Rust: backend" (section 1/1)' \
+assert_eq 'no-vibe: ON, resuming "Rust: backend" (chapter 1/1)' \
     "$(resume '---\nstatus: approved\ntopic: "Rust: backend"\n---\n- [ ] 1. a\n')" "double-quoted topic"
-assert_eq 'no-vibe: ON, resuming "Rust" (section 1/1)' \
+assert_eq 'no-vibe: ON, resuming "Rust" (chapter 1/1)' \
     "$(resume "---\nstatus: approved\ntopic: 'Rust'\n---\n- [ ] 1. a\n")" "single-quoted topic"
-assert_eq 'no-vibe: ON, resuming "T" (section 2/2)' \
+assert_eq 'no-vibe: ON, resuming "T" (chapter 2/2)' \
     "$(resume '---\r\nstatus: approved\r\ntopic: T\r\n---\r\n- [x] 1. a\r\n- [ ] 2. b\r\n')" "CRLF syllabus"
-assert_eq 'no-vibe: ON, resuming "T" (section 1/1)' \
+assert_eq 'no-vibe: ON, resuming "T" (chapter 1/1)' \
     "$(resume '---\nstatus: approved  \ntopic: T\n---\n- [ ] 1. a\n')" "trailing spaces after approved"
-assert_eq 'no-vibe: ON, resuming "T" (section 2/2)' \
+assert_eq 'no-vibe: ON, resuming "T" (chapter 2/2)' \
     "$(resume '---\nstatus: approved\ntopic: T\n---\n- [X] 1. a\n- [ ] 2. b\n')" "capital X counts as ticked"
-assert_eq 'no-vibe: ON, resuming "T" (section 2/2)' \
+assert_eq 'no-vibe: ON, resuming "T" (chapter 2/2)' \
     "$(resume '---\nstatus: approved\ntopic: T\n---\n- [x] 1. a\n- [ ] 2. b\n\nnotes:\n- [ ] remember x\n')" "unnumbered box is not a section"
 assert_eq 'no-vibe: ON' \
     "$(resume '---\nstatus: approved\ntopic: T\n---\n')" "no sections → no resume hint"
@@ -93,15 +93,15 @@ assert_eq 'no-vibe: ON' \
 cwd=$(mktemp -d -p "$fake_home"); mkdir -p "$cwd/a\"b/.no-vibe"
 assert_eq "no-vibe: OFF" "$(printf '{"cwd":"%s/a\\"b"}' "$cwd" | HOME="$fake_home" "$HOOK")" "escaped quote in cwd is decoded"
 rm -rf "$cwd"
-assert_eq "no-vibe: ON, resuming \"it's\" (section 1/1)" \
+assert_eq "no-vibe: ON, resuming \"it's\" (chapter 1/1)" \
     "$(resume "---\nstatus: approved\ntopic: 'it''s'\n---\n- [ ] 1. a\n")" "single-quoted topic unescapes ''"
-assert_eq 'no-vibe: ON, resuming "say "hi"" (section 1/1)' \
+assert_eq 'no-vibe: ON, resuming "say "hi"" (chapter 1/1)' \
     "$(resume '---\nstatus: approved\ntopic: "say \\"hi\\""\n---\n- [ ] 1. a\n')" "double-quoted topic unescapes \\\""
-assert_eq 'no-vibe: ON, resuming "T" (section 2/3)' \
+assert_eq 'no-vibe: ON, resuming "T" (chapter 2/3)' \
     "$(resume '---\nstatus: approved\ntopic: T\n---\n- [x]  1. a\n- [ ] 2. b\n- [ ]\t3. c\n')" "extra spacing after the box still counts"
-assert_eq 'no-vibe: ON, resuming ""x"" (section 1/1)' \
+assert_eq 'no-vibe: ON, resuming ""x"" (chapter 1/1)' \
     "$(resume "---\nstatus: approved\ntopic: '\"x\"'\n---\n- [ ] 1. a\n")" "single-quoted value keeps inner double quotes"
-assert_eq "no-vibe: ON, resuming \"'x'\" (section 1/1)" \
+assert_eq "no-vibe: ON, resuming \"'x'\" (chapter 1/1)" \
     "$(resume '---\nstatus: approved\ntopic: "'"'"'x'"'"'"\n---\n- [ ] 1. a\n')" "double-quoted value keeps inner single quotes"
 rm -rf "$fake_home"
 summary

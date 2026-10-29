@@ -34,14 +34,14 @@ field() {
     printf '%s\n' "$v"
 }
 
-# Sections are the numbered checkbox lines the skill writes, `- [ ] 1. ...`.
+# Chapters are the numbered checkbox lines the skill writes, `- [ ] 1. ...`.
 sections() { tr -d '\r' < "$syllabus" | grep -cE "^- \[$1\][[:space:]]+[0-9]+\. "; }
 
 if [ -f "$syllabus" ] && [ "$(field status)" = "approved" ]; then
     total=$(sections '[ xX]')
     finished=$(sections '[xX]')
     if [ "$total" -gt 0 ] && [ "$finished" -lt "$total" ]; then
-        line="$line, resuming \"$(field topic)\" (section $((finished + 1))/$total)"
+        line="$line, resuming \"$(field topic)\" (chapter $((finished + 1))/$total)"
     fi
 fi
 
