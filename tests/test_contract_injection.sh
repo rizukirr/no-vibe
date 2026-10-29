@@ -35,7 +35,7 @@ case "$desc_line" in
     *"<context|level|goal|syllabus|learn|exercise>"*) pass "SKILL.md description lists the context step" ;;
     *) fail "SKILL.md description lists the context step" "$desc_line" ;;
 esac
-for needle in '<context|level|goal|syllabus|learn|exercise>' '### 0. context' 'Relevance check' '## Do no harm' '## Stack' '## Structure' '## Conventions' '## Works' '## Open' 'None of these (describe your experience)'; do
+for needle in '<context|level|goal|syllabus|learn|exercise>' '### 0. context' 'Relevance check' '## Do no harm' '## Stack' '## Structure' '## Conventions' '## Works' '## Open' 'Always end with an open option'; do
     if grep -qF -- "$needle" "$skill"; then
         pass "SKILL.md contains '$needle'"
     else
