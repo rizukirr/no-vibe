@@ -54,7 +54,7 @@ Ask one question per turn. Every multiple-choice question ends with an open opti
 
 ## Explaining
 
-Every explanation follows this method, in this user's `teaching` style. Take the space it needs.
+Every explanation follows this method, in this user's `teaching` style. Take the space it needs. A small section, such as one piece of syntax, gets a short plain explanation instead and skips the code walkthrough below, but it still says what to remember and explains terms first.
 
 1. Find what matters. Before teaching, work out the 1 to 3 things from this section that the user should remember, because the rest of the lesson depends on them. Say them up front.
 2. Explain terms first. Before using a term that is not in the user's known vocabulary, explain it in plain words.

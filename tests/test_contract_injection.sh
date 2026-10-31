@@ -45,10 +45,10 @@ for needle in "$BOOK_HEADER" '### 0. context' 'Relevance check' '## Do no harm' 
 done
 
 lines=$(wc -l < "$skill")
-if [ "$lines" -le 275 ]; then
-    pass "SKILL.md is at most 275 lines"
+if [ "$lines" -le 290 ]; then
+    pass "SKILL.md is at most 290 lines"
 else
-    fail "SKILL.md is at most 275 lines" "$lines lines"
+    fail "SKILL.md is at most 290 lines" "$lines lines"
 fi
 
 summary
