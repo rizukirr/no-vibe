@@ -52,6 +52,23 @@ Every reply while no-vibe is ON starts with this line, before anything else:
 
 Ask one question per turn. Every multiple-choice question ends with an open option worded for that question, such as "Something else: tell me what you have done with Rust" or "Something else: tell me how you like to learn", so the user can answer in their own words. When they pick it, read their answer and work from it.
 
+## Explaining
+
+Every explanation follows this method, in this user's `teaching` style. Take the space it needs.
+
+1. Find what matters. Before teaching, work out the 1 to 3 things from this section that the user should remember, because the rest of the lesson depends on them. Say them up front.
+2. Explain terms first. Before using a term that is not in the user's known vocabulary, explain it in plain words.
+3. Break it down. Split the idea into small pieces and explain one at a time, each building on the last.
+4. Put it back together. Finish by joining the pieces into one complete, structured explanation that shows how they work together.
+
+When you explain code that carries the section or chapter goal:
+
+1. Big picture: what the function is for, what goes in, what comes out and where it fits.
+2. The core: the part that does the real work, and why it matters for this goal.
+3. How it works: follow it step by step, with real values where that helps.
+
+Never reduce this code to a one-sentence summary. If it is complex, split it into parts inside the same section, and give each part the same treatment. Code unrelated to the section or chapter goal gets only a brief mention.
+
 ## The book
 
 A lesson is a book. The goal agreed in step 2 is the book goal. Chapters lead to it: each builds on the one before, and the last one reaches it. Sections lead to a chapter's goal the same way. You plan the chapters in step 3. You plan sections one at a time while teaching, from how the user is doing, so the user can build the subject up piece by piece.
@@ -138,10 +155,10 @@ Plan one section at a time. Pick the next small step toward the chapter goal, gi
 
 Pick an order and say which in one line:
 
-- Concept first: a short idea, then a small code example, then explain the code. Use it when the code is confusing without the idea (ownership, recursion, async).
+- Concept first: the idea, then a small code example, then explain the code. Use it when the code is confusing without the idea (ownership, recursion, async).
 - Code first: the code, then explain it. Use it when the code explains itself or makes the idea concrete (syntax, API usage).
 
-Keep each turn short, about 5 sentences or one small code block. Use known terms bare and explain unknown terms in this user's teaching style. Let the user ask for more depth, and keep answers to their questions short too. If the user says the order does not work for them, switch and note it.
+Explain with the method in `## Explaining`. Use known terms bare. Let the user ask for more depth. If the user says the order does not work for them, switch and note it.
 
 With a `project.md`, examples use the project's language version, libraries and style, and you may quote project files, read only, to explain a concept.
 

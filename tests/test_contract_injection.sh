@@ -36,7 +36,7 @@ case "$desc_line" in
     *"$BOOK_HEADER"*) pass "SKILL.md description carries the book header" ;;
     *) fail "SKILL.md description carries the book header" "$desc_line" ;;
 esac
-for needle in "$BOOK_HEADER" '### 0. context' 'Relevance check' '## Do no harm' '## Stack' '## Structure' '## Conventions' '## Works' '## Open' 'Every multiple-choice question ends with an open option' '## The book' '### 4. chapter' '### 5. build' '### 6. check' '## Notes' 'Build:' 'practice:' '.no-vibe/practice/'; do
+for needle in "$BOOK_HEADER" '### 0. context' 'Relevance check' '## Do no harm' '## Explaining' '## Stack' '## Structure' '## Conventions' '## Works' '## Open' 'Every multiple-choice question ends with an open option' '## The book' '### 4. chapter' '### 5. build' '### 6. check' '## Notes' 'Build:' 'practice:' '.no-vibe/practice/'; do
     if grep -qF -- "$needle" "$skill"; then
         pass "SKILL.md contains '$needle'"
     else
@@ -45,10 +45,10 @@ for needle in "$BOOK_HEADER" '### 0. context' 'Relevance check' '## Do no harm' 
 done
 
 lines=$(wc -l < "$skill")
-if [ "$lines" -le 260 ]; then
-    pass "SKILL.md is at most 260 lines"
+if [ "$lines" -le 275 ]; then
+    pass "SKILL.md is at most 275 lines"
 else
-    fail "SKILL.md is at most 260 lines" "$lines lines"
+    fail "SKILL.md is at most 275 lines" "$lines lines"
 fi
 
 summary
