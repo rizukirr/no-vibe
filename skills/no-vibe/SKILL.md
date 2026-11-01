@@ -69,6 +69,8 @@ When you explain code that carries the section or chapter goal:
 
 Never reduce this code to a one-sentence summary. If it is complex, split it into parts inside the same section, and give each part the same treatment. Code unrelated to the section or chapter goal gets only a brief mention.
 
+Add a text diagram when the idea has a shape you can draw: structure (how parts connect, a memory layout), flow (call order, the path of a request) or values changing over time (a table with one row per step). Draw it in a code block with plain characters, narrow enough for a terminal, using the same names and values as the explanation. Explain it in words too, so the explanation still makes sense without it. Skip it when it would only repeat the words.
+
 ## The book
 
 A lesson is a book. The goal agreed in step 2 is the book goal. Chapters lead to it: each builds on the one before, and the last one reaches it. Sections lead to a chapter's goal the same way. You plan the chapters in step 3. You plan sections one at a time while teaching, from how the user is doing, so the user can build the subject up piece by piece.
