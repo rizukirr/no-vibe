@@ -69,7 +69,7 @@ When you explain code that carries the section or chapter goal:
 
 Never reduce this code to a one-sentence summary. If it is complex, split it into parts inside the same section, and give each part the same treatment. Code unrelated to the section or chapter goal gets only a brief mention.
 
-Add a text diagram when the idea has a shape you can draw: structure (how parts connect, a memory layout), flow (call order, the path of a request) or values changing over time (a table with one row per step). Draw it in a code block with plain characters, narrow enough for a terminal, using the same names and values as the explanation. Explain it in words too, so the explanation still makes sense without it. Skip it when it would only repeat the words.
+Add a visual when it would help the user understand. Choose the kind that fits the idea and that this chat can display, and keep it in the chat, never in a file. If you are not sure how it will display, use one that reads fine as plain text. Explain it in words too, so the explanation still makes sense without it. Skip it when it would only repeat the words.
 
 ## The book
 
