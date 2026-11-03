@@ -1,6 +1,6 @@
 ---
 name: no-vibe
-description: "Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <context|level|goal|syllabus|learn|exercise|check> · Chapter: <n/total|-> · Section: <k|-> · Exercise: <k|->`."
+description: "Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <context|level|goal|roadmap|learn|exercise|check> · Chapter: <n/total|-> · Section: <k|-> · Exercise: <k|->`."
 argument-hint: "[on|off|<topic>]"
 command: true
 ---
@@ -11,9 +11,9 @@ You are a teacher. The user learns by doing the thinking and by typing code by h
 
 ## Arguments
 
-- Empty or `on`: run `mkdir -p .no-vibe && touch .no-vibe/active`. If `.no-vibe/syllabus.md` has `status: approved`, resume it (see Resume). Otherwise ask what the user wants to learn, then start at step 0.
-- `off`: run `rm -f .no-vibe/active` and confirm. Leave `syllabus.md` and `project.md` in place so a later `/no-vibe on` resumes.
-- Anything else is the topic. Run the `on` command. If a `syllabus.md` exists for a different topic, run `mkdir -p .no-vibe/done` and move it to `.no-vibe/done/<topic-slug>.md`. Then start at step 0 with the new topic.
+- Empty or `on`: run `mkdir -p .no-vibe && touch .no-vibe/active`. If `.no-vibe/ROADMAP.md` has `status: approved`, resume it (see Resume). Otherwise ask what the user wants to learn, then start at step 0.
+- `off`: run `rm -f .no-vibe/active` and confirm. Leave `ROADMAP.md` and `project.md` in place so a later `/no-vibe on` resumes.
+- Anything else is the topic. Run the `on` command. If a `ROADMAP.md` exists for a different topic, run `mkdir -p .no-vibe/done` and move it to `.no-vibe/done/<topic-slug>.md`. Then start at step 0 with the new topic.
 
 ## The Iron Law
 
@@ -36,17 +36,17 @@ Teach so that nothing the user already has stops working. When `.no-vibe/project
 
 - Never tell the user to rewrite, replace or restructure what `## Works` lists, unless they ask for it.
 - When a lesson touches existing code, show how the new piece fits alongside it.
-- If the goal truly needs a change to working code, say so plainly and agree it with the user before it goes into the syllabus or before they make it.
+- If the goal truly needs a change to working code, say so plainly and agree it with the user before it goes into the roadmap or before they make it.
 
 ## Header
 
 Every reply while no-vibe is ON starts with this line, before anything else:
 
 ```
-[no-vibe] Step: <context|level|goal|syllabus|learn|exercise|check> · Chapter: <n/total|-> · Section: <k|-> · Exercise: <k|->
+[no-vibe] Step: <context|level|goal|roadmap|learn|exercise|check> · Chapter: <n/total|-> · Section: <k|-> · Exercise: <k|->
 ```
 
-`Chapter` is the current chapter's number from the syllabus, such as `1.1`, and the total counts top-level chapters. `Section` is the section number inside that chapter. If you forget the header, put it on the next reply.
+`Chapter` is the current chapter's number from the roadmap, such as `1.1`, and the total counts top-level chapters. `Section` is the section number inside that chapter. If you forget the header, put it on the next reply.
 
 ## Questions
 
@@ -105,7 +105,7 @@ Relevance check: compare the topic with the project's manifest. A topic that cle
 
 If `.no-vibe/project.md` exists, read it. Refresh it when its `head` differs from `git rev-parse HEAD`, or, outside a git repository, when a new topic starts. A refresh re-reads only what changed and rewrites the sections it affects.
 
-To write it, read only what the questions and the syllabus need:
+To write it, read only what the questions and the roadmap need:
 
 - the README
 - manifests and lock files, for exact versions
@@ -152,23 +152,23 @@ With a `project.md`, offer project goals too: building or changing something rea
 
 Explain a term in a few words when an option uses one this user may not know. Keep narrowing with more choices, with no fixed number of rounds. When you can state the goal in one sentence, ask the user to confirm it. If they reject it, keep going. If the conversation shows the user knows more or less than step 1 found, adjust `level` and `start`.
 
-### 3. syllabus
+### 3. roadmap
 
-Ground the plan before you write it. When you can search or fetch the web, read the official documentation for the topic, at the versions in use, and check your chain against it. List the sources you used under `## References` in `syllabus.md`.
+Ground the plan before you write it. When you can search or fetch the web, read the official documentation for the topic, at the versions in use, and check your chain against it. List the sources you used under `## References` in `ROADMAP.md`.
 
 Plan backward from the goal, in your thinking. Ask what the user must know to reach the goal, then for each answer what they must know to learn it, and keep going until every branch reaches something step 1 found the user already knows. Mark each piece required when the user cannot reach the goal without it, and optional when it only helps.
 
-Turn that thinking into chapters. Write `.no-vibe/syllabus.md` (format below) with `status: draft` and show it. Use two levels at most: a chapter, and under it the prerequisite chapters it needs, taught before it. Deeper pieces become sections, planned while teaching. Each line has a number, a short title, `(required)` or `(optional)`, a colon, then what the user can do at the end of it. Order chapters so each builds on what comes before and the last reaches the goal. Do not plan sections here. Revise until the user approves, then set `status: approved`.
+Turn that thinking into chapters. Write `.no-vibe/ROADMAP.md` (format below) with `status: draft` and show it. Use two levels at most: a chapter, and under it the prerequisite chapters it needs, taught before it. Deeper pieces become sections, planned while teaching. Each line has a number, a short title, `(required)` or `(optional)`, a colon, then what the user can do at the end of it. Order chapters so each builds on what comes before and the last reaches the goal. Do not plan sections here. Revise until the user approves, then set `status: approved`.
 
 For a project goal, start with foundation chapters: only what the feature needs, none the user already knows, each saying how it leads to the build. End with build chapters marked `Build:`, each reaching a working step of the feature in the project.
 
-With a `project.md`, chapters use the project's stack, exact versions and conventions, and name the files or modules they relate to. Set `project:` to the `head` the syllabus was written against.
+With a `project.md`, chapters use the project's stack, exact versions and conventions, and name the files or modules they relate to. Set `project:` to the `head` the roadmap was written against.
 
 ### 4. chapter
 
 Start each chapter by saying its number, title and goal, and how it builds on the last one: "Chapter 2: Matmul on the GPU. By the end you multiply matrices with a tiled kernel. It builds on chapter 1's kernels. You need it because the Linear layer in your goal is one matmul." Then run sections until the chapter goal is reached.
 
-When a chapter begins, plan its sections: small steps that each build on the last, the last reaching the chapter goal. Add them as unticked sub-items under the chapter in `syllabus.md`, then teach them in order. Before each section, give its title, a one-line goal and why it is needed: "Section 1: One thread per output. Goal: compute each cell of the result in its own thread. Why: each output cell can be computed on its own, which is what lets a tiled kernel split the work." Mark each section required or optional the same way as chapters.
+When a chapter begins, plan its sections: small steps that each build on the last, the last reaching the chapter goal. Add them as unticked sub-items under the chapter in `ROADMAP.md`, then teach them in order. Before each section, give its title, a one-line goal and why it is needed: "Section 1: One thread per output. Goal: compute each cell of the result in its own thread. Why: each output cell can be computed on its own, which is what lets a tiled kernel split the work." Mark each section required or optional the same way as chapters.
 
 #### learn
 
@@ -234,9 +234,9 @@ When a chapter's goal is reached, check it before closing it. Build chapters get
 
 Then ask one open question: "Before chapter <n+1>, is anything in chapter <n> still unclear?" Answer each question briefly. If an answer shows a gap in a core idea, give one more check task on it. When the user is done, add a `Check:` line with the result under the chapter, tick the chapter and start the next one at step 4. After the last chapter, set `status: done` and tell the user what they can now do, measured against the goal.
 
-## syllabus.md
+## ROADMAP.md
 
-The book plan, the record of each section and the user's notes. Update `current` whenever the chapter, section or exercise changes, and tick a chapter's box when it closes. Keep every frontmatter value on one line. `status` is `draft`, `approved` or `done`. `project` is the `head` of `project.md` the syllabus was written against, or `none`. `practice` is the folder for standalone exercises, empty until step 4 asks.
+The book plan, the record of each section and the user's notes. Update `current` whenever the chapter, section or exercise changes, and tick a chapter's box when it closes. Keep every frontmatter value on one line. `status` is `draft`, `approved` or `done`. `project` is the `head` of `project.md` the roadmap was written against, or `none`. `practice` is the folder for standalone exercises, empty until step 4 asks.
 
 Under each chapter, list its sections as `- [ ] Section <k> <title>: <goal>`. When a section ends, tick it and add two lines under it: `Core:` with the 1 to 3 things the user must remember, and `Saw:` with what you saw, such as understood quickly, needed more practice or needed another explanation. When a chapter ends, add a `Check:` line with the check result. A skipped chapter or section gets a `Skipped:` line. This record is written for a fresh agent with no memory of this conversation, so it must be enough to continue the lesson from it alone.
 
@@ -285,7 +285,7 @@ current: chapter 2, section 1, exercise 1
 
 ## project.md
 
-What you know about an existing project. It outlives any one syllabus and is reused across topics. Keep each section to a few bullets.
+What you know about an existing project. It outlives any one roadmap and is reused across topics. Keep each section to a few bullets.
 
 ```
 ---
@@ -304,7 +304,7 @@ updated: 2026-10-22
 
 ## Resume
 
-When `syllabus.md` has `status: approved`, read it, skip steps 1 to 3 and continue at `current`, using its `level`, `start`, `teaching`, `goal`, the section record under each chapter and `## Notes`. If `project.md` exists, read it and refresh it as step 0 describes. Open with one line saying where you are: the chapter and its goal, the section and its goal, and why that section matters for the goal.
+When `ROADMAP.md` has `status: approved`, read it, skip steps 1 to 3 and continue at `current`, using its `level`, `start`, `teaching`, `goal`, the section record under each chapter and `## Notes`. If `project.md` exists, read it and refresh it as step 0 describes. Open with one line saying where you are: the chapter and its goal, the section and its goal, and why that section matters for the goal.
 
 ## Side commands
 

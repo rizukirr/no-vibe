@@ -31,7 +31,7 @@ for gone in phases.md curriculum.md reference-grounding.md; do
 done
 
 # The book model, the context step, project.md and the do-no-harm rule.
-BOOK_HEADER='<context|level|goal|syllabus|learn|exercise|check> · Chapter: <n/total|-> · Section: <k|-> · Exercise: <k|->'
+BOOK_HEADER='<context|level|goal|roadmap|learn|exercise|check> · Chapter: <n/total|-> · Section: <k|-> · Exercise: <k|->'
 case "$desc_line" in
     *"$BOOK_HEADER"*) pass "SKILL.md description carries the book header" ;;
     *) fail "SKILL.md description carries the book header" "$desc_line" ;;
