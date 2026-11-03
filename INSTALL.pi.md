@@ -1,6 +1,6 @@
 # no-vibe for Pi
 
-Pi is the [pi-mono](https://github.com/badlogic/pi-mono) coding agent (`@mariozechner/pi-coding-agent`). no-vibe ships as a pi package. The bundled extension runs the shared write guard as a hard block and injects the status line, the bundled prompts expose `/no-vibe`, `/no-vibe-btw` and `/no-vibe-challenge`, and the `skills/` directory is shared with the other runtimes.
+Pi is the [pi-mono](https://github.com/badlogic/pi-mono) coding agent (`@mariozechner/pi-coding-agent`). no-vibe ships as a pi package. The bundled extension runs the shared write guard as a hard block and injects the status line, the bundled prompts expose `/no-vibe` and `/no-vibe-btw`, and the `skills/` directory is shared with the other runtimes.
 
 Requires `bash` on PATH.
 
@@ -46,7 +46,6 @@ mkdir -p ~/.pi/agent/skills ~/.pi/agent/prompts ~/.pi/agent/extensions
 ln -s ~/Projects/no-vibe/skills/no-vibe                          ~/.pi/agent/skills/no-vibe
 ln -s ~/Projects/no-vibe/.pi-plugin/prompts/no-vibe.md           ~/.pi/agent/prompts/no-vibe.md
 ln -s ~/Projects/no-vibe/.pi-plugin/prompts/no-vibe-btw.md       ~/.pi/agent/prompts/no-vibe-btw.md
-ln -s ~/Projects/no-vibe/.pi-plugin/prompts/no-vibe-challenge.md ~/.pi/agent/prompts/no-vibe-challenge.md
 ln -s ~/Projects/no-vibe/.pi-plugin/extensions/no-vibe           ~/.pi/agent/extensions/no-vibe
 ```
 
