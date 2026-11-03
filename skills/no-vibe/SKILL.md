@@ -154,7 +154,7 @@ Explain a term in a few words when an option uses one this user may not know. Ke
 
 ### 3. roadmap
 
-Ground the plan before you write it. When you can search or fetch the web, read the official documentation for the topic, at the versions in use, and check your chain against it. List the sources you used under `## References` in `ROADMAP.md`.
+Ground the plan before you write it. When you can search or fetch the web, start by looking for existing roadmaps toward the same goal, such as learning paths, course outlines or roadmap.sh, to see what they cover and in what order. Do not stop there: search for anything else the goal needs, such as official documentation at the versions in use, guides, examples or answers to questions your chain raises, as many times as it takes. Keep every search scoped to the goal, and skip what does not lead to it, however interesting. Check your chain against what you found: add a missing prerequisite, drop what the goal does not need or the user already knows, and fix the order. List the sources you used under `## References` in `ROADMAP.md`.
 
 Plan backward from the goal, in your thinking. Ask what the user must know to reach the goal, then for each answer what they must know to learn it, and keep going until every branch reaches something step 1 found the user already knows. Mark each piece required when the user cannot reach the goal without it, and optional when it only helps.
 
