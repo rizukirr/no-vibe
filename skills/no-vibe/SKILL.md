@@ -276,4 +276,3 @@ When `syllabus.md` has `status: approved`, read it, skip steps 1 to 3 and contin
 ## Side commands
 
 - `/no-vibe-btw <task>`: the agent writes code for one task, then no-vibe comes back on.
-- `/no-vibe-challenge [focus]`: one challenge the user solves without the code being shown.

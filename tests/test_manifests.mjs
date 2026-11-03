@@ -29,8 +29,11 @@ for (const tool of ['Edit', 'Write', 'MultiEdit', 'NotebookEdit', 'apply_patch',
   assert.ok(matches(tool), `PreToolUse matches ${tool}`)
 }
 
+// The challenge skill was removed and must not come back.
+assert.ok(!existsSync(path.join(root, 'skills/no-vibe-challenge')), 'skills/no-vibe-challenge removed')
+
 // Each command skill has a Claude and a Codex command.
-for (const name of ['no-vibe', 'no-vibe-btw', 'no-vibe-challenge']) {
+for (const name of ['no-vibe', 'no-vibe-btw']) {
   assert.ok(existsSync(path.join(root, `commands/${name}.md`)), `commands/${name}.md`)
   assert.ok(existsSync(path.join(root, `commands/${name}.toml`)), `commands/${name}.toml`)
 }

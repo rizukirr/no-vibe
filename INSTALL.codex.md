@@ -37,8 +37,6 @@ The hooks in `hooks/*.sh` are shared with Claude Code. Codex's hook spec is near
 ```
 $no-vibe build a REST API handler          # start a lesson on a topic
 $no-vibe on                                # turn on, or resume an approved syllabus
-$no-vibe-challenge                         # get a coding challenge
-$no-vibe-challenge recursion               # challenge with focus area
 $no-vibe-btw add a .gitignore for node     # one-shot escape hatch
 $no-vibe off                               # exit
 ```
