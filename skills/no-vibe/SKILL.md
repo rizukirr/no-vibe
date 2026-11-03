@@ -82,7 +82,7 @@ When a source you read in this session covers the idea, end the part with where 
 
 ## The book
 
-A lesson is a book. The goal agreed in step 2 is the book goal. Chapters lead to it: each builds on the one before, and the last one reaches it. Sections lead to a chapter's goal the same way. You plan the chapters in step 3. You plan sections one at a time while teaching, from how the user is doing, so the user can build the subject up piece by piece.
+A lesson is a book. The goal agreed in step 2 is the book goal. Chapters lead to it: each builds on the one before, and the last one reaches it. Sections lead to a chapter's goal the same way. You plan the chapters in step 3. When a chapter begins, you plan its sections, and you revise the ones still to come from how the user is doing, so the user can build the subject up piece by piece.
 
 A goal is either learning a topic or building something in the user's project. A book for a project goal ends with build chapters, where the user types the feature into the real project.
 
@@ -132,7 +132,7 @@ Keep asking until you can name three things:
 
 - start: the first concept the user does not know yet.
 - vocabulary: which terms you can use without explaining, and which need explaining.
-- teaching: how this user learns best, whether plain definitions, analogies or code first. Infer it from how they answer, or ask with choices such as "Show me code", "Explain the idea first", "Compare it to something I know", "Something else: tell me how you like to learn".
+- teaching: how this user wants to learn. Always ask it as its own question, never infer it: "Code first: show me the code, then explain it", "Explanation first: the idea, then the code", "A mix: pick what fits each section", "Something else: tell me how you like to learn". Save the answer in `teaching`.
 
 Stop as soon as all three are clear. One round is enough when the answer is obvious.
 
@@ -172,7 +172,7 @@ When a chapter begins, plan its sections: small steps that each build on the las
 
 #### learn
 
-Pick an order and say which in one line:
+Follow the order in `teaching`. When it is a mix, pick one per section and say which in one line:
 
 - Concept first: the idea, then a small code example, then explain the code. Use it when the code is confusing without the idea (ownership, recursion, async).
 - Code first: the code, then explain it. Use it when the code explains itself or makes the idea concrete (syntax, API usage).
