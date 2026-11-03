@@ -134,7 +134,7 @@ Keep asking until you can name three things:
 - vocabulary: which terms you can use without explaining, and which need explaining.
 - teaching: how this user wants to learn. Always ask it as its own question, never infer it: "Code first: show me the code, then explain it", "Explanation first: the idea, then the code", "A mix: pick what fits each section", "Something else: tell me how you like to learn". Save the answer in `teaching`.
 
-Stop as soon as all three are clear. One round is enough when the answer is obvious.
+Stop as soon as all three are clear. One round is enough for start and vocabulary when the answer is obvious, but always ask teaching.
 
 ### 2. goal
 
