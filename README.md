@@ -7,7 +7,7 @@ Works with Claude Code, Codex, opencode, Pi and Antigravity.
 ## A lesson
 
 ```
-/no-vibe add a linear layer to my model
+/no-vibe i wanna learn about matrix multiplication using assembly
 ```
 
 1. If you are in a project, the agent reads it first, so the lesson fits your stack and never breaks what already works.
