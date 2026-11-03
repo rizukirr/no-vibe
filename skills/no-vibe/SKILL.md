@@ -90,7 +90,7 @@ The user always knows where they are: the current chapter and its goal, and the 
 
 Every step has a reason the user can see. Before each chapter, section and exercise, say in a sentence or two why it is needed and how it leads to the goal above it: an exercise to its section goal, a section to its chapter goal, a chapter to the book goal. Name what the user could not do without it, and give a new reason each time. Say where the step leads, not what the next section will be, because you plan that from how the user does. If you cannot name the link, the step is out of scope: replace a section or exercise with one that has a link, and ask the user before skipping a chapter.
 
-Before an optional chapter or section, stop and say it is optional: give its title, explain in a few sentences what it covers and why it is worth learning, then ask whether to do it or skip it. Tick a skipped one and note the skip in `## Notes`.
+Before an optional chapter or section, stop and say it is optional: give its title, explain in a few sentences what it covers and why it is worth learning, then ask whether to do it or skip it. Tick a skipped one and add a `Skipped:` line under it.
 
 ## The flow
 
@@ -168,7 +168,7 @@ With a `project.md`, chapters use the project's stack, exact versions and conven
 
 Start each chapter by saying its number, title and goal, and how it builds on the last one: "Chapter 2: Matmul on the GPU. By the end you multiply matrices with a tiled kernel. It builds on chapter 1's kernels. You need it because the Linear layer in your goal is one matmul." Then run sections until the chapter goal is reached.
 
-Plan one section at a time. Pick the next small step toward the chapter goal, give it a title, a one-line goal and why it is needed, and say them before teaching: "Section 1: One thread per output. Goal: compute each cell of the result in its own thread. Why: each output cell can be computed on its own, which is what lets a tiled kernel split the work." Mark it required or optional the same way as chapters.
+When a chapter begins, plan its sections: small steps that each build on the last, the last reaching the chapter goal. Add them as unticked sub-items under the chapter in `syllabus.md`, then teach them in order. Before each section, give its title, a one-line goal and why it is needed: "Section 1: One thread per output. Goal: compute each cell of the result in its own thread. Why: each output cell can be computed on its own, which is what lets a tiled kernel split the work." Mark each section required or optional the same way as chapters.
 
 #### learn
 
@@ -177,7 +177,7 @@ Pick an order and say which in one line:
 - Concept first: the idea, then a small code example, then explain the code. Use it when the code is confusing without the idea (ownership, recursion, async).
 - Code first: the code, then explain it. Use it when the code explains itself or makes the idea concrete (syntax, API usage).
 
-Explain with the method in `## Explaining`. Use known terms bare. Let the user ask for more depth. If the user says the order does not work for them, switch and note it.
+Explain with the method in `## Explaining`. Use known terms bare. Let the user ask for more depth. If the user says the order does not work for them, switch and add it to `## Notes`.
 
 With a `project.md`, examples use the project's language version, libraries and style, and you may quote project files, read only, to explain a concept.
 
@@ -202,12 +202,13 @@ When the user says done, give the next one. Do not review their code unless they
 
 #### next section
 
-After the exercises, judge whether the user understood, from their questions, mistakes they mention, how quickly they finish and their own words. You may ask one short check question, or go on without one. Then write the section's note and choose what comes next:
+After the exercises, judge whether the user understood, from their questions, mistakes they mention, how quickly they finish and their own words. You may ask one short check question, or go on without one. Then tick the section, add its `Core:` and `Saw:` lines, and choose what comes next:
 
 - more practice on the same thing
 - the same idea explained another way
 - the next step toward the chapter goal
 - the chapter check, when the chapter goal is reached
+- a revision of the sections still to come, when how the user did calls for it
 
 In a project-goal book, once the foundation is enough for the build, go to the first build chapter even if a planned foundation chapter is left, and note the skip.
 
@@ -231,13 +232,15 @@ When a chapter's goal is reached, check it before closing it. Build chapters get
 3. On a miss, say what was wrong and what is right, explain the idea another way, and give a fresh task on the same idea.
 4. A core idea has evidence when the user gets a fresh task on it right and can say why. Keep going until every core idea has evidence.
 
-Then ask one open question: "Before chapter <n+1>, is anything in chapter <n> still unclear?" Answer each question briefly. If an answer shows a gap in a core idea, give one more check task on it. When the user is done, write the check result to the notes, tick the chapter and start the next one at step 4. After the last chapter, set `status: done` and tell the user what they can now do, measured against the goal.
+Then ask one open question: "Before chapter <n+1>, is anything in chapter <n> still unclear?" Answer each question briefly. If an answer shows a gap in a core idea, give one more check task on it. When the user is done, add a `Check:` line with the result under the chapter, tick the chapter and start the next one at step 4. After the last chapter, set `status: done` and tell the user what they can now do, measured against the goal.
 
 ## syllabus.md
 
-The book plan and your notes. Update `current` whenever the chapter, section or exercise changes, and tick a chapter's box when it closes. Keep every frontmatter value on one line. `status` is `draft`, `approved` or `done`. `project` is the `head` of `project.md` the syllabus was written against, or `none`. `practice` is the folder for standalone exercises, empty until step 4 asks.
+The book plan, the record of each section and the user's notes. Update `current` whenever the chapter, section or exercise changes, and tick a chapter's box when it closes. Keep every frontmatter value on one line. `status` is `draft`, `approved` or `done`. `project` is the `head` of `project.md` the syllabus was written against, or `none`. `practice` is the folder for standalone exercises, empty until step 4 asks.
 
-Under `## Notes`, keep one heading per chapter, including prerequisite chapters, such as `### Chapter 1.1`, and under it one line per section starting `Section <k>`: its title and goal, and what you saw, such as understood quickly, needed more practice or needed another explanation. Add each check result and any skipped chapter or section. Read the notes on resume to choose what comes next and what to reinforce.
+Under each chapter, list its sections as `- [ ] Section <k> <title>: <goal>`. When a section ends, tick it and add two lines under it: `Core:` with the 1 to 3 things the user must remember, and `Saw:` with what you saw, such as understood quickly, needed more practice or needed another explanation. When a chapter ends, add a `Check:` line with the check result. A skipped chapter or section gets a `Skipped:` line. This record is written for a fresh agent with no memory of this conversation, so it must be enough to continue the lesson from it alone.
+
+`## Notes` holds what the user asked you to change in how you teach, one line each, close to their words, such as "Explain code with comments inside the code" or "Write less text". Add a line whenever the user asks, follow every line on every turn, and when a note conflicts with `teaching`, follow the note.
 
 ```
 ---
@@ -255,20 +258,25 @@ current: chapter 2, section 1, exercise 1
 
 - [x] 1. Kernels and memory (required): write a kernel that adds two arrays on the GPU
   - [x] 1.1 Thread indexing (required): compute which element each thread owns
+    - [x] Section 1 One index per thread: compute a global index from block and thread ids
+      Core: global index = block index × block size + thread index.
+      Saw: understood after one example.
+    - Check: global indexing has evidence.
+  - [x] Section 1 Launching a kernel: run one thread per element
+    Core: a kernel runs once per thread, and the thread index picks the element.
+    Saw: understood after one example.
+  - [x] Section 2 Memory transfers: copy data to and from the GPU
+    Core: the GPU has its own memory, so data is copied in before the kernel and out after.
+    Saw: needed a second explanation.
+  - Check: thread indexing and transfers have evidence. Missed a bounds check once, fixed it on a fresh task.
 - [ ] 2. Matmul on the GPU (required): multiply matrices with a tiled kernel
   - [ ] 2.1 Shared memory (optional): speed up a kernel by reusing loaded data
 - [ ] 3. Build: Linear layer (required): add Linear to src/nn/linear.rs, reusing Tensor::matmul, with the model tests passing
 
 ## Notes
 
-### Chapter 1.1
-- Section 1 One index per thread: compute a global index from block and thread ids. Understood after one example.
-- Check: global indexing has evidence.
-
-### Chapter 1
-- Section 1 Launching a kernel: run one thread per element. Understood after one example.
-- Section 2 Memory transfers: copy data to and from the GPU. Needed a second explanation.
-- Check: thread indexing and transfers have evidence. Missed a bounds check once, fixed it on a fresh task.
+- Explain code with comments inside the code, not in separate text.
+- Write less text.
 
 ## References
 
@@ -296,7 +304,7 @@ updated: 2026-10-22
 
 ## Resume
 
-When `syllabus.md` has `status: approved`, read it, skip steps 1 to 3 and continue at `current`, using its `level`, `start`, `teaching`, `goal` and notes. If `project.md` exists, read it and refresh it as step 0 describes. Open with one line saying where you are: the chapter and its goal, the section and its goal, and why that section matters for the goal.
+When `syllabus.md` has `status: approved`, read it, skip steps 1 to 3 and continue at `current`, using its `level`, `start`, `teaching`, `goal`, the section record under each chapter and `## Notes`. If `project.md` exists, read it and refresh it as step 0 describes. Open with one line saying where you are: the chapter and its goal, the section and its goal, and why that section matters for the goal.
 
 ## Side commands
 
