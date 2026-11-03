@@ -63,7 +63,7 @@ Codex uses `$` instead of `/`.
 <!-- no-vibe:generated:commands -->
 | Command | Effect |
 |---|---|
-| `/no-vibe [on\|off\|<topic>]` | Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <context\|level\|goal\|syllabus\|learn\|exercise\|check> · Chapter: <n/total\|-> · Section: <k\|-> · Exercise: <k\|->`. |
+| `/no-vibe [on\|off\|<topic>]` | Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <context\|level\|goal\|roadmap\|learn\|exercise\|check> · Chapter: <n/total\|-> · Section: <k\|-> · Exercise: <k\|->`. |
 | `/no-vibe-btw <task>` | One-shot escape hatch to temporarily disable no-vibe write guard for a single scoped task, then restore the marker. |
 <!-- /no-vibe:generated -->
 

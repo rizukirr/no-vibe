@@ -11,7 +11,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 // runtime must reach while .no-vibe/active exists.
 const CASES = [
   { name: 'write a project file', allow: false, kind: 'write', rel: 'src/main.rs' },
-  { name: 'write inside .no-vibe', allow: true, kind: 'write', rel: '.no-vibe/syllabus.md' },
+  { name: 'write inside .no-vibe', allow: true, kind: 'write', rel: '.no-vibe/ROADMAP.md' },
   { name: 'shell redirect into the project', allow: false, kind: 'shell', command: 'echo hi > src/main.rs' },
   { name: 'shell redirect into /tmp', allow: true, kind: 'shell', command: 'echo hi > /tmp/no-vibe-parity.txt' },
   { name: 'read-only shell', allow: true, kind: 'shell', command: 'ls -la' },

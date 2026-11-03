@@ -8,7 +8,7 @@ This repo is the no-vibe plugin for Claude Code, Codex, opencode, Pi and Antigra
 
 ## What no-vibe is for
 
-People learn by doing the thinking and by typing code by hand. In an existing project the agent first reads it and saves what it learns to `.no-vibe/project.md`, so its questions, goal options and syllabus fit the project and nothing it teaches breaks what already works. It finds the user's level with concrete multiple-choice questions, agrees a goal with them, and plans a book by working backward from the goal to what the user already knows: chapters the user approves, each required or optional, with a goal that builds on the last. When a chapter begins it plans the chapter's sections, then for each one says its goal and why it is needed, explains what matters in a clear structure with visuals that show how to think about it, gives at least 3 exercises with the full code shown so the user builds muscle memory by typing it, and records what each section taught under its chapter, so a fresh agent can continue the lesson. Each chapter ends with a check on its core ideas. For a goal in the user's project, the last chapters are build chapters where the user types the feature into the project, reusing what exists and following its style.
+People learn by doing the thinking and by typing code by hand. In an existing project the agent first reads it and saves what it learns to `.no-vibe/project.md`, so its questions, goal options and roadmap fit the project and nothing it teaches breaks what already works. It finds the user's level with concrete multiple-choice questions, agrees a goal with them, and plans a book by working backward from the goal to what the user already knows: chapters the user approves, each required or optional, with a goal that builds on the last. When a chapter begins it plans the chapter's sections, then for each one says its goal and why it is needed, explains what matters in a clear structure with visuals that show how to think about it, gives at least 3 exercises with the full code shown so the user builds muscle memory by typing it, and records what each section taught under its chapter, so a fresh agent can continue the lesson. Each chapter ends with a check on its core ideas. For a goal in the user's project, the last chapters are build chapters where the user types the feature into the project, reusing what exists and following its style.
 
 Test every teaching change against one question: does the user still think and still type every line?
 
@@ -28,14 +28,14 @@ The guards are a guardrail against drift, not a sandbox. The Bash guard matches 
 
 ## State
 
-`.no-vibe/syllabus.md` holds the current lesson, what each section taught and the user's notes on how to teach, and `hooks/status.sh` reads it for the resume line. `.no-vibe/project.md` holds what the agent learned about an existing project, and is reused across topics.
+`.no-vibe/ROADMAP.md` holds the current lesson, what each section taught and the user's notes on how to teach, and `hooks/status.sh` reads it for the resume line. `.no-vibe/project.md` holds what the agent learned about an existing project, and is reused across topics.
 
 ## Commands
 
 <!-- no-vibe:generated:commands -->
 | Command | Effect |
 |---|---|
-| `/no-vibe [on\|off\|<topic>]` | Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <context\|level\|goal\|syllabus\|learn\|exercise\|check> · Chapter: <n/total\|-> · Section: <k\|-> · Exercise: <k\|->`. |
+| `/no-vibe [on\|off\|<topic>]` | Learning mode. Use ONLY when `.no-vibe/active` exists at the project root or the user invoked `/no-vibe`. The agent teaches in chat and never writes project files. Every reply starts with the header `[no-vibe] Step: <context\|level\|goal\|roadmap\|learn\|exercise\|check> · Chapter: <n/total\|-> · Section: <k\|-> · Exercise: <k\|->`. |
 | `/no-vibe-btw <task>` | One-shot escape hatch to temporarily disable no-vibe write guard for a single scoped task, then restore the marker. |
 <!-- /no-vibe:generated -->
 

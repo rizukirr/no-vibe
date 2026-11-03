@@ -10,9 +10,9 @@ run_status() {
     printf '{"cwd":"%s"}' "$1" | HOME="$2" "$HOOK" 2>/dev/null
 }
 
-syllabus() {
+roadmap() {
     local cwd="$1" status="$2"
-    cat > "$cwd/.no-vibe/syllabus.md" <<EOT
+    cat > "$cwd/.no-vibe/ROADMAP.md" <<EOT
 ---
 status: $status
 topic: Rust backend
@@ -41,19 +41,19 @@ assert_eq "no-vibe: OFF" "$(run_status "$cwd" "$fake_home")" "dir without marker
 rm -rf "$cwd"
 
 cwd=$(mktemp -d); mkdir -p "$cwd/.no-vibe"; touch "$cwd/.no-vibe/active"
-assert_eq "no-vibe: ON" "$(run_status "$cwd" "$fake_home")" "marker, no syllabus → ON"
+assert_eq "no-vibe: ON" "$(run_status "$cwd" "$fake_home")" "marker, no roadmap → ON"
 rm -rf "$cwd"
 
-cwd=$(mktemp -d); mkdir -p "$cwd/.no-vibe"; touch "$cwd/.no-vibe/active"; syllabus "$cwd" approved
-assert_eq 'no-vibe: ON, resuming "Rust backend" (chapter 2/3)' "$(run_status "$cwd" "$fake_home")" "approved syllabus → resume hint"
+cwd=$(mktemp -d); mkdir -p "$cwd/.no-vibe"; touch "$cwd/.no-vibe/active"; roadmap "$cwd" approved
+assert_eq 'no-vibe: ON, resuming "Rust backend" (chapter 2/3)' "$(run_status "$cwd" "$fake_home")" "approved roadmap → resume hint"
 rm -rf "$cwd"
 
-cwd=$(mktemp -d); mkdir -p "$cwd/.no-vibe"; touch "$cwd/.no-vibe/active"; syllabus "$cwd" draft
-assert_eq "no-vibe: ON" "$(run_status "$cwd" "$fake_home")" "draft syllabus → no resume hint"
+cwd=$(mktemp -d); mkdir -p "$cwd/.no-vibe"; touch "$cwd/.no-vibe/active"; roadmap "$cwd" draft
+assert_eq "no-vibe: ON" "$(run_status "$cwd" "$fake_home")" "draft roadmap → no resume hint"
 rm -rf "$cwd"
 
-cwd=$(mktemp -d); mkdir -p "$cwd/.no-vibe"; touch "$cwd/.no-vibe/active"; syllabus "$cwd" done
-assert_eq "no-vibe: ON" "$(run_status "$cwd" "$fake_home")" "done syllabus → no resume hint"
+cwd=$(mktemp -d); mkdir -p "$cwd/.no-vibe"; touch "$cwd/.no-vibe/active"; roadmap "$cwd" done
+assert_eq "no-vibe: ON" "$(run_status "$cwd" "$fake_home")" "done roadmap → no resume hint"
 rm -rf "$cwd"
 
 cwd=$(mktemp -d); mkdir -p "$cwd/.no-vibe" "$fake_home/.no-vibe"; touch "$cwd/.no-vibe/active"
@@ -67,10 +67,10 @@ out=$(cd / && printf '{"cwd":"%s"}' "$cwd" | HOME="$fake_home" "$HOOK")
 assert_eq "no-vibe: OFF" "$out" "cwd comes from stdin, not PWD"
 rm -rf "$cwd"
 
-# Syllabus variations the skill or an editor can produce.
+# Roadmap variations the skill or an editor can produce.
 resume() {
     local cwd; cwd=$(mktemp -d); mkdir -p "$cwd/.no-vibe"; touch "$cwd/.no-vibe/active"
-    printf '%b' "$1" > "$cwd/.no-vibe/syllabus.md"
+    printf '%b' "$1" > "$cwd/.no-vibe/ROADMAP.md"
     run_status "$cwd" "$fake_home"
     rm -rf "$cwd"
 }
@@ -79,7 +79,7 @@ assert_eq 'no-vibe: ON, resuming "Rust: backend" (chapter 1/1)' \
 assert_eq 'no-vibe: ON, resuming "Rust" (chapter 1/1)' \
     "$(resume "---\nstatus: approved\ntopic: 'Rust'\n---\n- [ ] 1. a\n")" "single-quoted topic"
 assert_eq 'no-vibe: ON, resuming "T" (chapter 2/2)' \
-    "$(resume '---\r\nstatus: approved\r\ntopic: T\r\n---\r\n- [x] 1. a\r\n- [ ] 2. b\r\n')" "CRLF syllabus"
+    "$(resume '---\r\nstatus: approved\r\ntopic: T\r\n---\r\n- [x] 1. a\r\n- [ ] 2. b\r\n')" "CRLF roadmap"
 assert_eq 'no-vibe: ON, resuming "T" (chapter 1/1)' \
     "$(resume '---\nstatus: approved  \ntopic: T\n---\n- [ ] 1. a\n')" "trailing spaces after approved"
 assert_eq 'no-vibe: ON, resuming "T" (chapter 2/2)' \
@@ -107,5 +107,9 @@ assert_eq 'no-vibe: ON, resuming "T" (chapter 2/2)' \
     "$(resume '---\nstatus: approved\ntopic: T\n---\n- [x] 1. a\n  - [x] 1.1 b\n- [ ] 2. c\n  - [ ] 2.1 d\n')" "indented prerequisite chapters are not counted"
 assert_eq 'no-vibe: ON, resuming "T" (chapter 2/2)' \
     "$(resume '---\nstatus: approved\ntopic: T\n---\n- [x] 1. a\n  - [x] Section 1 b\n    Core: c\n    Saw: d\n  - Check: e\n- [ ] 2. f\n  - [ ] Section 1 g\n')" "section lines are not counted"
+cwd=$(mktemp -d); mkdir -p "$cwd/.no-vibe"; touch "$cwd/.no-vibe/active"
+printf -- '---\nstatus: approved\ntopic: T\n---\n- [ ] 1. a\n' > "$cwd/.no-vibe/syllabus.md"
+assert_eq 'no-vibe: ON' "$(run_status "$cwd" "$fake_home")" "an old syllabus.md alone is not read"
+rm -rf "$cwd"
 rm -rf "$fake_home"
 summary

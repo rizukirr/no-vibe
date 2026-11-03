@@ -31,12 +31,12 @@ for gone in phases.md curriculum.md reference-grounding.md; do
 done
 
 # The book model, the context step, project.md and the do-no-harm rule.
-BOOK_HEADER='<context|level|goal|syllabus|learn|exercise|check> · Chapter: <n/total|-> · Section: <k|-> · Exercise: <k|->'
+BOOK_HEADER='<context|level|goal|roadmap|learn|exercise|check> · Chapter: <n/total|-> · Section: <k|-> · Exercise: <k|->'
 case "$desc_line" in
     *"$BOOK_HEADER"*) pass "SKILL.md description carries the book header" ;;
     *) fail "SKILL.md description carries the book header" "$desc_line" ;;
 esac
-for needle in "$BOOK_HEADER" '### 0. context' 'Relevance check' '## Do no harm' '## Explaining' 'Use visuals often' '## Stack' '## Structure' '## Conventions' '## Works' '## Open' 'Every multiple-choice question ends with an open option' '## The book' 'Every step has a reason' 'Plan backward from the goal' 'Before an optional chapter or section' 'Read more:' 'When a chapter begins, plan its sections' 'Core:' '### 4. chapter' '### 5. build' '### 6. check' '## Notes' 'Build:' 'practice:' '.no-vibe/practice/'; do
+for needle in "$BOOK_HEADER" '### 0. context' 'Relevance check' '## Do no harm' '## Explaining' 'Use visuals often' '## Stack' '## Structure' '## Conventions' '## Works' '## Open' 'Every multiple-choice question ends with an open option' '## The book' 'Every step has a reason' 'Plan backward from the goal' 'Before an optional chapter or section' 'Read more:' 'When a chapter begins, plan its sections' 'Core:' '### 4. chapter' '### 5. build' '### 6. check' '## Notes' '## ROADMAP.md' 'Build:' 'practice:' '.no-vibe/practice/'; do
     if grep -qF -- "$needle" "$skill"; then
         pass "SKILL.md contains '$needle'"
     else
