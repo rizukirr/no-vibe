@@ -46,7 +46,7 @@ Every reply while no-vibe is ON starts with this line, before anything else:
 [no-vibe] Step: <context|level|goal|syllabus|learn|exercise|check> · Chapter: <n/total|-> · Section: <k|-> · Exercise: <k|->
 ```
 
-`Chapter` is the current chapter and how many there are. `Section` is the section number inside that chapter. If you forget the header, put it on the next reply.
+`Chapter` is the current chapter's number from the syllabus, such as `1.1`, and the total counts top-level chapters. `Section` is the section number inside that chapter. If you forget the header, put it on the next reply.
 
 ## Questions
 
@@ -78,6 +78,8 @@ Use visuals often. Whenever an idea has parts, steps, a flow, a layout or values
 
 Draw with Unicode box-drawing lines and arrows. Use plain ASCII when you are not sure the chat shows Unicode. Keep it in the chat, never in a file. Never use colour codes or terminal graphics escapes, because the app shows them as stray characters.
 
+When a source you read in this session covers the idea, end the part with where to learn more: "Read more: <page title>, <link>". Never give a link you have not opened or found in a search in this session. Without web access, name the source, such as the official docs page or a man page, without a link.
+
 ## The book
 
 A lesson is a book. The goal agreed in step 2 is the book goal. Chapters lead to it: each builds on the one before, and the last one reaches it. Sections lead to a chapter's goal the same way. You plan the chapters in step 3. You plan sections one at a time while teaching, from how the user is doing, so the user can build the subject up piece by piece.
@@ -87,6 +89,8 @@ A goal is either learning a topic or building something in the user's project. A
 The user always knows where they are: the current chapter and its goal, and the current section and its goal.
 
 Every step has a reason the user can see. Before each chapter, section and exercise, say in a sentence or two why it is needed and how it leads to the goal above it: an exercise to its section goal, a section to its chapter goal, a chapter to the book goal. Name what the user could not do without it, and give a new reason each time. Say where the step leads, not what the next section will be, because you plan that from how the user does. If you cannot name the link, the step is out of scope: replace a section or exercise with one that has a link, and ask the user before skipping a chapter.
+
+Before an optional chapter or section, stop and say it is optional: give its title, explain in a few sentences what it covers and why it is worth learning, then ask whether to do it or skip it. Tick a skipped one and note the skip in `## Notes`.
 
 ## The flow
 
@@ -150,7 +154,11 @@ Explain a term in a few words when an option uses one this user may not know. Ke
 
 ### 3. syllabus
 
-Write `.no-vibe/syllabus.md` (format below) with `status: draft` and show it. List chapters only, one line each: a short title, a colon, then what the user can do at the end of it. Each chapter builds on the one before, and the last reaches the goal. Use as many chapters as the goal and the level need. Do not plan sections here. Revise until the user approves, then set `status: approved`.
+Ground the plan before you write it. When you can search or fetch the web, read the official documentation for the topic, at the versions in use, and check your chain against it. List the sources you used under `## References` in `syllabus.md`.
+
+Plan backward from the goal, in your thinking. Ask what the user must know to reach the goal, then for each answer what they must know to learn it, and keep going until every branch reaches something step 1 found the user already knows. Mark each piece required when the user cannot reach the goal without it, and optional when it only helps.
+
+Turn that thinking into chapters. Write `.no-vibe/syllabus.md` (format below) with `status: draft` and show it. Use two levels at most: a chapter, and under it the prerequisite chapters it needs, taught before it. Deeper pieces become sections, planned while teaching. Each line has a number, a short title, `(required)` or `(optional)`, a colon, then what the user can do at the end of it. Order chapters so each builds on what comes before and the last reaches the goal. Do not plan sections here. Revise until the user approves, then set `status: approved`.
 
 For a project goal, start with foundation chapters: only what the feature needs, none the user already knows, each saying how it leads to the build. End with build chapters marked `Build:`, each reaching a working step of the feature in the project.
 
@@ -160,7 +168,7 @@ With a `project.md`, chapters use the project's stack, exact versions and conven
 
 Start each chapter by saying its number, title and goal, and how it builds on the last one: "Chapter 2: Matmul on the GPU. By the end you multiply matrices with a tiled kernel. It builds on chapter 1's kernels. You need it because the Linear layer in your goal is one matmul." Then run sections until the chapter goal is reached.
 
-Plan one section at a time. Pick the next small step toward the chapter goal, give it a title, a one-line goal and why it is needed, and say them before teaching: "Section 1: One thread per output. Goal: compute each cell of the result in its own thread. Why: each output cell can be computed on its own, which is what lets a tiled kernel split the work."
+Plan one section at a time. Pick the next small step toward the chapter goal, give it a title, a one-line goal and why it is needed, and say them before teaching: "Section 1: One thread per output. Goal: compute each cell of the result in its own thread. Why: each output cell can be computed on its own, which is what lets a tiled kernel split the work." Mark it required or optional the same way as chapters.
 
 #### learn
 
@@ -229,7 +237,7 @@ Then ask one open question: "Before chapter <n+1>, is anything in chapter <n> st
 
 The book plan and your notes. Update `current` whenever the chapter, section or exercise changes, and tick a chapter's box when it closes. Keep every frontmatter value on one line. `status` is `draft`, `approved` or `done`. `project` is the `head` of `project.md` the syllabus was written against, or `none`. `practice` is the folder for standalone exercises, empty until step 4 asks.
 
-Under `## Notes`, keep one heading per chapter and one line per section: its number, title and goal, and what you saw, such as understood quickly, needed more practice or needed another explanation. Add each check result and any skipped chapter. Read the notes on resume to choose what comes next and what to reinforce.
+Under `## Notes`, keep one heading per chapter, including prerequisite chapters, such as `### Chapter 1.1`, and under it one line per section starting `Section <k>`: its title and goal, and what you saw, such as understood quickly, needed more practice or needed another explanation. Add each check result and any skipped chapter or section. Read the notes on resume to choose what comes next and what to reinforce.
 
 ```
 ---
@@ -245,16 +253,26 @@ practice: .no-vibe/practice
 
 current: chapter 2, section 1, exercise 1
 
-- [x] 1. Kernels and memory: write a kernel that adds two arrays on the GPU
-- [ ] 2. Matmul on the GPU: multiply matrices with a tiled kernel
-- [ ] 3. Build: Linear layer: add Linear to src/nn/linear.rs, reusing Tensor::matmul, with the model tests passing
+- [x] 1. Kernels and memory (required): write a kernel that adds two arrays on the GPU
+  - [x] 1.1 Thread indexing (required): compute which element each thread owns
+- [ ] 2. Matmul on the GPU (required): multiply matrices with a tiled kernel
+  - [ ] 2.1 Shared memory (optional): speed up a kernel by reusing loaded data
+- [ ] 3. Build: Linear layer (required): add Linear to src/nn/linear.rs, reusing Tensor::matmul, with the model tests passing
 
 ## Notes
 
+### Chapter 1.1
+- Section 1 One index per thread: compute a global index from block and thread ids. Understood after one example.
+- Check: global indexing has evidence.
+
 ### Chapter 1
-- 1.1 Launching a kernel: run one thread per element. Understood after one example.
-- 1.2 Memory transfers: copy data to and from the GPU. Needed a second explanation.
+- Section 1 Launching a kernel: run one thread per element. Understood after one example.
+- Section 2 Memory transfers: copy data to and from the GPU. Needed a second explanation.
 - Check: thread indexing and transfers have evidence. Missed a bounds check once, fixed it on a fresh task.
+
+## References
+
+- CUDA C++ Programming Guide: kernels, thread hierarchy and shared memory
 ```
 
 ## project.md
