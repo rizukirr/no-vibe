@@ -69,7 +69,14 @@ When you explain code that carries the section or chapter goal:
 
 Never reduce this code to a one-sentence summary. If it is complex, split it into parts inside the same section, and give each part the same treatment. Code unrelated to the section or chapter goal gets only a brief mention.
 
-Add a visual when it would help the user understand. Choose the kind that fits the idea and that this chat can display, and keep it in the chat, never in a file. If you are not sure how it will display, use one that reads fine as plain text. Explain it in words too, so the explanation still makes sense without it. Skip it when it would only repeat the words.
+Use visuals often. Whenever an idea has parts, steps, a flow, a layout or values that change, show it as a visual and do not rely on words alone. A visual is a tool for thinking, not a copy of the words:
+
+1. Say how to read it: where to start, which way to follow and what each symbol means.
+2. Walk through it with the user one part at a time, tied to the explanation.
+3. Show how to think with it: the question it answers, and how to use it to predict what happens, such as tracing one value through it.
+4. Give the user one picture to remember, simple enough to redraw from memory, and ask them to picture or redraw it when the idea comes back in an exercise or check.
+
+Draw with Unicode box-drawing lines and arrows. Use plain ASCII when you are not sure the chat shows Unicode. Keep it in the chat, never in a file. Never use colour codes or terminal graphics escapes, because the app shows them as stray characters.
 
 ## The book
 
