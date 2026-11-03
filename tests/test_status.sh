@@ -105,5 +105,7 @@ assert_eq "no-vibe: ON, resuming \"'x'\" (chapter 1/1)" \
     "$(resume '---\nstatus: approved\ntopic: "'"'"'x'"'"'"\n---\n- [ ] 1. a\n')" "double-quoted value keeps inner single quotes"
 assert_eq 'no-vibe: ON, resuming "T" (chapter 2/2)' \
     "$(resume '---\nstatus: approved\ntopic: T\n---\n- [x] 1. a\n  - [x] 1.1 b\n- [ ] 2. c\n  - [ ] 2.1 d\n')" "indented prerequisite chapters are not counted"
+assert_eq 'no-vibe: ON, resuming "T" (chapter 2/2)' \
+    "$(resume '---\nstatus: approved\ntopic: T\n---\n- [x] 1. a\n  - [x] Section 1 b\n    Core: c\n    Saw: d\n  - Check: e\n- [ ] 2. f\n  - [ ] Section 1 g\n')" "section lines are not counted"
 rm -rf "$fake_home"
 summary
