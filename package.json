@@ -1,6 +1,6 @@
 {
   "name": "no-vibe",
-  "version": "3.5.1",
+  "version": "3.6.0",
   "description": "Learning mode for AI coding assistants. The agent teaches and shows code in chat, and you type every line yourself.",
   "type": "module",
   "license": "MIT",
