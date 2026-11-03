@@ -11,14 +11,14 @@ Works with Claude Code, Codex, opencode, Pi and Antigravity.
 ```
 
 1. If you are in a project, the agent reads it first, so the lesson fits your stack and never breaks what already works.
-2. It finds your level with a few multiple-choice questions.
+2. It finds your level with a few multiple-choice questions, and asks how you like to learn: code first, explanation first or a mix.
 3. It agrees a one-sentence goal with you.
-4. It plans chapters you approve by working backward from your goal to what you already know, each marked required or optional and building on the last.
-5. Each chapter is taught one section at a time: why it is needed, a structured explanation with visuals that show how to think about it, then at least 3 exercises with the full code shown for you to type and run.
+4. It researches your goal, looking at existing roadmaps and references, then works backward from your goal to what you already know and writes a roadmap of chapters for you to approve. Each chapter is required or optional, and before an optional one the agent explains it and lets you choose to do it or skip it.
+5. When a chapter begins, it plans the chapter's sections. Each section says why it is needed, gives a structured explanation with visuals that show how to think about it, then at least 3 exercises with the full code shown for you to type and run.
 6. Each chapter ends with a check, such as finding a bug or predicting output, and the agent re-explains what you miss.
 7. For a goal in your project, the last chapters guide you to type the real feature into your own code.
 
-Progress is saved in `.no-vibe/`, so `/no-vibe on` picks up where you left off.
+Progress is saved in `.no-vibe/ROADMAP.md`: the roadmap, what each section taught you, and your notes on how you want to be taught, such as "write less text". `/no-vibe on` picks up where you left off, even in a fresh session.
 
 ## Install
 
