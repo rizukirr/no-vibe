@@ -14,7 +14,7 @@ Works with Claude Code, Codex, opencode, Pi and Antigravity.
 2. It finds your level with a few multiple-choice questions, and asks how you like to learn: code first, explanation first or a mix.
 3. It agrees a one-sentence goal with you.
 4. It researches your goal, looking at existing roadmaps and references, then works backward from your goal to what you already know and writes a roadmap of chapters for you to approve. Each chapter is required or optional, and before an optional one the agent explains it and lets you choose to do it or skip it.
-5. When a chapter begins, it plans the chapter's sections. Each section says why it is needed, gives a structured explanation with visuals that show how to think about it, then at least 3 exercises with the full code shown for you to type and run.
+5. When a chapter begins, it plans the chapter's sections. Each section says why it is needed, gives a structured explanation with visuals that show how to think about it, then at least 3 exercises with the full code shown for you to type and run. New ideas start from the most naive version you can write by hand and improve step by step toward the tools people really use.
 6. Each chapter ends with a check, such as finding a bug or predicting output, and the agent re-explains what you miss.
 7. For a goal in your project, the last chapters guide you to type the real feature into your own code.
 
