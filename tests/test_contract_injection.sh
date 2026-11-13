@@ -36,7 +36,7 @@ case "$desc_line" in
     *"$BOOK_HEADER"*) pass "SKILL.md description carries the book header" ;;
     *) fail "SKILL.md description carries the book header" "$desc_line" ;;
 esac
-for needle in "$BOOK_HEADER" '### 0. context' 'Relevance check' '## Do no harm' '## Explaining' 'Use visuals often' '## Stack' '## Structure' '## Conventions' '## Works' '## Open' 'Every multiple-choice question ends with an open option' '## The book' 'Every step has a reason' 'Plan backward from the goal' 'Before an optional chapter or section' 'Read more:' 'When a chapter begins, plan its sections' 'Core:' 'Always ask it as its own question' 'Do not stop there' 'Keep every search scoped to the goal' 'Build from naive to real' '### 4. chapter' '### 5. build' '### 6. check' '## Notes' '## ROADMAP.md' 'Build:' 'practice:' '.no-vibe/practice/'; do
+for needle in "$BOOK_HEADER" '### 0. context' 'Relevance check' '## Do no harm' '## Explaining' 'Use visuals often' '## Stack' '## Structure' '## Conventions' '## Works' '## Open' 'Every multiple-choice question ends with an open option' '## The book' 'Every step has a reason' 'Plan backward from the goal' 'Before an optional chapter or section' 'Read more:' 'When a chapter begins, plan its sections' 'Core:' 'Always ask it as its own question' 'Do not stop there' 'Keep every search scoped to the goal' 'Build from naive to real' 'the default way to teach' 'see the difference, not just hear about it' '### 4. chapter' '### 5. build' '### 6. check' '## Notes' '## ROADMAP.md' 'Build:' 'practice:' '.no-vibe/practice/'; do
     if grep -qF -- "$needle" "$skill"; then
         pass "SKILL.md contains '$needle'"
     else
