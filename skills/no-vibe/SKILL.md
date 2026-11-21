@@ -71,6 +71,10 @@ When you explain code that carries the section or chapter goal:
 
 Never reduce this code to a one-sentence summary. If it is complex, split it into parts inside the same section, and give each part the same treatment. Code unrelated to the section or chapter goal gets only a brief mention.
 
+Show how the input becomes the output. For every program or function you show, trace one concrete input through it: what goes in, each step that changes it and the value after that step, and what comes out, such as `"3,1,2"` → `split(",")` → `["3","1","2"]` → `int` → `[3, 1, 2]` → `sorted` → `[1, 2, 3]`. Then point at what the user will see when they run it and name the line of code that produced each part, so the output is never a surprise. Draw the trace as a visual when it has more than three steps.
+
+Comment the code you show. Every example, exercise and build step carries short comments inside the code that say why it is written that way: what a block does to the data, what would break without a line, or why this approach and not the obvious one, such as `# get(word, 0) covers the first time a word is seen`. Put a comment above each block that does one job, and beside a line whose reason is not plain from the line itself. Skip a comment that only repeats the code, such as `# add 1 to i` over `i += 1`, and keep each to one line where you can. The user types the comments with the code, so each reason is in front of them while they write the line it explains, and after running it they can reread code and reason together instead of jumping between the code and the chat. The comments hold the reasons line by line, and the explanation in chat still gives the big picture and the trace.
+
 Use visuals often. Whenever an idea has parts, steps, a flow, a layout or values that change, show it as a visual and do not rely on words alone. A visual is a tool for thinking, not a copy of the words:
 
 1. Say how to read it: where to start, which way to follow and what each symbol means.
@@ -194,7 +198,7 @@ Before the first exercise of the book, ask once where the user wants to practice
 
 Use that folder in every command you give. Never tell the user to make or enter a folder they do not need.
 
-Give each exercise with the full code in chat, starting with why this exercise comes now. The user types it by hand and runs it. The point is muscle memory and getting used to the code, so the user never has to guess. Tell them what to run and what they should see. Exercises are standalone practice in the practice folder, never typed into the project. With a `project.md`, they use the same stack and versions, and in a project-goal book they use the project's names and style where they can.
+Give each exercise with the full code in chat, starting with why this exercise comes now. The user types it by hand and runs it. The point is muscle memory and getting used to the code, so the user never has to guess. The code carries comments as `## Explaining` describes. Tell them what to run and what they should see, and trace how their input becomes that output. Exercises are standalone practice in the practice folder, never typed into the project. With a `project.md`, they use the same stack and versions, and in a project-goal book they use the project's names and style where they can.
 
 Every section has at least 3 exercises, each a different kind of task:
 
@@ -244,7 +248,7 @@ The book plan, the record of each section and the user's notes. Update `current`
 
 Under each chapter, list its sections as `- [ ] Section <k> <title>: <goal>`. When a section ends, tick it and add two lines under it: `Core:` with the 1 to 3 things the user must remember, and `Saw:` with what you saw, such as understood quickly, needed more practice or needed another explanation. When a chapter ends, add a `Check:` line with the check result. A skipped chapter or section gets a `Skipped:` line. This record is written for a fresh agent with no memory of this conversation, so it must be enough to continue the lesson from it alone.
 
-`## Notes` holds what the user asked you to change in how you teach, one line each, close to their words, such as "Explain code with comments inside the code" or "Write less text". Add a line whenever the user asks, follow every line on every turn, and when a note conflicts with `teaching`, follow the note.
+`## Notes` holds what the user asked you to change in how you teach, one line each, close to their words, such as "Use smaller examples" or "Write less text". Add a line whenever the user asks, follow every line on every turn, and when a note conflicts with `teaching`, follow the note.
 
 ```
 ---
@@ -279,7 +283,7 @@ current: chapter 2, section 1, exercise 1
 
 ## Notes
 
-- Explain code with comments inside the code, not in separate text.
+- Use smaller examples.
 - Write less text.
 
 ## References
